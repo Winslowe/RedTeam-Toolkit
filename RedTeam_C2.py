@@ -296,6 +296,7 @@ def c2_payload_builder():
     print_banner()
     print(f"{C.YELLOW}[*] C2 Payload Builder{C.RESET}\n")
     print_line()
+    print(f"{C.DIM}  [!] Önerilen Portlar: 443 (HTTPS), 80 (HTTP), 53 (DNS) - Güvenlik duvarlarını aşmak için{C.RESET}\n")
 
     lhost = input(f"{C.CYAN}  [?] LHOST (Saldırgan IP)   : {C.RESET}").strip()
     lport = input(f"{C.CYAN}  [?] LPORT (Saldırgan Port) : {C.RESET}").strip()
@@ -366,14 +367,15 @@ def c2_payload_builder():
 def c2_listener():
     clear_screen()
     print_banner()
-    print(f"{C.YELLOW}[*] C2 Listener{C.RESET}\n")
+    print(f"{C.YELLOW}[*] C2 Listener (Dinleyici){C.RESET}\n")
     print_line()
+    print(f"{C.DIM}  [!] Önerilen Portlar: Payload'da belirttiğiniz port (ör: 443, 80, 53){C.RESET}\n")
 
-    lport = input(f"{C.CYAN}  [?] Dinlenecek Port (Örn: 4444): {C.RESET}").strip()
-    if not lport.isdigit():
+    port_str = input(f"{C.CYAN}  [?] Dinlenecek Port: {C.RESET}").strip()
+    if not port_str.isdigit():
         return
 
-    port = int(lport)
+    port = int(port_str)
     print(f"\n{C.GREEN}  [*] 0.0.0.0:{port} dinleniyor... (İptal: CTRL+C){C.RESET}\n")
 
     conn = None
@@ -420,7 +422,16 @@ def run_external_tool(script_path, desc):
         input(f"\n{C.YELLOW}  Geri dönmek için Enter'a basın...{C.RESET}")
         return
 
-    print(f"{C.DIM}Bu aracın argüman gerektirip gerektirmediğini görmek için boş bırakıp Enter'a basabilirsiniz.{C.RESET}\n")
+    if "Evil_Twin.py" in script_path:
+        print(f"{C.DIM}  [!] ÖNERİLEN KULLANIM (Linux/Root Gerekir):{C.RESET}")
+        print(f"{C.DIM}  Arayüz: wlan0 (veya wlan1) | SSID: 'FreeWiFi' veya 'Starbucks_Guest' | Kanal: 1, 6 veya 11{C.RESET}")
+        print(f"{C.DIM}  Örnek Giriş: wlan0 Starbucks_Guest 6{C.RESET}\n")
+    elif "Reverse_Shell_Gen.py" in script_path:
+        print(f"{C.DIM}  [!] ÖNERİLEN KULLANIM:{C.RESET}")
+        print(f"{C.DIM}  Örnek Giriş: 10.10.10.1 4444 python{C.RESET}\n")
+    else:
+        print(f"{C.DIM}Bu aracın argüman gerektirip gerektirmediğini görmek için boş bırakıp Enter'a basabilirsiniz.{C.RESET}\n")
+        
     args = input(f"{C.CYAN}  [?] Argümanları girin (ör: <IP> <PORT> veya -h): {C.RESET}").strip()
     
     print_line()
