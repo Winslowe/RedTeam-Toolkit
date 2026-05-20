@@ -422,17 +422,34 @@ def run_external_tool(script_path, desc):
         input(f"\n{C.YELLOW}  Geri dönmek için Enter'a basın...{C.RESET}")
         return
 
+    args = ""
     if "Evil_Twin.py" in script_path:
-        print(f"{C.DIM}  [!] ÖNERİLEN KULLANIM (Linux/Root Gerekir):{C.RESET}")
-        print(f"{C.DIM}  Arayüz: wlan0 (veya wlan1) | SSID: 'FreeWiFi' veya 'Starbucks_Guest' | Kanal: 1, 6 veya 11{C.RESET}")
-        print(f"{C.DIM}  Örnek Giriş: wlan0 Starbucks_Guest 6{C.RESET}\n")
+        print(f"{C.YELLOW}  [*] Evil Twin Kurulum Sihirbazı{C.RESET}")
+        iface = input(f"  {C.CYAN}[?] WiFi Arayüzü (ör: wlan0): {C.RESET}").strip()
+        ssid = input(f"  {C.CYAN}[?] Sahte Ağ Adı (ör: FreeWiFi): {C.RESET}").strip()
+        kanal = input(f"  {C.CYAN}[?] Kanal (ör: 6): {C.RESET}").strip()
+        if iface and ssid:
+            args = f"{iface} {ssid} {kanal}".strip()
+    
     elif "Reverse_Shell_Gen.py" in script_path:
-        print(f"{C.DIM}  [!] ÖNERİLEN KULLANIM:{C.RESET}")
-        print(f"{C.DIM}  Örnek Giriş: 10.10.10.1 4444 python{C.RESET}\n")
+        print(f"{C.YELLOW}  [*] Reverse Shell Generator Sihirbazı{C.RESET}")
+        ip = input(f"  {C.CYAN}[?] LHOST (Saldırgan IP): {C.RESET}").strip()
+        port = input(f"  {C.CYAN}[?] LPORT (Saldırgan Port): {C.RESET}").strip()
+        lang = input(f"  {C.CYAN}[?] Dil (Opsiyonel, boş bırakın veya python/bash yazın): {C.RESET}").strip()
+        if ip and port:
+            args = f"{ip} {port} {lang}".strip()
+
+    elif "Wordlist_Generator.py" in script_path:
+        print(f"{C.DIM}Bu araç kendi içinde interaktiftir, doğrudan başlatılıyor...{C.RESET}\n")
+        args = ""
+
+    elif "Log_Cleaner.py" in script_path:
+        print(f"{C.DIM}Bu araç argüman gerektirmez, doğrudan başlatılıyor...{C.RESET}\n")
+        args = ""
+
     else:
         print(f"{C.DIM}Bu aracın argüman gerektirip gerektirmediğini görmek için boş bırakıp Enter'a basabilirsiniz.{C.RESET}\n")
-        
-    args = input(f"{C.CYAN}  [?] Argümanları girin (ör: <IP> <PORT> veya -h): {C.RESET}").strip()
+        args = input(f"{C.CYAN}  [?] Argümanları girin (ör: <IP> <PORT> veya -h): {C.RESET}").strip()
     
     print_line()
     print(f"{C.GREEN}[+] Araç Çıktısı Başlıyor...{C.RESET}\n")
