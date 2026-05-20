@@ -482,19 +482,22 @@ def main_menu():
     ]
     
     pwd_tools = [
-        ("SSH Bruteforce", os.path.join(base_dir, "Password Cracking", "SSH_Bruteforce.py"), "SSH login denemeleri", C.RED),
-        ("FTP Bruteforce", os.path.join(base_dir, "Password Cracking", "FTP_Bruteforce.py"), "FTP login denemeleri", C.RED),
+        ("Wordlist Generator", os.path.join(base_dir, "Password Cracking", "Wordlist_Generator.py"), "Hedef odaklı özel şifre listesi üret", C.GREEN),
         ("Hash Identifier", os.path.join(base_dir, "Password Cracking", "Hash_Identifier.py"), "Hash formatını belirle", C.GREEN),
         ("MD5 Hash Cracker", os.path.join(base_dir, "Password Cracking", "Hash_Cracker.py"), "Wordlist ile MD5 kırma", C.YELLOW),
-        ("ZIP Password Cracker", os.path.join(base_dir, "Password Cracking", "Zip_Cracker.py"), "Şifreli ZIP dosyalarını kırma", C.YELLOW)
+        ("ZIP Password Cracker", os.path.join(base_dir, "Password Cracking", "Zip_Cracker.py"), "Şifreli ZIP dosyalarını kırma", C.YELLOW),
+        ("SSH Bruteforce", os.path.join(base_dir, "Password Cracking", "SSH_Bruteforce.py"), "SSH login denemeleri", C.RED),
+        ("FTP Bruteforce", os.path.join(base_dir, "Password Cracking", "FTP_Bruteforce.py"), "FTP login denemeleri", C.RED)
     ]
     
     post_tools = [
+        ("Reverse Shell Generator", os.path.join(base_dir, "Post-Exploitation", "Reverse_Shell_Gen.py"), "12 dilde hazır shell kodu üret", C.GREEN),
         ("Credential Harvester", os.path.join(base_dir, "Post-Exploitation", "Credential_Harvester.py"), "WiFi şifreleri ve sistem bilgisi", C.YELLOW),
-        ("Persistence Installer", os.path.join(base_dir, "Post-Exploitation", "Persistence_Installer.py"), "Kalıcılık sağlama (Registry/Cron)", C.RED),
         ("Screenshot Grabber", os.path.join(base_dir, "Post-Exploitation", "Screenshot_Grabber.py"), "Hedef ekrandan görüntü alma", C.YELLOW),
         ("Simple Keylogger", os.path.join(base_dir, "Post-Exploitation", "Simple_Keylogger.py"), "Klavye vuruşlarını kaydetme", C.RED),
-        ("Data Exfiltrator", os.path.join(base_dir, "Post-Exploitation", "Data_Exfiltrator.py"), "B64/HTTP ile veri sızdırma", C.RED)
+        ("Data Exfiltrator", os.path.join(base_dir, "Post-Exploitation", "Data_Exfiltrator.py"), "B64/HTTP ile veri sızdırma", C.RED),
+        ("Persistence Installer", os.path.join(base_dir, "Post-Exploitation", "Persistence_Installer.py"), "Kalıcılık sağlama (Registry/Cron)", C.RED),
+        ("Log Cleaner", os.path.join(base_dir, "Post-Exploitation", "Log_Cleaner.py"), "İz silme — Windows/Linux log temizleyici", C.RED)
     ]
     
     priv_tools = [
@@ -505,6 +508,10 @@ def main_menu():
     av_tools = [
         ("Payload Obfuscator", os.path.join(base_dir, "AV Evasion", "Payload_Obfuscator.py"), "Python scriptlerini gizleme", C.YELLOW),
         ("Shellcode Encoder", os.path.join(base_dir, "AV Evasion", "Shellcode_Encoder.py"), "XOR ile Shellcode şifreleme", C.YELLOW)
+    ]
+
+    wireless_tools = [
+        ("Evil Twin", os.path.join(base_dir, "Wireless Attacks", "Evil_Twin.py"), "Sahte WiFi AP + Captive Portal (Linux)", C.RED)
     ]
 
     while True:
@@ -518,13 +525,14 @@ def main_menu():
 
         print(f"{C.BOLD}  KATEGORİLER:{C.RESET}\n")
         
-        print(f"  {C.CYAN}1){C.RESET} {C.GREEN}Privilege Escalation{C.RESET}{C.DIM}— Windows/Linux PrivEsc Checker{C.RESET}")
-        print(f"  {C.CYAN}2){C.RESET} {C.GREEN}AV Evasion{C.RESET}          {C.DIM}— Obfuscator, Shellcode Encoder{C.RESET}")
-        print(f"  {C.CYAN}3){C.RESET} {C.YELLOW}Network Recon{C.RESET}       {C.DIM}— Ağ tarama, DNS, ARP Spoofing{C.RESET}")
-        print(f"  {C.CYAN}4){C.RESET} {C.YELLOW}Web Exploitation{C.RESET}    {C.DIM}— SQLi, XSS, LFI, Dir Buster{C.RESET}")
-        print(f"  {C.CYAN}5){C.RESET} {C.YELLOW}Password Cracking{C.RESET}   {C.DIM}— SSH/FTP Brute, Hash, ZIP{C.RESET}")
-        print(f"  {C.CYAN}6){C.RESET} {C.RED}Post-Exploitation{C.RESET}   {C.DIM}— Keylogger, Harvester, Persistence{C.RESET}")
-        print(f"  {C.CYAN}7){C.RESET} {C.RED}C2 Framework{C.RESET}        {C.DIM}— Payload Builder & Listener (Stealth Mode){C.RESET}")
+        print(f"  {C.CYAN}1){C.RESET} {C.GREEN}Privilege Escalation{C.RESET} {C.DIM}— Windows/Linux PrivEsc Checker{C.RESET}")
+        print(f"  {C.CYAN}2){C.RESET} {C.GREEN}AV Evasion{C.RESET}           {C.DIM}— Obfuscator, Shellcode Encoder{C.RESET}")
+        print(f"  {C.CYAN}3){C.RESET} {C.YELLOW}Network Recon{C.RESET}        {C.DIM}— Ağ tarama, DNS, ARP Spoofing{C.RESET}")
+        print(f"  {C.CYAN}4){C.RESET} {C.YELLOW}Web Exploitation{C.RESET}     {C.DIM}— SQLi, XSS, LFI, Dir Buster{C.RESET}")
+        print(f"  {C.CYAN}5){C.RESET} {C.YELLOW}Password Cracking{C.RESET}    {C.DIM}— Wordlist, Hash, SSH/FTP Brute{C.RESET}")
+        print(f"  {C.CYAN}6){C.RESET} {C.RED}Post-Exploitation{C.RESET}    {C.DIM}— Shell Gen, Keylogger, Log Cleaner{C.RESET}")
+        print(f"  {C.CYAN}7){C.RESET} {C.RED}Wireless Attacks{C.RESET}     {C.DIM}— Evil Twin, Sahte WiFi AP{C.RESET}")
+        print(f"  {C.CYAN}8){C.RESET} {C.RED}C2 Framework{C.RESET}         {C.DIM}— Payload Builder & Listener (Stealth){C.RESET}")
         print(f"  {C.CYAN}0){C.RESET} Çıkış\n")
 
         try:
@@ -547,6 +555,8 @@ def main_menu():
         elif choice == '6':
             external_menu_category("Post-Exploitation", post_tools)
         elif choice == '7':
+            external_menu_category("Wireless Attacks", wireless_tools)
+        elif choice == '8':
             while True:
                 clear_screen()
                 print_banner()
