@@ -42,9 +42,29 @@ Kullanımı çok basittir. Terminalinizi/CMD'yi açıp şu komutu yazmanız yete
 python RedTeam_C2.py
 ```
 
-![Ana Menü Ekran Görüntüsü](https://via.placeholder.com/800x400.png?text=Renkli+Ana+Menu+Ekran+Goruntusu+Buraya+Gelecek)
+Karsınıza aşağıdaki gibi renkli bir menü ekranı çıkacak:
 
-Karşınıza yukarıdaki gibi bir ekran çıkacak. Riske göre ayrılmış kategorilerden klavyenizle numara seçerek ilerleyebilirsiniz.
+```
+┌──────────────────────────────────────────────────┐
+│  The Ultimate Pentest Arsenal v5.0     │
+│                                        │
+│  RİSK BİLGİLENDİRMESİ:                  │
+│  ■ DÜŞÜK RİSK  : Tespit/Kontrol           │
+│  ■ ORTA RİSK   : Tarayıcı/Bruteforce      │
+│  ■ YÜKSEK RİSK : İstismar/C2              │
+│                                        │
+│  1) Privilege Escalation               │
+│  2) AV Evasion                         │
+│  3) Network Recon                      │
+│  4) Web Exploitation                   │
+│  5) Password Cracking                  │
+│  6) Post-Exploitation                  │
+│  7) C2 Framework                       │
+│  0) Çıkış                                │
+└──────────────────────────────────────────────────┘
+```
+
+Riske göre ayrılmış kategorilerden klavyenizle numara seçerek ilerleyebilirsiniz.
 
 ---
 
@@ -62,7 +82,17 @@ C2 (Command and Control) Framework, kurban bilgisayarı uzaktan komuta etmenize 
     *   Windows'un yerleşik koruması olan **AMSI** sistemini devre dışı bırakır.
     *   Fotoğrafın içindeki şifreli kodu çözer ve kurbanın bilgisayarıyla sizin aranızda **gizli bir bağlantı kurar.**
 
-![C2 Framework Mantığı](https://via.placeholder.com/800x300.png?text=PNG+Virusu+C2+Baglantisi+Semasi+Buraya+Gelecek)
+```mermaid
+flowchart LR
+    A["Saldırgan\nRedTeam_C2.py"] -->|"1. Kapak PNG seç"| B["Gerçek Fotoğraf\n(.png)"]
+    B -->|"2. XOR Şifreleme"| C["PNG + Gizli Payload\n(metadata içinde)"]
+    C -->|"3. VBS Dropper"| D["Kurban Tıklar"]
+    D -->|"4. VM/Sandbox?"| E{"Güvenlik\nKontrolü"}
+    E -->|"Evet"| F["Çalışmayı Durdur"]
+    E -->|"Hayır"| G["AMSI + ETW Bypass"]
+    G -->|"5. Decrypt & Execute"| H["Reverse Shell\nSaldırgana Bağlan"]
+    H -->|"6. Uzaktan Kontrol"| A
+```
 
 Artık kurbanın bilgisayarına uzaktan istediğiniz komutu gönderebilirsiniz!
 
