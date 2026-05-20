@@ -1,0 +1,14 @@
+# Pentest Toolkit Dependencies
+# =============================
+# pip install -r requirements.txt
+
+# Network Recon
+scapy>=2.5.0
+requests>=2.28.0
+
+# Password Cracking
+paramiko>=3.0.0
+
+# Post-Exploitation
+pynput>=1.7.0
+Pillow>=10.0.0
