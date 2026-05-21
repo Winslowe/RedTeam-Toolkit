@@ -615,9 +615,7 @@ WshShell.Run Chr(34) & myDir & "\\svchost.exe" & Chr(34), 0, False
         final_exe = exe_path
 
     if not os.path.exists(final_exe):
-        print(f"{C.RED}  [-] Derleme başarısız!{C.RESET}")
-        if 'result' in dir() and result.stderr:
-            print(f"{C.RED}  {result.stderr[:300]}{C.RESET}")
+        print(f"{C.RED}  [-] Paketleme başarısız!{C.RESET}")
         input(f"\n{C.YELLOW}  Enter'a basın...{C.RESET}")
         return
 
