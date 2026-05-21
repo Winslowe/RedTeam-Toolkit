@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARSENAL - ACCESS DENIED</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030305;
+            --accent-primary: #ff003c; /* Cyberpunk Red for Login */
+            --accent-secondary: #00f0ff; /* Neon Cyan */
+            --glass-blur: blur(20px);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(255, 0, 60, 0.1), transparent 60%),
+                linear-gradient(rgba(255, 0, 60, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 60, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Scanline Overlay */
+        body::after {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 10; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
+        .login-container {
+            width: 400px;
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid rgba(255, 0, 60, 0.3);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(255, 0, 60, 0.2), inset 0 0 20px rgba(255, 0, 60, 0.05);
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            animation: glitchFadeIn 1s ease forwards;
+        }
+
+        @keyframes glitchFadeIn {
+            0% { opacity: 0; transform: scale(0.9) skewX(10deg); filter: hue-rotate(90deg); }
+            20% { opacity: 1; transform: scale(1.05) skewX(-10deg); }
+            40% { transform: scale(0.98) skewX(5deg); }
+            60% { transform: scale(1.02) skewX(-2deg); }
+            80% { transform: scale(0.99) skewX(1deg); }
+            100% { transform: scale(1) skewX(0); filter: hue-rotate(0); }
+        }
+
+        .icon-container {
+            font-size: 3rem;
+            color: var(--accent-primary);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px var(--accent-primary);
+            animation: pulseIcon 2s infinite;
+        }
+
+        @keyframes pulseIcon {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; text-shadow: 0 0 30px var(--accent-primary); }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.2rem;
+            margin: 0 0 5px 0;
+            color: #fff;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+        
+        h2 {
+            font-size: 1rem;
+            color: var(--accent-primary);
+            margin: 0 0 30px 0;
+            font-weight: 400;
+            letter-spacing: 2px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b949e;
+            transition: 0.3s;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #333;
+            color: var(--accent-primary);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.3s;
+            outline: none;
+            letter-spacing: 2px;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(255, 0, 60, 0.2);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .form-control:focus + i, .form-control:not(:placeholder-shown) + i {
+            color: var(--accent-primary);
+            text-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 0, 60, 0.1);
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: var(--accent-primary);
+            color: #000;
+            box-shadow: 0 0 30px rgba(255, 0, 60, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .error-msg {
+            color: var(--accent-primary);
+            font-size: 0.85rem;
+            margin-top: -15px;
+            margin-bottom: 20px;
+            text-align: left;
+            display: none;
+            text-shadow: 0 0 5px var(--accent-primary);
+        }
+        
+        .alert {
+            background: rgba(255,0,0,0.1); border: 1px solid red; color: red;
+            padding: 10px; margin-bottom: 20px; border-radius: 5px; font-size: 0.9rem;
+        }
+
+        /* Glitch effect on hover */
+        .glitch-text { position: relative; display: inline-block; }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.8;
+        }
+        .glitch-text::before { left: 2px; text-shadow: -1px 0 red; clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        .glitch-text::after { left: -2px; text-shadow: -1px 0 blue; clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
+        @keyframes glitch-anim { 0% { clip: rect(79px, 9999px, 86px, 0); } 100% { clip: rect(31px, 9999px, 85px, 0); } }
+        @keyframes glitch-anim-2 { 0% { clip: rect(29px, 9999px, 83px, 0); } 100% { clip: rect(102px, 9999px, 14px, 0); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="icon-container">
+            <i class="fa-solid fa-fingerprint"></i>
+        </div>
+        <h1 class="glitch-text" data-text="ARSENAL C2">ARSENAL C2</h1>
+        <h2>RESTRICTED AREA</h2>
+        
+        {% if error %}
+            <div class="alert"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
+        {% endif %}
+
+        <form action="/login" method="POST">
+            <div class="input-group">
+                <input type="password" name="password" class="form-control" placeholder="ENTER ENCRYPTION KEY" required autocomplete="off" autofocus>
+                <i class="fa-solid fa-key"></i>
+            </div>
+            
+            <button type="submit" class="btn">
+                <i class="fa-solid fa-unlock"></i> DECRYPT SYSTEM
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

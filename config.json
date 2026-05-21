@@ -2,5 +2,6 @@
     "telegram_bot_token": "BURAYA_TOKEN_GIRILECEK",
     "telegram_chat_id": "BURAYA_CHAT_ID_GIRILECEK",
     "discord_webhook": "BURAYA_WEBHOOK_URL_GIRILECEK",
-    "notifications_enabled": true
+    "notifications_enabled": true,
+    "admin_password": "admin"
 }

@@ -9,9 +9,10 @@ import sys
 import subprocess
 import json
 import traceback
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 
 app = Flask(__name__)
+app.secret_key = 'arsenal_super_secret_key_v8'
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Tüm araçların kategorileri ve gereksinim duydukları inputlar (Detaylı Açıklamalarla)
@@ -92,6 +93,13 @@ TOOLS_CONFIG = [
                     {"name": "arg1", "type": "text", "placeholder": "örn: 192.168.1.10", "label": "Kurban IP Adresi"},
                     {"name": "arg2", "type": "text", "placeholder": "örn: 192.168.1.1", "label": "Modem (Gateway) IP"}
                 ]
+            },
+            {
+                "id": "dns_listener",
+                "name": "DNS Sızdırma Dinleyicisi (Listener)",
+                "path": "Network Recon/DNS_Server_Listener.py",
+                "desc": "DNS Tunneling ile dışarı çıkarılan gizli verileri yakalamak için 53 (UDP) portunu dinler ve parçalanmış paketleri birleştirerek orijinal dosyayı oluşturur.",
+                "inputs": [{"name": "arg1", "type": "text", "placeholder": "örn: 0.0.0.0", "label": "Dinlenecek IP"}]
             }
         ]
     },
@@ -200,10 +208,53 @@ TOOLS_CONFIG = [
                     {"name": "arg1", "type": "text", "placeholder": "örn: C:\\Windows\\explorer.exe", "label": "Orijinal (İmzalı) EXE Yolu"},
                     {"name": "arg2", "type": "text", "placeholder": "örn: stealth_dropper/setup.exe", "label": "Zararlı (Hedef) EXE Yolu"}
                 ]
+            },
+            {
+                "id": "process_injector",
+                "name": "Process Injector (Hayalet Modu)",
+                "path": "AV Evasion/Process_Injector.py",
+                "desc": "CTypes ile Windows API'lerini çağırarak, raw (saf) shellcode dosyanızı aktif olarak çalışan yasal bir sistem işleminin (örn: explorer.exe) hafıza alanına enjekte eder (VirtualAllocEx & CreateRemoteThread).",
+                "inputs": [
+                    {"name": "arg1", "type": "text", "placeholder": "örn: explorer.exe", "label": "Hedef Yasal İşlem (Process)"},
+                    {"name": "arg2", "type": "text", "placeholder": "örn: payload.bin", "label": "Raw Shellcode Dosyası"}
+                ]
+            },
+            {
+                "id": "dns_exfiltrator",
+                "name": "DNS Exfiltrator (Veri Sızdırma)",
+                "path": "Post-Exploitation/DNS_Exfiltrator.py",
+                "desc": "Çalınan bir dosyayı Firewall ve IPS sistemlerinden gizlemek için Base32 ile kodlar ve sahte DNS sorguları (nslookup) aracılığıyla dışarı çıkartır.",
+                "inputs": [
+                    {"name": "arg1", "type": "text", "placeholder": "örn: passwords.txt", "label": "Sızdırılacak Dosya"},
+                    {"name": "arg2", "type": "text", "placeholder": "örn: attacker.com", "label": "Saldırgan (Listener) Domaini"}
+                ]
             }
         ]
     }
 ]
+
+@app.before_request
+def check_auth():
+    if request.endpoint not in ['login', 'static'] and not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+def get_admin_password():
+    try:
+        with open(os.path.join(base_dir, 'config.json'), 'r') as f:
+            return json.load(f).get('admin_password', 'admin')
+    except:
+        return 'admin'
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form.get('password') == get_admin_password():
+            session['logged_in'] = True
+            return redirect(url_for('index'))
+        else:
+            error = "ACCESS DENIED - INVALID ENCRYPTION KEY"
+    return render_template('login.html', error=error)
 
 @app.route('/')
 def index():
