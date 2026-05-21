@@ -238,6 +238,13 @@ def check_auth():
     if request.endpoint not in ['login', 'static'] and not session.get('logged_in'):
         return redirect(url_for('login'))
 
+@app.after_request
+def add_header(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 def get_admin_password():
     try:
         with open(os.path.join(base_dir, 'config.json'), 'r') as f:

