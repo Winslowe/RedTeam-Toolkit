@@ -186,6 +186,22 @@ TOOLS_CONFIG = [
                 ]
             }
         ]
+    },
+    {
+        "category": "AV Evasion (Antivirüs Atlatma)",
+        "icon": "fa-ghost",
+        "tools": [
+            {
+                "id": "sigthief",
+                "name": "SigThief (Dijital İmza Çalma)",
+                "path": "AV Evasion/SigThief.py",
+                "desc": "Orijinal ve güvenilir bir programdan (Örn: Microsoft imzalı bir .exe) dijital imza sertifikasını kopyalar ve zararlı Payload'ınıza yapıştırır. Bu, Güvenlik Duvarlarını ve EDR/AV yazılımlarını atlatmak için harika bir yoldur.",
+                "inputs": [
+                    {"name": "arg1", "type": "text", "placeholder": "örn: C:\\Windows\\explorer.exe", "label": "Orijinal (İmzalı) EXE Yolu"},
+                    {"name": "arg2", "type": "text", "placeholder": "örn: stealth_dropper/setup.exe", "label": "Zararlı (Hedef) EXE Yolu"}
+                ]
+            }
+        ]
     }
 ]
 

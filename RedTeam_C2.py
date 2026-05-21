@@ -893,6 +893,13 @@ def prompt_for_tool(script_path):
         sc = input(f"  {C.CYAN}[?] Shellcode (hex formatında) veya Dosya Yolu: {C.RESET}").strip()
         if sc: args.append(sc)
 
+    elif "SigThief.py" in script_path:
+        print(f"{C.YELLOW}  [*] SigThief (Sertifika Çalma) Sihirbazı{C.RESET}")
+        signed_file = input(f"  {C.CYAN}[?] Orijinal (İmzalı) EXE Yolu: {C.RESET}").strip()
+        target_file = input(f"  {C.CYAN}[?] Hedef (Zararlı) EXE Yolu: {C.RESET}").strip()
+        if signed_file and target_file:
+            args.extend([signed_file, target_file])
+
     # --- Wireless ---
     elif "Evil_Twin.py" in script_path:
         print(f"\n{C.YELLOW}{C.BOLD}  [*] Gelişmiş Evil Twin (Sahte AP) Kurulum Sihirbazı{C.RESET}")
@@ -1013,7 +1020,8 @@ def main_menu():
     
     av_tools = [
         ("Payload Obfuscator", os.path.join(base_dir, "AV Evasion", "Payload_Obfuscator.py"), "Python scriptlerini gizleme", C.YELLOW),
-        ("Shellcode Encoder", os.path.join(base_dir, "AV Evasion", "Shellcode_Encoder.py"), "XOR ile Shellcode şifreleme", C.YELLOW)
+        ("Shellcode Encoder", os.path.join(base_dir, "AV Evasion", "Shellcode_Encoder.py"), "XOR ile Shellcode şifreleme", C.YELLOW),
+        ("SigThief (Digital Signature Spoofing)", os.path.join(base_dir, "AV Evasion", "SigThief.py"), "Yasal EXE'den dijital imza çalıp Payload'a ekleme", C.YELLOW)
     ]
 
     wireless_tools = [
