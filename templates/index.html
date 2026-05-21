@@ -335,8 +335,21 @@
             <div class="tools-grid" id="tools-grid">
                 <!-- Araç kartları JS ile buraya yüklenecek -->
             </div>
-
-            <div class="terminal-container stagger-3" id="terminal-container">
+            
+            <!-- Live Stream Modal -->
+            <div id="stream-modal">
+                <div style="width: 85%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: var(--accent-primary); margin: 0; font-family: 'Rajdhani'; font-size: 2rem; letter-spacing: 2px; text-shadow: 0 0 15px var(--accent-primary);">
+                        <i class="fa-solid fa-satellite"></i> SATELLITE FEED (LIVE)
+                    </h3>
+                    <button onclick="document.getElementById('stream-modal').style.display='none'" class="btn" style="width: auto; padding: 10px 30px;">Close Feed</button>
+                </div>
+                <img id="stream-img" src="" style="max-width: 85%; max-height: 80vh; border: 2px solid var(--accent-primary); box-shadow: 0 0 40px rgba(0, 240, 255, 0.4); border-radius: 12px; object-fit: contain;">
+            </div>
+        </div>
+        
+        <div style="padding: 20px 40px; border-top: 1px solid var(--border-light); background: rgba(3,3,5,0.85); z-index: 10; backdrop-filter: var(--glass-blur);">
+            <div class="terminal-container stagger-3" id="terminal-container" style="height: 250px; margin: 0;">
                 <div class="terminal-header">
                     <span id="term-prompt" style="color: var(--accent-primary);"><i class="fa-solid fa-terminal"></i> root@arsenal:~#</span>
                     <span id="term-status" style="color: var(--success-color);"><i class="fa-solid fa-circle-check"></i> System Idle</span>
@@ -350,18 +363,6 @@
                     <input type="text" id="bot-cmd-input" placeholder="Execute command (e.g. !spread)..." autocomplete="off" onkeypress="handleBotCmd(event)">
                 </div>
             </div>
-            
-            <!-- Live Stream Modal -->
-            <div id="stream-modal">
-                <div style="width: 85%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="color: var(--accent-primary); margin: 0; font-family: 'Rajdhani'; font-size: 2rem; letter-spacing: 2px; text-shadow: 0 0 15px var(--accent-primary);">
-                        <i class="fa-solid fa-satellite"></i> SATELLITE FEED (LIVE)
-                    </h3>
-                    <button onclick="document.getElementById('stream-modal').style.display='none'" class="btn" style="width: auto; padding: 10px 30px;">Close Feed</button>
-                </div>
-                <img id="stream-img" src="" style="max-width: 85%; max-height: 80vh; border: 2px solid var(--accent-primary); box-shadow: 0 0 40px rgba(0, 240, 255, 0.4); border-radius: 12px; object-fit: contain;">
-            </div>
-
         </div>
     </div>
 
