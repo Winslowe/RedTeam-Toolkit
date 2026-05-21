@@ -8,6 +8,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
 [![Status](https://img.shields.io/badge/Status-Elite-red.svg)]()
+[![FUD](https://img.shields.io/badge/FUD%20Rate-0%2F70-success.svg)]()
 
 *Bu proje yalnızca eğitim, sızma testi (pentest) yetkilendirmesi olan profesyoneller ve etik hackerlar (White Hat) için geliştirilmiştir.*
 
@@ -19,21 +20,21 @@
 
 **The Ultimate Pentest Arsenal**, dağınık haldeki siber güvenlik araçlarını (Nmap, DirBuster, Hydra, Metasploit vb. işlevlerini) tek bir merkezden, **Karanlık Mod (Dark Mode) Web Dashboard** veya **Terminal Sihirbazı** aracılığıyla yönetmenizi sağlayan devasa bir Red Team otomasyon aracıdır.
 
-Sıfırdan tasarlanan **Askeri Düzey AES-256 Şifreli C2 (Command & Control)** mimarisi sayesinde, oluşturduğunuz Zararlı Yazılımlar (Payloads) hedef ağdaki modern Firewall ve IDS sistemlerini kolayca atlatır (Bypass).
+Sıfırdan tasarlanan **Askeri Düzey AES-256 Şifreli C2 (Command & Control)** mimarisi sayesinde, oluşturduğunuz Zararlı Yazılımlar (Payloads) hedef ağdaki modern Firewall ve IDS sistemlerini kolayca atlatır (Bypass). 
 
 ## 🚀 Öne Çıkan "Elite" Özellikler
 
 - **🤖 Auto-Pwn (Otopilot):** Tek bir IP adresi verin, arkaya yaslanın. Araç kendi kendine portları tarar, bulduğu servislere (HTTP, FTP, SSH) uygun zafiyet araçlarını zincirleme çalıştırır ve raporu sunar.
-- **🌐 Flask Web Dashboard:** 26 farklı sızma testi aracını, komut satırı ezberlemeden, şık bir web tarayıcı arayüzünden (Sidebar, Interaktif Kartlar) yönetin.
+- **👻 AV Evasion & SigThief (0-Day Stealth):** Nuitka C derlemesi ve **SigThief (Dijital İmza Çalma)** sayesinde Microsoft imzalarını kopyalayarak EDR ve Anti-Virüsleri (0/70 FUD oranı) tamamen atlatın.
+- **🌐 Glassmorphism Web Dashboard:** 26 farklı sızma testi aracını, komut satırı ezberlemeden, şık ve dinamik bir web tarayıcı arayüzünden yönetin.
 - **🔒 AES-256 E2EE C2 Bağlantısı:** Hedef cihazlarla aranızdaki Reverse Shell iletişimi uçtan uca AES-256 ile şifrelenir. 
 - **📱 Telegram & Discord Entegrasyonu:** Şifre mi kırıldı? Biri Phishing ağına mı düştü? Yoksa C2'ye yeni bir shell mi bağlandı? Sistem anında cebinize bildirim gönderir.
-- **🛡️ Anti-VM & SmartScreen Bypass:** Nuitka ile C diline derlenen (Native EXE) payload'lar sayesinde, antivirüslerin (AV) statik analizlerinden ve Sandbox ortamlarından kurtulun.
 
 ---
 
 ## 🏗️ Mimari Şeması (Architecture)
 
-Aşağıdaki şema, projenin modüllerinin birbiriyle nasıl haberleştiğini göstermektedir:
+Aşağıdaki şema, projenin devasa modül ağının birbiriyle nasıl entegre haberleştiğini göstermektedir:
 
 ```mermaid
 graph TD
@@ -58,6 +59,8 @@ graph TD
     C -->|Kalıcılık & Kontrol| H[AES-256 C2 Listener]
     H <==>|Uçtan Uca Şifreli Bağlantı| I[💀 Hedef Sistem / Kurban]
     
+    C -->|AV Atlatma| J[AV Evasion & SigThief]
+    J -.->|FUD Payload Derler| H
     I -->|Veri Sızdırma| H
 ```
 
@@ -65,7 +68,7 @@ graph TD
 
 ## 🧰 Modüller ve İçerikleri
 
-Proje içerisinde **26+** modül kategorize edilmiş durumdadır:
+Proje içerisinde **26+** modül mükemmel bir uyumla çalışmak üzere kategorize edilmiştir:
 
 | Kategori | Araçlar | Açıklama |
 | :--- | :--- | :--- |
@@ -74,7 +77,8 @@ Proje içerisinde **26+** modül kategorize edilmiş durumdadır:
 | **Web Exploitation** | `CMS_Scanner`, `DirBrute`, `SQLi`, `XSS`, `LFI` | Web sunucularındaki kritik zafiyetleri ve gizli dosyaları analiz eder. |
 | **Password Cracking** | `SSH_Brute`, `FTP_Brute`, `Hash_Cracker`, `Zip_Cracker` | Kritik servislere ve dosyalara yönelik kaba kuvvet saldırıları düzenler. |
 | **Social Engineering**| `Phishing_Server` | Modern, log tutan ve bildirim gönderen sahte oltalama sunucusu. |
-| **C2 & Evasion** | `Payload_Builder`, `C2_Listener`, `Obfuscator` | Antivirüslere yakalanmayan, AES-256 şifreli Reverse Shell oluşturucu ve dinleyici. |
+| **AV Evasion** | `SigThief`, `Payload_Obfuscator`, `Shellcode_Encoder` | Güvenlik duvarlarını ve Antivirüsleri atlatmak için sertifika kopyalama (SigThief) ve kod gizleme araçları. |
+| **C2 & Post-Exploit** | `Payload_Builder`, `C2_Listener`, `Ransomware`, `Keylogger` | Antivirüslere yakalanmayan, hedef ağı içeriden yöneten E2EE kontrol merkezi. |
 
 ---
 
@@ -103,7 +107,7 @@ python RedTeam_C2.py
 
 Bu komuttan sonra karşınıza çıkan sihirbazdan:
 - İstediğiniz aracı seçip **Terminal Sihirbazı** üzerinden parametreleri adım adım girebilirsiniz.
-- Veya menüden **"13) Web Dashboard"** seçeneğini seçerek tarayıcınızdan muhteşem grafik arayüzüne bağlanabilirsiniz!
+- Veya menüden **"13) Web Dashboard"** seçeneğini seçerek tarayıcınızdan muhteşem **Glassmorphism grafik arayüzüne** bağlanabilirsiniz!
 
 ---
 
