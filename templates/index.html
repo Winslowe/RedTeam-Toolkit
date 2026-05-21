@@ -421,6 +421,23 @@
             });
         }
 
+        function browseLocalFile(btn) {
+            const input = btn.previousElementSibling;
+            const oldIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            fetch('/api/browse')
+                .then(r => r.json())
+                .then(d => {
+                    if(d.status === "success" && d.path) {
+                        input.value = d.path;
+                    }
+                })
+                .catch(e => console.error(e))
+                .finally(() => {
+                    btn.innerHTML = oldIcon;
+                });
+        }
+
         let currentBotId = null;
         let botPollInterval = null;
 
@@ -542,10 +559,21 @@
                 let inputsHTML = '';
                 if(tool.inputs) {
                     tool.inputs.forEach(inp => {
+                        let isPath = inp.label.toLowerCase().includes('yolu') || inp.label.toLowerCase().includes('dosya') || inp.label.toLowerCase().includes('wordlist');
+                        let browseBtn = '';
+                        let inputStyle = '';
+                        if (isPath) {
+                            browseBtn = `<button type="button" class="btn" style="width: auto; padding: 14px 20px; background: rgba(0,240,255,0.05); border-left: none; border-radius: 0 8px 8px 0; margin: 0; box-shadow: none;" onclick="browseLocalFile(this)"><i class="fa-solid fa-folder-open"></i></button>`;
+                            inputStyle = 'border-radius: 8px 0 0 8px;';
+                        }
+                        
                         inputsHTML += `
                             <div class="form-group">
                                 <label>${inp.label}</label>
-                                <input type="${inp.type}" name="${inp.name}" class="form-control" placeholder="${inp.placeholder}">
+                                <div style="display: flex;">
+                                    <input type="${inp.type}" name="${inp.name}" class="form-control" placeholder="${inp.placeholder}" style="${inputStyle}">
+                                    ${browseBtn}
+                                </div>
                             </div>
                         `;
                     });

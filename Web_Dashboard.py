@@ -261,6 +261,21 @@ def index():
     # JSON objesini HTML içerisine render etmek için yolluyoruz
     return render_template('index.html', tools_config=json.dumps(TOOLS_CONFIG))
 
+@app.route('/api/browse', methods=['GET'])
+def api_browse():
+    import subprocess
+    # PowerShell ile native dosya seçici ekranı açar
+    ps_script = """
+    Add-Type -AssemblyName System.Windows.Forms
+    $f = New-Object System.Windows.Forms.OpenFileDialog
+    $f.Filter = 'All Files (*.*)|*.*'
+    $f.Title = 'Hedef Dosyayi Secin'
+    $res = $f.ShowDialog()
+    if ($res -eq 'OK') { Write-Output $f.FileName }
+    """
+    res = subprocess.run(["powershell", "-Command", ps_script], capture_output=True, text=True)
+    return jsonify({"status": "success", "path": res.stdout.strip()})
+
 @app.route('/api/run', methods=['POST'])
 def api_run():
     data = request.json
