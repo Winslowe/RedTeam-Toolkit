@@ -737,6 +737,125 @@ class Program {{
 #  EXTERNAL TOOLS EXECUTOR
 # ══════════════════════════════════════════════════════════
 
+def prompt_for_tool(script_path):
+    """Her araç için özel, şık bir argüman sorma ekranı"""
+    args = []
+    
+    # --- Network Recon ---
+    if "Network_Scanner.py" in script_path:
+        print(f"{C.YELLOW}  [*] Network Scanner Sihirbazı{C.RESET}")
+        target = input(f"  {C.CYAN}[?] Hedef IP veya Aralık (örn: 192.168.1.1/24): {C.RESET}").strip()
+        if target: args.append(target)
+        
+    elif "DNS_Enumerator.py" in script_path:
+        print(f"{C.YELLOW}  [*] DNS Enumerator Sihirbazı{C.RESET}")
+        domain = input(f"  {C.CYAN}[?] Hedef Domain (örn: example.com): {C.RESET}").strip()
+        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu (Subdomain BF için, yoksa boş geçin): {C.RESET}").strip()
+        if domain: args.append(domain)
+        if wordlist: args.append(wordlist)
+        
+    elif "ARP_Spoofer.py" in script_path:
+        print(f"{C.YELLOW}  [*] ARP Spoofer Sihirbazı{C.RESET}")
+        target = input(f"  {C.CYAN}[?] Kurban IP Adresi: {C.RESET}").strip()
+        gateway = input(f"  {C.CYAN}[?] Gateway (Modem) IP Adresi: {C.RESET}").strip()
+        if target and gateway:
+            args.extend([target, gateway])
+
+    # --- Web Exploitation ---
+    elif "SQLi_Tester.py" in script_path or "XSS_Scanner.py" in script_path or "LFI_Scanner.py" in script_path or "CMS_Scanner.py" in script_path:
+        print(f"{C.YELLOW}  [*] Web Vulnerability Scanner Sihirbazı{C.RESET}")
+        url = input(f"  {C.CYAN}[?] Hedef URL (http/https dahil): {C.RESET}").strip()
+        if url: args.append(url)
+        
+    elif "Directory_Bruteforcer.py" in script_path:
+        print(f"{C.YELLOW}  [*] Directory Bruteforcer Sihirbazı{C.RESET}")
+        url = input(f"  {C.CYAN}[?] Hedef URL (http/https dahil): {C.RESET}").strip()
+        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu: {C.RESET}").strip()
+        if url and wordlist:
+            args.extend([url, wordlist])
+
+    # --- Password Cracking ---
+    elif "Hash_Identifier.py" in script_path:
+        print(f"{C.YELLOW}  [*] Hash Identifier Sihirbazı{C.RESET}")
+        hash_val = input(f"  {C.CYAN}[?] Tanımlanacak Hash: {C.RESET}").strip()
+        if hash_val: args.append(hash_val)
+        
+    elif "Hash_Cracker.py" in script_path:
+        print(f"{C.YELLOW}  [*] Hash Cracker Sihirbazı{C.RESET}")
+        hash_val = input(f"  {C.CYAN}[?] Kırılacak Hash: {C.RESET}").strip()
+        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu: {C.RESET}").strip()
+        if hash_val and wordlist:
+            args.extend([hash_val, wordlist])
+            
+    elif "Zip_Cracker.py" in script_path:
+        print(f"{C.YELLOW}  [*] ZIP Cracker Sihirbazı{C.RESET}")
+        zip_file = input(f"  {C.CYAN}[?] Şifreli ZIP Dosyası: {C.RESET}").strip()
+        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu: {C.RESET}").strip()
+        if zip_file and wordlist:
+            args.extend([zip_file, wordlist])
+            
+    elif "SSH_Bruteforce.py" in script_path or "FTP_Bruteforce.py" in script_path:
+        print(f"{C.YELLOW}  [*] Brute-Force Sihirbazı{C.RESET}")
+        target = input(f"  {C.CYAN}[?] Hedef IP: {C.RESET}").strip()
+        user = input(f"  {C.CYAN}[?] Kullanıcı Adı: {C.RESET}").strip()
+        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu: {C.RESET}").strip()
+        if target and user and wordlist:
+            args.extend([target, user, wordlist])
+
+    # --- OSINT ---
+    elif "Email_Harvester.py" in script_path or "Whois_Lookup.py" in script_path:
+        print(f"{C.YELLOW}  [*] OSINT Sihirbazı{C.RESET}")
+        domain = input(f"  {C.CYAN}[?] Hedef Domain (örn: example.com): {C.RESET}").strip()
+        if domain: args.append(domain)
+
+    # --- Social Engineering ---
+    elif "Phishing_Server.py" in script_path:
+        print(f"{C.YELLOW}  [*] Phishing Sunucu Sihirbazı{C.RESET}")
+        port = input(f"  {C.CYAN}[?] Dinlenecek Port {C.DIM}[8080]{C.RESET}: ").strip() or "8080"
+        redir = input(f"  {C.CYAN}[?] Kurban Nereye Yönlendirilsin? {C.DIM}[https://google.com]{C.RESET}: ").strip() or "https://google.com"
+        title = input(f"  {C.CYAN}[?] Sahte Sayfa Başlığı {C.DIM}[Kurumsal Portal]{C.RESET}: ").strip() or "Kurumsal Portal"
+        args.extend([port, redir, title])
+
+    # --- Post-Exploitation ---
+    elif "Reverse_Shell_Gen.py" in script_path:
+        print(f"{C.YELLOW}  [*] Reverse Shell Generator Sihirbazı{C.RESET}")
+        ip = input(f"  {C.CYAN}[?] LHOST (Saldırgan IP): {C.RESET}").strip()
+        port = input(f"  {C.CYAN}[?] LPORT (Saldırgan Port): {C.RESET}").strip()
+        lang = input(f"  {C.CYAN}[?] Dil (Opsiyonel, boş=tümü): {C.RESET}").strip()
+        if ip and port:
+            args.extend([ip, port])
+            if lang: args.append(lang)
+            
+    elif "Data_Exfiltrator.py" in script_path:
+        print(f"{C.YELLOW}  [*] Data Exfiltrator Sihirbazı{C.RESET}")
+        target_file = input(f"  {C.CYAN}[?] Sızdırılacak Dosya: {C.RESET}").strip()
+        server_ip = input(f"  {C.CYAN}[?] Alıcı Sunucu IP (Senin IP'n): {C.RESET}").strip()
+        if target_file and server_ip:
+            args.extend([target_file, server_ip])
+
+    # --- AV Evasion ---
+    elif "Payload_Obfuscator.py" in script_path:
+        print(f"{C.YELLOW}  [*] Obfuscator Sihirbazı{C.RESET}")
+        in_file = input(f"  {C.CYAN}[?] Gizlenecek Python Dosyası: {C.RESET}").strip()
+        if in_file: args.append(in_file)
+
+    elif "Shellcode_Encoder.py" in script_path:
+        print(f"{C.YELLOW}  [*] Shellcode Encoder Sihirbazı{C.RESET}")
+        sc = input(f"  {C.CYAN}[?] Shellcode (hex formatında) veya Dosya Yolu: {C.RESET}").strip()
+        if sc: args.append(sc)
+
+    # --- Wireless ---
+    elif "Evil_Twin.py" in script_path:
+        print(f"\n{C.YELLOW}{C.BOLD}  [*] Gelişmiş Evil Twin (Sahte AP) Kurulum Sihirbazı{C.RESET}")
+        iface = input(f"  {C.CYAN}[?] WiFi Arayüzü {C.DIM}[wlan0]{C.RESET}: ").strip() or "wlan0"
+        ssid = input(f"  {C.CYAN}[?] Sahte Ağ Adı (SSID) {C.DIM}[FreeWiFi]{C.RESET}: ").strip() or "FreeWiFi"
+        kanal = input(f"  {C.CYAN}[?] WiFi Kanalı {C.DIM}[6]{C.RESET}: ").strip() or "6"
+        args.extend([iface, ssid, kanal])
+
+    # Özel parametre istemeyenler: Wordlist_Generator, Credential_Harvester, Screenshot_Grabber,
+    # Simple_Keylogger, Persistence_Installer, Log_Cleaner, PrivEsc araçları, Report_Generator vs.
+    return args
+
 def run_external_tool(script_path, desc):
     clear_screen()
     print_banner()
@@ -748,48 +867,13 @@ def run_external_tool(script_path, desc):
         input(f"\n{C.YELLOW}  Geri dönmek için Enter'a basın...{C.RESET}")
         return
 
-    args = ""
-    if "Evil_Twin.py" in script_path:
-        print(f"\n{C.YELLOW}{C.BOLD}  [*] Gelişmiş Evil Twin (Sahte AP) Kurulum Sihirbazı{C.RESET}")
-        print(f"{C.DIM}  =============================================================={C.RESET}")
-        print(f"  {C.CYAN}[ℹ] Evil Twin, hedefin WiFi ağının kopyasını oluşturarak{C.RESET}")
-        print(f"  {C.CYAN}    kullanıcıları sahte ağa (Captive Portal) yönlendirir.{C.RESET}")
-        print(f"  {C.CYAN}[!] Önerilen Ayarlar:{C.RESET}")
-        print(f"  {C.CYAN}    - Hedef ağın kanalıyla (Channel) aynı kanalı kullanın.{C.RESET}")
-        print(f"  {C.CYAN}    - Captive Portal otomatik olarak Port 80'de (HTTP) çalışır.{C.RESET}")
-        print(f"{C.DIM}  =============================================================={C.RESET}\n")
-        
-        iface = input(f"  {C.CYAN}[?] İzleme Destekli WiFi Arayüzü {C.DIM}[wlan0]{C.RESET}: ").strip() or "wlan0"
-        ssid = input(f"  {C.CYAN}[?] Taklit Edilecek Ağ Adı (SSID) {C.DIM}[FreeWiFi]{C.RESET}: ").strip() or "FreeWiFi"
-        kanal = input(f"  {C.CYAN}[?] WiFi Kanalı {C.DIM}[6]{C.RESET}: ").strip() or "6"
-        
-        if iface and ssid:
-            args = f"{iface} {ssid} {kanal}".strip()
-    
-    elif "Reverse_Shell_Gen.py" in script_path:
-        print(f"{C.YELLOW}  [*] Reverse Shell Generator Sihirbazı{C.RESET}")
-        ip = input(f"  {C.CYAN}[?] LHOST (Saldırgan IP): {C.RESET}").strip()
-        port = input(f"  {C.CYAN}[?] LPORT (Saldırgan Port): {C.RESET}").strip()
-        lang = input(f"  {C.CYAN}[?] Dil (Opsiyonel, boş bırakın veya python/bash yazın): {C.RESET}").strip()
-        if ip and port:
-            args = f"{ip} {port} {lang}".strip()
-
-    elif "Wordlist_Generator.py" in script_path:
-        print(f"{C.DIM}Bu araç kendi içinde interaktiftir, doğrudan başlatılıyor...{C.RESET}\n")
-        args = ""
-
-    elif "Log_Cleaner.py" in script_path:
-        print(f"{C.DIM}Bu araç argüman gerektirmez, doğrudan başlatılıyor...{C.RESET}\n")
-        args = ""
-
-    else:
-        print(f"{C.DIM}Bu aracın argüman gerektirip gerektirmediğini görmek için boş bırakıp Enter'a basabilirsiniz.{C.RESET}\n")
-        args = input(f"{C.CYAN}  [?] Argümanları girin (ör: <IP> <PORT> veya -h): {C.RESET}").strip()
+    # Aracın parametrelerini sihirbazdan al
+    args = prompt_for_tool(script_path)
     
     print_line()
     print(f"{C.GREEN}[+] Araç Çıktısı Başlıyor...{C.RESET}\n")
     
-    cmd = [sys.executable, script_path] + args.split()
+    cmd = [sys.executable, script_path] + args
     try:
         subprocess.run(cmd)
     except KeyboardInterrupt:
@@ -842,7 +926,12 @@ def main_menu():
         ("Whois Lookup", os.path.join(base_dir, "OSINT", "Whois_Lookup.py"), "Domain Whois ve kayıt bilgilerini sorgula", C.GREEN)
     ]
 
+    se_tools = [
+        ("Phishing Server", os.path.join(base_dir, "Social Engineering", "Phishing_Server.py"), "Sahte login ekranı başlat ve şifreleri çal", C.RED)
+    ]
+
     web_tools = [
+        ("CMS Vulnerability Scanner", os.path.join(base_dir, "Web Exploitation", "CMS_Scanner.py"), "WP/Joomla vs. versiyon ve açık tarayıcı", C.GREEN),
         ("SQLi Tester", os.path.join(base_dir, "Web Exploitation", "SQLi_Tester.py"), "SQL Injection tespiti (Error/Time-Based)", C.YELLOW),
         ("XSS Scanner", os.path.join(base_dir, "Web Exploitation", "XSS_Scanner.py"), "Gelişmiş Reflected XSS tespiti", C.YELLOW),
         ("Directory Bruteforcer", os.path.join(base_dir, "Web Exploitation", "Directory_Bruteforcer.py"), "Gizli dizin ve dosya bulucu", C.YELLOW),
@@ -898,15 +987,16 @@ def main_menu():
         print(f"{C.BOLD}  KATEGORİLER:{C.RESET}\n")
         
         print(f"  {C.CYAN}1){C.RESET} {C.GREEN}OSINT (Açık Kaynak İstihbarat){C.RESET} {C.DIM}— Email Harvester, Whois{C.RESET}")
-        print(f"  {C.CYAN}2){C.RESET} {C.GREEN}Privilege Escalation{C.RESET}         {C.DIM}— Windows/Linux PrivEsc Checker{C.RESET}")
-        print(f"  {C.CYAN}3){C.RESET} {C.GREEN}AV Evasion{C.RESET}                   {C.DIM}— Obfuscator, Shellcode Encoder{C.RESET}")
-        print(f"  {C.CYAN}4){C.RESET} {C.YELLOW}Network Recon{C.RESET}                {C.DIM}— Ağ tarama, DNS, ARP Spoofing{C.RESET}")
-        print(f"  {C.CYAN}5){C.RESET} {C.YELLOW}Web Exploitation{C.RESET}             {C.DIM}— SQLi, XSS, LFI, Dir Buster{C.RESET}")
-        print(f"  {C.CYAN}6){C.RESET} {C.YELLOW}Password Cracking{C.RESET}            {C.DIM}— Wordlist, Hash, SSH/FTP Brute{C.RESET}")
-        print(f"  {C.CYAN}7){C.RESET} {C.RED}Post-Exploitation{C.RESET}            {C.DIM}— Shell Gen, Keylogger, Log Cleaner{C.RESET}")
-        print(f"  {C.CYAN}8){C.RESET} {C.RED}Wireless Attacks{C.RESET}             {C.DIM}— Evil Twin, Sahte WiFi AP{C.RESET}")
-        print(f"  {C.CYAN}9){C.RESET} {C.RED}C2 Framework{C.RESET}                 {C.DIM}— Payload Builder & Listener (Stealth){C.RESET}")
-        print(f" {C.CYAN}10){C.RESET} {C.MAGENTA}Reporting (Raporlama){C.RESET}        {C.DIM}— Otomatik HTML Pentest Raporu Üretici{C.RESET}")
+        print(f"  {C.CYAN}2){C.RESET} {C.YELLOW}Social Engineering (Oltalama){C.RESET} {C.DIM}— Phishing Server{C.RESET}")
+        print(f"  {C.CYAN}3){C.RESET} {C.GREEN}Privilege Escalation{C.RESET}         {C.DIM}— Windows/Linux PrivEsc Checker{C.RESET}")
+        print(f"  {C.CYAN}4){C.RESET} {C.GREEN}AV Evasion{C.RESET}                   {C.DIM}— Obfuscator, Shellcode Encoder{C.RESET}")
+        print(f"  {C.CYAN}5){C.RESET} {C.YELLOW}Network Recon{C.RESET}                {C.DIM}— Ağ tarama, DNS, ARP Spoofing{C.RESET}")
+        print(f"  {C.CYAN}6){C.RESET} {C.YELLOW}Web Exploitation{C.RESET}             {C.DIM}— CMS Scanner, SQLi, XSS, Dir Buster{C.RESET}")
+        print(f"  {C.CYAN}7){C.RESET} {C.YELLOW}Password Cracking{C.RESET}            {C.DIM}— Wordlist, Hash, SSH/FTP Brute{C.RESET}")
+        print(f"  {C.CYAN}8){C.RESET} {C.RED}Post-Exploitation{C.RESET}            {C.DIM}— Shell Gen, Keylogger, Log Cleaner{C.RESET}")
+        print(f"  {C.CYAN}9){C.RESET} {C.RED}Wireless Attacks{C.RESET}             {C.DIM}— Evil Twin, Sahte WiFi AP{C.RESET}")
+        print(f" {C.CYAN}10){C.RESET} {C.RED}C2 Framework{C.RESET}                 {C.DIM}— Payload Builder & Listener (Stealth){C.RESET}")
+        print(f" {C.CYAN}11){C.RESET} {C.MAGENTA}Reporting (Raporlama){C.RESET}        {C.DIM}— Otomatik HTML Pentest Raporu Üretici{C.RESET}")
         print(f"  {C.CYAN}0){C.RESET} Çıkış\n")
 
         try:
@@ -919,20 +1009,22 @@ def main_menu():
         if choice == '1':
             external_menu_category("OSINT", osint_tools)
         elif choice == '2':
-            external_menu_category("Privilege Escalation", priv_tools)
+            external_menu_category("Social Engineering", se_tools)
         elif choice == '3':
-            external_menu_category("AV Evasion", av_tools)
+            external_menu_category("Privilege Escalation", priv_tools)
         elif choice == '4':
-            external_menu_category("Network Recon", recon_tools)
+            external_menu_category("AV Evasion", av_tools)
         elif choice == '5':
-            external_menu_category("Web Exploitation", web_tools)
+            external_menu_category("Network Recon", recon_tools)
         elif choice == '6':
-            external_menu_category("Password Cracking", pwd_tools)
+            external_menu_category("Web Exploitation", web_tools)
         elif choice == '7':
-            external_menu_category("Post-Exploitation", post_tools)
+            external_menu_category("Password Cracking", pwd_tools)
         elif choice == '8':
-            external_menu_category("Wireless Attacks", wireless_tools)
+            external_menu_category("Post-Exploitation", post_tools)
         elif choice == '9':
+            external_menu_category("Wireless Attacks", wireless_tools)
+        elif choice == '10':
             while True:
                 clear_screen()
                 print_banner()
@@ -950,7 +1042,7 @@ def main_menu():
                 elif c2c == '2': c2_listener()
                 elif c2c == '3': c2_disguise()
                 elif c2c == '0': break
-        elif choice == '10':
+        elif choice == '11':
             external_menu_category("Reporting", reporting_tools)
         elif choice == '0':
             clear_screen()
