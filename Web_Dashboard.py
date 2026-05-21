@@ -14,7 +14,7 @@ from flask import Flask, render_template, request, jsonify
 app = Flask(__name__)
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Tüm araçların kategorileri ve gereksinim duydukları inputlar
+# Tüm araçların kategorileri ve gereksinim duydukları inputlar (Detaylı Açıklamalarla)
 TOOLS_CONFIG = [
     {
         "category": "Elite & Automation",
@@ -22,65 +22,65 @@ TOOLS_CONFIG = [
         "tools": [
             {
                 "id": "autopwn",
-                "name": "Auto-Pwn (Otopilot)",
+                "name": "Auto-Pwn (Otopilot Sızma Motoru)",
                 "path": "Auto_Pwn.py",
-                "desc": "Açık portları tarar ve hedefe uygun modülleri zincirleme çalıştırır.",
+                "desc": "Belirttiğiniz hedef IP adresi üzerinde tam otomatik bir sızma testi (Pentest) gerçekleştirir. Önce açık portları tarar (Nmap stili), ardından 21 (FTP), 22 (SSH) veya 80 (HTTP) gibi kritik portlar bulduğunda otomatik olarak uygun Exploit veya Brute-Force araçlarını sırasıyla çalıştırarak sistemi ele geçirmeye çalışır.",
                 "inputs": [
-                    {"name": "arg1", "type": "text", "placeholder": "192.168.1.5", "label": "Hedef IP"},
-                    {"name": "arg2", "type": "text", "placeholder": "Wordlist (Opsiyonel)", "label": "Wordlist Yolu"}
+                    {"name": "arg1", "type": "text", "placeholder": "örn: 192.168.1.5", "label": "Hedef IP"},
+                    {"name": "arg2", "type": "text", "placeholder": "Wordlist Yolu (Opsiyonel)", "label": "Kullanılacak Wordlist"}
                 ]
             }
         ]
     },
     {
-        "category": "OSINT",
+        "category": "OSINT (Açık Kaynak İstihbarat)",
         "icon": "fa-search",
         "tools": [
             {
                 "id": "email_harvest",
                 "name": "Email Harvester",
                 "path": "OSINT/Email_Harvester.py",
-                "desc": "Hedef domain için açık kaynaklardan e-posta toplar.",
-                "inputs": [{"name": "arg1", "type": "text", "placeholder": "example.com", "label": "Hedef Domain"}]
+                "desc": "Saldırı öncesi bilgi toplama aşamasında kullanılır. Hedef kuruma ait sızmış, internette dolaşan e-posta adreslerini arama motorları üzerinden tarayarak listeler. Oltalama (Phishing) saldırıları için kritik bir adımdır.",
+                "inputs": [{"name": "arg1", "type": "text", "placeholder": "örn: example.com", "label": "Hedef Domain"}]
             },
             {
                 "id": "whois_lookup",
                 "name": "Whois Lookup",
                 "path": "OSINT/Whois_Lookup.py",
-                "desc": "Domain hakkında tescil ve sunucu bilgilerini getirir.",
-                "inputs": [{"name": "arg1", "type": "text", "placeholder": "example.com", "label": "Hedef Domain"}]
+                "desc": "Hedef domainin tescil bilgilerini, sahibini, oluşturulma tarihini ve hangi sunucularda (NameServer) barındığını gösteren detaylı bir analiz raporu sunar.",
+                "inputs": [{"name": "arg1", "type": "text", "placeholder": "örn: example.com", "label": "Hedef Domain"}]
             }
         ]
     },
     {
-        "category": "Network Recon",
+        "category": "Network Recon (Ağ Keşfi)",
         "icon": "fa-network-wired",
         "tools": [
             {
                 "id": "dns_enum",
-                "name": "DNS Enumerator",
+                "name": "DNS Enumerator & Subdomain Tarayıcı",
                 "path": "Network Recon/DNS_Enumerator.py",
-                "desc": "DNS kayıtlarını ve alt alan adlarını (subdomain) bulur.",
+                "desc": "Hedef alan adının arka planındaki tüm DNS kayıtlarını (A, MX, TXT vb.) çeker ve potansiyel alt alan adlarını (subdomain) tespit eder.",
                 "inputs": [
-                    {"name": "arg1", "type": "text", "placeholder": "example.com", "label": "Domain"},
+                    {"name": "arg1", "type": "text", "placeholder": "örn: example.com", "label": "Domain"},
                     {"name": "arg2", "type": "text", "placeholder": "", "label": "Wordlist Yolu (Opsiyonel)"}
                 ]
             },
             {
                 "id": "net_scan",
-                "name": "Network Scanner",
+                "name": "Local Network Scanner",
                 "path": "Network Recon/Network_Scanner.py",
-                "desc": "Belirtilen ağ aralığındaki cihazları (IP/MAC) bulur.",
-                "inputs": [{"name": "arg1", "type": "text", "placeholder": "192.168.1.0/24", "label": "Hedef Ağ (CIDR)"}]
+                "desc": "İç ağınızdaki (LAN) tüm cihazların IP ve MAC adreslerini saniyeler içinde tarar. Hedefleri belirlemek için ilk kullanılması gereken ağ aracıdır.",
+                "inputs": [{"name": "arg1", "type": "text", "placeholder": "örn: 192.168.1.0/24", "label": "Hedef Ağ (CIDR Formatı)"}]
             },
             {
                 "id": "arp_spoof",
-                "name": "ARP Spoofer",
+                "name": "ARP Spoofer (MITM)",
                 "path": "Network Recon/ARP_Spoofer.py",
-                "desc": "Kurban ile modem arasına girer (MITM). Uzun sürer, manuel durdurulur.",
+                "desc": "Kurban ile modem arasındaki trafiği manipüle ederek araya girmenizi (Man-in-the-Middle) sağlar. Dikkat: Bu işlem arka planda çalışmaya devam eder ve manuel durdurulması gerekir.",
                 "inputs": [
-                    {"name": "arg1", "type": "text", "placeholder": "192.168.1.10", "label": "Kurban IP"},
-                    {"name": "arg2", "type": "text", "placeholder": "192.168.1.1", "label": "Modem IP"}
+                    {"name": "arg1", "type": "text", "placeholder": "örn: 192.168.1.10", "label": "Kurban IP Adresi"},
+                    {"name": "arg2", "type": "text", "placeholder": "örn: 192.168.1.1", "label": "Modem (Gateway) IP"}
                 ]
             }
         ]
@@ -91,34 +91,34 @@ TOOLS_CONFIG = [
         "tools": [
             {
                 "id": "cms_scan",
-                "name": "CMS Scanner",
+                "name": "CMS Zafiyet Tarayıcı",
                 "path": "Web Exploitation/CMS_Scanner.py",
-                "desc": "WordPress, Joomla, Drupal altyapısını ve zafiyetlerini analiz eder.",
-                "inputs": [{"name": "arg1", "type": "text", "placeholder": "http://example.com", "label": "Hedef URL"}]
+                "desc": "Verilen web sitesinin WordPress, Joomla veya Drupal gibi bir altyapı kullanıp kullanmadığını anlar, versiyon bilgisini çıkarır ve bilinen zaafiyetli eklentileri arar.",
+                "inputs": [{"name": "arg1", "type": "text", "placeholder": "örn: http://example.com", "label": "Hedef Web Sitesi (URL)"}]
             },
             {
                 "id": "dir_brute",
-                "name": "Directory Bruteforcer",
+                "name": "Directory Bruteforcer (DirBuster)",
                 "path": "Web Exploitation/Directory_Bruteforcer.py",
-                "desc": "Gizli dizinleri ve dosyaları tespit eder.",
+                "desc": "Web sunucusundaki gizli klasörleri, unutulmuş yedek dosyalarını (backup.zip vb.) ve yetkisiz erişime açık panelleri kaba kuvvet (sözlük saldırısı) ile tespit eder.",
                 "inputs": [
-                    {"name": "arg1", "type": "text", "placeholder": "http://example.com", "label": "Hedef URL"},
+                    {"name": "arg1", "type": "text", "placeholder": "örn: http://example.com", "label": "Hedef URL"},
                     {"name": "arg2", "type": "text", "placeholder": "wordlists/common.txt", "label": "Wordlist Yolu"}
                 ]
             },
             {
                 "id": "sqli_test",
-                "name": "SQLi Tester",
+                "name": "SQL Injection (SQLi) Tester",
                 "path": "Web Exploitation/SQLi_Tester.py",
-                "desc": "SQL Injection (SQLi) güvenlik açıklarını tespit eder.",
-                "inputs": [{"name": "arg1", "type": "text", "placeholder": "http://example.com/page?id=1", "label": "Hedef URL (Parametreli)"}]
+                "desc": "Veritabanı sızıntısına yol açan SQL Injection hatalarını test etmek için verilen URL parametrelerine özel saldırı vektörleri gönderir.",
+                "inputs": [{"name": "arg1", "type": "text", "placeholder": "örn: http://example.com/page?id=1", "label": "Zafiyetli Olabilecek URL"}]
             },
             {
                 "id": "xss_test",
-                "name": "XSS Scanner",
+                "name": "XSS (Cross-Site Scripting) Scanner",
                 "path": "Web Exploitation/XSS_Scanner.py",
-                "desc": "Cross-Site Scripting (XSS) açıklarını bulur.",
-                "inputs": [{"name": "arg1", "type": "text", "placeholder": "http://example.com/search?q=", "label": "Hedef URL (Parametreli)"}]
+                "desc": "Kullanıcı girdilerinin temizlenmediği noktalarda çalışan kötü amaçlı JavaScript kodlarını (XSS) tespit etmek için tarama yapar.",
+                "inputs": [{"name": "arg1", "type": "text", "placeholder": "örn: http://example.com/search?q=", "label": "Arama veya Girdi URL'si"}]
             }
         ]
     },
@@ -130,10 +130,10 @@ TOOLS_CONFIG = [
                 "id": "ssh_brute",
                 "name": "SSH Bruteforce",
                 "path": "Password Cracking/SSH_Bruteforce.py",
-                "desc": "SSH servisine sözlük saldırısı yapar.",
+                "desc": "Linux/Sunucu sistemlerine izinsiz giriş yapmak amacıyla, SSH servisine (Port 22) belirtilen kelime listesi (wordlist) ile kaba kuvvet saldırısı düzenler.",
                 "inputs": [
-                    {"name": "arg1", "type": "text", "placeholder": "192.168.1.10", "label": "Hedef IP"},
-                    {"name": "arg2", "type": "text", "placeholder": "root", "label": "Kullanıcı Adı"},
+                    {"name": "arg1", "type": "text", "placeholder": "örn: 192.168.1.10", "label": "Sunucu IP Adresi"},
+                    {"name": "arg2", "type": "text", "placeholder": "örn: root", "label": "Kullanıcı Adı"},
                     {"name": "arg3", "type": "text", "placeholder": "wordlists/passwords.txt", "label": "Wordlist Yolu"}
                 ]
             },
@@ -141,20 +141,20 @@ TOOLS_CONFIG = [
                 "id": "ftp_brute",
                 "name": "FTP Bruteforce",
                 "path": "Password Cracking/FTP_Bruteforce.py",
-                "desc": "FTP servisine sözlük saldırısı yapar.",
+                "desc": "Dosya transfer sunucularına (FTP - Port 21) izinsiz erişim sağlamak için parola tahmin etme saldırısı yapar.",
                 "inputs": [
-                    {"name": "arg1", "type": "text", "placeholder": "192.168.1.10", "label": "Hedef IP"},
-                    {"name": "arg2", "type": "text", "placeholder": "admin", "label": "Kullanıcı Adı"},
+                    {"name": "arg1", "type": "text", "placeholder": "örn: 192.168.1.10", "label": "Sunucu IP Adresi"},
+                    {"name": "arg2", "type": "text", "placeholder": "örn: admin", "label": "Kullanıcı Adı"},
                     {"name": "arg3", "type": "text", "placeholder": "wordlists/passwords.txt", "label": "Wordlist Yolu"}
                 ]
             },
             {
                 "id": "hash_crack",
-                "name": "Hash Cracker",
+                "name": "Offline Hash Cracker",
                 "path": "Password Cracking/Hash_Cracker.py",
-                "desc": "MD5/SHA1/SHA256 şifre özetlerini wordlist ile kırar.",
+                "desc": "Sistemlerden sızdırılmış (ele geçirilmiş) şifreli metinlerin (MD5, SHA1, SHA256) orijinal hallerini, milyonlarca kelimenin bulunduğu dosyalarla eşleştirerek çözer.",
                 "inputs": [
-                    {"name": "arg1", "type": "text", "placeholder": "5d41402abc4b2a76b9719d911017c592", "label": "Hash Metni"},
+                    {"name": "arg1", "type": "text", "placeholder": "örn: 5d41402abc4b2a76b9719d911017c592", "label": "Kırılacak Hash Metni"},
                     {"name": "arg2", "type": "text", "placeholder": "wordlists/passwords.txt", "label": "Wordlist Yolu"}
                 ]
             }
@@ -166,13 +166,13 @@ TOOLS_CONFIG = [
         "tools": [
             {
                 "id": "phishing",
-                "name": "Phishing Server",
+                "name": "Phishing (Oltalama) Server",
                 "path": "Social Engineering/Phishing_Server.py",
-                "desc": "Sahte giriş portalı oluşturup girilen şifreleri kaydeder.",
+                "desc": "Hedef kullanıcıyı kandırmak için sahte bir kurumsal giriş ekranı oluşturur. Kurban kullanıcı adı ve şifresini girdiğinde bunları kaydeder, Telegram botunuza gönderir ve kurbanı orijinal siteye yönlendirir.",
                 "inputs": [
-                    {"name": "arg1", "type": "text", "placeholder": "8080", "label": "Dinlenecek Port"},
-                    {"name": "arg2", "type": "text", "placeholder": "https://google.com", "label": "Yönlendirilecek Adres"},
-                    {"name": "arg3", "type": "text", "placeholder": "Secure Portal", "label": "Sayfa Başlığı"}
+                    {"name": "arg1", "type": "text", "placeholder": "örn: 8080", "label": "Dinlenecek Port"},
+                    {"name": "arg2", "type": "text", "placeholder": "örn: https://google.com", "label": "Orijinal (Yönlendirilecek) URL"},
+                    {"name": "arg3", "type": "text", "placeholder": "örn: Kurumsal Ağ Girişi", "label": "Sahte Sayfa Başlığı"}
                 ]
             }
         ]
