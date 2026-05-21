@@ -926,7 +926,6 @@ def main_menu():
                 print(f"{C.BOLD}  C2 FRAMEWORK:{C.RESET}\n")
                 print(f"  {C.CYAN}1){C.RESET} Payload Builder (EXE Oluştur)")
                 print(f"  {C.CYAN}2){C.RESET} Listener (Dinleyici)")
-                print(f"  {C.CYAN}3){C.RESET} EXE Gizleme (PNG/JPG/PDF Kılığına Sok)")
                 print(f"  {C.CYAN}0){C.RESET} Geri Dön\n")
                 try:
                     c2c = input(f"{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
@@ -935,7 +934,6 @@ def main_menu():
 
                 if c2c == '1': c2_payload_builder()
                 elif c2c == '2': c2_listener()
-                elif c2c == '3': c2_disguise()
                 elif c2c == '0': break
         elif choice == '0':
             clear_screen()
