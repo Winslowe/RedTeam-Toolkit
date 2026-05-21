@@ -401,7 +401,6 @@ exec(_c)
         result = subprocess.run(
             [sys.executable, "-m", "nuitka",
              "--onefile", "--windows-console-mode=disable",
-             "--mingw64",
              "--output-dir=" + output_dir,
              "--output-filename=" + exe_name + ".exe",
              "--remove-output",
