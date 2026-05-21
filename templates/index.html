@@ -5,377 +5,279 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Ultimate Pentest Arsenal - Elite UI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #050505;
-            --sidebar-bg: rgba(10, 10, 15, 0.85);
-            --card-bg: rgba(20, 20, 25, 0.6);
-            --border-color: #2a2a35;
-            --text-color: #e2e8f0;
-            --accent-primary: #ff003c; /* Cyberpunk Red */
-            --accent-secondary: #00f0ff; /* Cyberpunk Blue */
-            --danger-color: #ff003c;
-            --success-color: #39ff14; /* Neon Green */
-            --terminal-bg: rgba(5, 5, 5, 0.9);
-            --terminal-text: #39ff14;
-            --glass-blur: blur(12px);
+            --bg-color: #030305;
+            --sidebar-bg: rgba(8, 8, 12, 0.7);
+            --card-bg: rgba(15, 15, 20, 0.45);
+            --border-light: rgba(255, 255, 255, 0.05);
+            --border-glow: rgba(0, 240, 255, 0.3);
+            --text-main: #e2e8f0;
+            --text-muted: #8b949e;
+            --accent-primary: #00f0ff; /* Neon Cyan */
+            --accent-secondary: #ff003c; /* Cyberpunk Red */
+            --success-color: #39ff14; /* Hacker Green */
+            --terminal-bg: rgba(2, 2, 3, 0.85);
+            --glass-blur: blur(20px);
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(255, 0, 60, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.08), transparent 25%);
-            color: var(--text-color);
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 20% 40%, rgba(255, 0, 60, 0.08), transparent 40%),
+                radial-gradient(circle at 80% 60%, rgba(0, 240, 255, 0.08), transparent 40%);
+            background-size: 30px 30px, 30px 30px, 100% 100%, 100% 100%;
+            background-attachment: fixed;
+            color: var(--text-main);
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 2px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
+        /* Typography */
+        h1, h2, h3 { font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 5px var(--success-color); }
+            50% { box-shadow: 0 0 15px var(--success-color), 0 0 30px rgba(57, 255, 20, 0.4); }
+            100% { box-shadow: 0 0 5px var(--success-color); }
+        }
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
 
         /* Sidebar */
         .sidebar {
-            width: 280px;
+            width: 300px;
             background: var(--sidebar-bg);
             backdrop-filter: var(--glass-blur);
-            border-right: 1px solid var(--border-color);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-right: 1px solid var(--border-light);
             display: flex;
             flex-direction: column;
-            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
             z-index: 10;
+            position: relative;
         }
 
         .sidebar-header {
-            padding: 25px 20px;
+            padding: 30px 20px;
             text-align: center;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-light);
             position: relative;
         }
-
         .sidebar-header::after {
-            content: '';
-            position: absolute;
-            bottom: -1px; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            content: ''; position: absolute; bottom: -1px; left: 10%; right: 10%;
+            height: 1px; background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
         }
 
         .sidebar-header h1 {
-            margin: 0;
-            font-size: 1.4rem;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 800;
-            text-shadow: 0 0 15px var(--accent-primary);
+            margin: 0; font-size: 1.6rem; color: #fff;
+            font-weight: 700; text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
         }
-        
-        .sidebar-header h1 i { color: var(--accent-primary); }
+        .sidebar-header h1 i { color: var(--accent-secondary); margin-right: 8px; }
 
         .status-badge {
-            display: inline-block;
-            font-size: 0.65rem;
-            color: var(--bg-color);
-            background: var(--success-color);
-            padding: 3px 8px;
-            border-radius: 12px;
-            margin-top: 10px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            box-shadow: 0 0 10px var(--success-color);
-            animation: pulse 2s infinite;
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.7rem; color: #000; background: var(--success-color);
+            padding: 4px 12px; border-radius: 20px; margin-top: 15px;
+            font-weight: 800; font-family: 'JetBrains Mono', monospace;
+            animation: pulseGlow 2s infinite;
         }
+        .status-badge i { font-size: 0.6rem; }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 5px var(--success-color); }
-            50% { box-shadow: 0 0 15px var(--success-color); }
-            100% { box-shadow: 0 0 5px var(--success-color); }
-        }
-
-        .sidebar-menu {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px 0;
-        }
+        .sidebar-menu { flex: 1; overflow-y: auto; padding: 20px 0; }
 
         .menu-item {
-            padding: 12px 25px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: #94a3b8;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border-left: 3px solid transparent;
+            padding: 14px 25px; cursor: pointer;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 15px;
+            color: var(--text-muted); font-weight: 500; font-size: 0.95rem;
+            border-left: 3px solid transparent; position: relative;
+            overflow: hidden;
         }
-
+        .menu-item::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.1), transparent);
+            transform: translateX(-100%); transition: transform 0.3s ease; z-index: -1;
+        }
+        .menu-item:hover::before, .menu-item.active::before { transform: translateX(0); }
         .menu-item:hover, .menu-item.active {
-            background: linear-gradient(90deg, rgba(255, 0, 60, 0.1), transparent);
-            color: #fff;
-            border-left: 3px solid var(--accent-primary);
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            color: #fff; border-left: 3px solid var(--accent-primary);
         }
-
-        .menu-item i {
-            width: 20px;
-            text-align: center;
-            font-size: 1.1rem;
-            transition: color 0.3s;
-        }
-        
-        .menu-item:hover i, .menu-item.active i {
-            color: var(--accent-secondary);
-        }
+        .menu-item i { width: 20px; text-align: center; font-size: 1.1rem; transition: all 0.3s; }
+        .menu-item:hover i, .menu-item.active i { color: var(--accent-primary); text-shadow: 0 0 10px var(--accent-primary); }
 
         /* Main Content */
         .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            flex: 1; display: flex; flex-direction: column; position: relative;
         }
 
         .topbar {
-            height: 70px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            padding: 0 30px;
-            background: rgba(5, 5, 5, 0.7);
-            backdrop-filter: var(--glass-blur);
+            height: 75px; border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: center; padding: 0 40px;
+            background: rgba(3, 3, 5, 0.6); backdrop-filter: var(--glass-blur);
             z-index: 5;
         }
-
-        .topbar h2 {
-            margin: 0;
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .topbar h2 i { color: var(--accent-secondary); }
+        .topbar h2 { margin: 0; font-size: 1.4rem; color: #fff; display: flex; align-items: center; gap: 12px; }
+        .topbar h2 i { color: var(--accent-secondary); text-shadow: 0 0 10px var(--accent-secondary); }
 
         .content-area {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
+            flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 30px;
         }
 
-        /* Cards & Grids */
+        /* Grid & Cards */
         .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 25px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 30px;
         }
 
         .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 25px;
-            backdrop-filter: var(--glass-blur);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            background: var(--card-bg); border: 1px solid var(--border-light);
+            border-radius: 16px; padding: 30px; backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; overflow: hidden;
+            animation: fadeUp 0.5s ease backwards;
         }
-
+        .card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+            opacity: 0; transition: opacity 0.4s; pointer-events: none;
+        }
+        .card:hover::before { opacity: 1; }
         .card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(0, 240, 255, 0.5);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.6), 0 0 15px rgba(0, 240, 255, 0.1);
+            transform: translateY(-8px); border-color: var(--border-glow);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0, 240, 255, 0.15);
         }
 
         .card h3 {
-            margin-top: 0;
-            color: #fff;
-            font-size: 1.15rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 12px;
-            margin-bottom: 15px;
+            margin-top: 0; color: #fff; font-size: 1.3rem;
+            display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--border-light); padding-bottom: 15px; margin-bottom: 20px;
         }
-        
         .card h3 i { color: var(--accent-primary); }
 
         .card p {
-            font-size: 0.85rem;
-            color: #cbd5e1;
-            margin-bottom: 20px;
-            line-height: 1.6;
+            font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px; line-height: 1.7; font-weight: 300;
         }
 
-        /* Forms */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
+        /* Form Controls */
+        .form-group { margin-bottom: 20px; }
         .form-group label {
-            display: block;
-            font-size: 0.75rem;
-            margin-bottom: 6px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
+            display: block; font-size: 0.75rem; margin-bottom: 8px; color: var(--text-main);
+            text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; font-family: 'Rajdhani', sans-serif;
         }
-
         .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--border-color);
-            color: #fff;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            transition: all 0.3s;
+            width: 100%; padding: 14px 18px; background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-light); color: #fff; border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; transition: all 0.3s;
         }
-
         .form-control:focus {
-            outline: none;
-            border-color: var(--accent-secondary);
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
-            background: rgba(0, 0, 0, 0.8);
+            outline: none; border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15); background: rgba(0, 0, 0, 0.7);
         }
 
         .btn {
-            width: 100%;
-            padding: 12px;
-            background: transparent;
-            border: 1px solid var(--accent-primary);
-            color: var(--accent-primary);
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 800;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 0.85rem;
-            position: relative;
-            overflow: hidden;
+            width: 100%; padding: 14px; background: rgba(0, 240, 255, 0.05);
+            border: 1px solid var(--accent-primary); color: var(--accent-primary);
+            border-radius: 8px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 700;
+            transition: all 0.3s; text-transform: uppercase; letter-spacing: 2px; font-size: 1rem;
+            position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-
         .btn:hover {
-            background: var(--accent-primary);
-            color: #fff;
-            box-shadow: 0 0 20px rgba(255, 0, 60, 0.4);
+            background: var(--accent-primary); color: #000;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.5); transform: scale(1.02);
         }
+        .btn:disabled { border-color: #475569; color: #475569; cursor: not-allowed; background: transparent; transform: none; box-shadow: none; }
 
-        .btn:disabled {
-            border-color: #475569;
-            color: #475569;
-            cursor: not-allowed;
-        }
-        .btn:disabled:hover { background: transparent; box-shadow: none; }
-
-        /* Terminal */
+        /* Hacker Terminal */
         .terminal-container {
-            margin-top: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            background: var(--terminal-bg);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.9);
-            height: 350px;
-            backdrop-filter: var(--glass-blur);
+            margin-top: auto; border: 1px solid var(--border-light); border-radius: 12px;
+            display: flex; flex-direction: column; background: var(--terminal-bg);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); height: 380px; position: relative; overflow: hidden;
+            animation: fadeUp 0.6s ease backwards;
         }
-
+        /* CRT Scanline Effect */
+        .terminal-container::after {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
         .terminal-header {
-            background: rgba(20, 20, 25, 0.9);
-            padding: 10px 20px;
-            font-size: 0.8rem;
-            color: #94a3b8;
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-color);
-            font-family: 'JetBrains Mono', monospace;
+            background: rgba(10, 10, 15, 0.95); padding: 12px 25px; font-size: 0.8rem;
+            display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-light);
+            font-family: 'JetBrains Mono', monospace; z-index: 3; position: relative;
         }
-
         .terminal-content {
-            padding: 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: var(--terminal-text);
-            overflow-y: auto;
-            flex: 1;
-            white-space: pre-wrap;
-            line-height: 1.5;
+            padding: 25px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+            color: var(--success-color); overflow-y: auto; flex: 1; white-space: pre-wrap;
+            line-height: 1.6; z-index: 3; position: relative;
+            text-shadow: 0 0 5px rgba(57, 255, 20, 0.3);
         }
-
         #bot-cmd-input {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: #fff;
-            padding: 15px 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            outline: none;
+            width: 100%; background: rgba(0,0,0,0.6); border: none; border-top: 1px solid var(--border-light);
+            color: #fff; padding: 18px 25px; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;
+            outline: none; z-index: 3; position: relative;
         }
-        
-        .botnet-cmd-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.85rem;
-        }
-        .botnet-cmd-table th, .botnet-cmd-table td {
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            text-align: left;
-        }
-        .botnet-cmd-table th { background: rgba(255, 0, 60, 0.1); color: var(--accent-primary); }
-        .botnet-cmd-table td code { color: var(--accent-secondary); font-family: 'JetBrains Mono', monospace; }
+        #bot-cmd-input:focus { background: rgba(0, 240, 255, 0.05); }
 
-        /* Modals */
+        /* Botnet Tables */
+        .botnet-cmd-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
+        .botnet-cmd-table th, .botnet-cmd-table td { padding: 12px 15px; border: 1px solid var(--border-light); text-align: left; }
+        .botnet-cmd-table th { background: rgba(255, 0, 60, 0.1); color: var(--accent-secondary); font-family: 'Rajdhani', sans-serif; font-size: 1rem; letter-spacing: 1px; }
+        .botnet-cmd-table td code { color: var(--accent-primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; }
+
+        /* Modals & Zombie Items */
+        .zombie-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.5); padding: 18px; border-radius: 10px;
+            border-left: 4px solid var(--accent-secondary); transition: all 0.3s;
+        }
+        .zombie-item:hover { background: rgba(255, 0, 60, 0.1); transform: translateX(5px); }
+
         #stream-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column;
-            align-items: center; justify-content: center; backdrop-filter: blur(5px);
+            align-items: center; justify-content: center; backdrop-filter: blur(10px);
         }
         
-        .zombie-item {
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px;
-            border-left: 4px solid var(--accent-primary); transition: all 0.2s;
-        }
-        .zombie-item:hover { background: rgba(255, 0, 60, 0.05); }
-
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h1><i class="fa-solid fa-skull-crossbones"></i> Arsenal</h1>
-            <div class="status-badge">SYSTEM ONLINE</div>
+            <h1><i class="fa-solid fa-biohazard"></i> ARSENAL</h1>
+            <div class="status-badge"><i class="fa-solid fa-circle"></i> SYSTEM ONLINE</div>
         </div>
         <div class="sidebar-menu" id="sidebar-menu">
             <div class="menu-item" id="menu-item-botnet" onclick="renderBotnet()">
-                <i class="fa-solid fa-spider"></i>
-                <span style="color: var(--accent-primary); font-weight: 800;">Zombies (Botnet)</span>
+                <i class="fa-solid fa-network-wired"></i>
+                <span style="color: var(--accent-primary); font-weight: 700;">Zombies (Botnet)</span>
             </div>
-            <div style="border-bottom: 1px solid var(--border-color); margin: 15px 0;"></div>
+            <div style="border-bottom: 1px solid var(--border-light); margin: 15px 20px;"></div>
             <div id="dynamic-menu"></div>
         </div>
     </div>
@@ -387,21 +289,23 @@
         
         <div class="content-area">
             
-            <div id="botnet-container" style="display: none; flex-direction: column; gap: 25px;">
-                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px;">
-                    <div class="card" style="border-color: var(--accent-primary);">
+            <div id="botnet-container" style="display: none; flex-direction: column; gap: 30px;">
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+                    <div class="card stagger-1" style="border-color: var(--accent-secondary); box-shadow: 0 0 20px rgba(255,0,60,0.1);">
                         <h3><i class="fa-solid fa-satellite-dish"></i> C2 Listener Control</h3>
-                        <p>Web tabanlı C2 Listener'ı başlatın. Kurbanlar doğrudan bu sunucuya ters bağlantı (Reverse TCP) kuracaktır.</p>
+                        <p>Kurban cihazları yönetmek için Askeri Düzey şifreli bağlantı dinleyicisini başlatın.</p>
                         <div class="form-group">
                             <label>Dinlenecek Port</label>
                             <input type="text" id="c2-port-input" class="form-control" placeholder="Örn: 443" value="443">
                         </div>
-                        <button class="btn" onclick="startC2Listener()"><i class="fa-solid fa-power-off"></i> Dinlemeyi Başlat</button>
+                        <button class="btn" style="border-color: var(--accent-secondary); color: var(--accent-secondary);" onclick="startC2Listener()" onmouseover="this.style.background='var(--accent-secondary)'; this.style.color='#fff'" onmouseout="this.style.background='transparent'; this.style.color='var(--accent-secondary)'">
+                            <i class="fa-solid fa-power-off"></i> Dinlemeyi Başlat
+                        </button>
                     </div>
                     
-                    <div class="card">
+                    <div class="card stagger-2">
                         <h3><i class="fa-solid fa-book-skull"></i> God-Tier Botnet Commands</h3>
-                        <p>Hedefe bağlandıktan sonra terminale (aşağıdaki input alanına) yazabileceğiniz özel modül komutları:</p>
+                        <p>Zombilere (hedef cihazlara) hükmetmek için terminale yazabileceğiniz elit komutlar:</p>
                         <table class="botnet-cmd-table">
                             <tr><th>Komut</th><th>Açıklama / Etki</th></tr>
                             <tr><td><code>!spread</code></td><td>USB bellekleri bulur, kendini kopyalar ve bulaşır.</td></tr>
@@ -410,17 +314,19 @@
                             <tr><td><code>!stream_stop</code></td><td>Canlı ekran yayınını durdurur.</td></tr>
                             <tr><td><code>!autoroot</code></td><td>Fodhelper UAC bypass ile Yönetici hakları alır.</td></tr>
                             <tr><td><code>!suicide</code></td><td>Virüsü diskten siler, logları temizler, bağlantı koparır.</td></tr>
-                            <tr><td><code>whoami, dir</code></td><td>Tüm standart Windows CMD komutları geçerlidir.</td></tr>
                         </table>
                     </div>
                 </div>
 
-                <div class="card" style="min-height: 200px;">
-                    <h3><i class="fa-solid fa-users-crosshairs"></i> Active Zombies <span id="bot-count" style="background: var(--accent-primary); padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; margin-left: auto;">0</span></h3>
-                    <div id="bots-list" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
-                        <div style="color: #64748b; font-size: 0.9rem; text-align: center; padding: 20px;">
-                            <i class="fa-solid fa-satellite fa-2x" style="opacity: 0.5; margin-bottom: 10px;"></i><br>
-                            Dinleme başlatılmadı veya bağlı kurban yok.
+                <div class="card stagger-3" style="min-height: 250px;">
+                    <h3 style="display: flex; justify-content: space-between;">
+                        <span><i class="fa-solid fa-users-crosshairs"></i> Active Zombies</span>
+                        <span id="bot-count" style="background: var(--accent-secondary); color: #fff; padding: 4px 15px; border-radius: 20px; font-size: 0.9rem; font-family: 'JetBrains Mono'; box-shadow: 0 0 10px rgba(255,0,60,0.5);">0</span>
+                    </h3>
+                    <div id="bots-list" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                        <div style="color: #475569; font-size: 1rem; text-align: center; padding: 30px;">
+                            <i class="fa-solid fa-radar fa-spin fa-3x" style="opacity: 0.3; margin-bottom: 15px;"></i><br>
+                            Bağlantı bekleniyor veya dinleyici kapalı...
                         </div>
                     </div>
                 </div>
@@ -430,28 +336,30 @@
                 <!-- Araç kartları JS ile buraya yüklenecek -->
             </div>
 
-            <div class="terminal-container" id="terminal-container">
+            <div class="terminal-container stagger-3" id="terminal-container">
                 <div class="terminal-header">
-                    <span id="term-prompt" style="color: var(--accent-secondary);"><i class="fa-solid fa-terminal"></i> root@arsenal:~#</span>
+                    <span id="term-prompt" style="color: var(--accent-primary);"><i class="fa-solid fa-terminal"></i> root@arsenal:~#</span>
                     <span id="term-status" style="color: var(--success-color);"><i class="fa-solid fa-circle-check"></i> System Idle</span>
                 </div>
                 <div class="terminal-content" id="terminal-content">
-[+] The Ultimate Pentest Arsenal - Web Dashboard v7.0
-[+] Cyberpunk UI Loaded. Glassmorphism Engine Active.
-[+] Initialize sequence completed. Awaiting commands...
+[+] The Ultimate Pentest Arsenal - Elite Web Dashboard v7.3
+[+] Encripted Connection Established. Glassmorphism Engine Active.
+[+] Boot sequence completed. Awaiting operator input...
                 </div>
-                <div style="display: flex; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.5);">
-                    <input type="text" id="bot-cmd-input" placeholder="Komut yazın (örn: !spread, !ransom, dir)... ve Enter'a basın" autocomplete="off" onkeypress="handleBotCmd(event)">
+                <div style="display: flex;">
+                    <input type="text" id="bot-cmd-input" placeholder="Execute command (e.g. !spread)..." autocomplete="off" onkeypress="handleBotCmd(event)">
                 </div>
             </div>
             
             <!-- Live Stream Modal -->
             <div id="stream-modal">
-                <div style="width: 85%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="color: var(--accent-primary); margin: 0; font-family: 'JetBrains Mono';"><i class="fa-solid fa-video"></i> LIVE TARGET STREAM</h3>
-                    <button onclick="document.getElementById('stream-modal').style.display='none'" class="btn" style="width: auto; padding: 8px 20px; border-color: #fff; color: #fff;">Close View</button>
+                <div style="width: 85%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: var(--accent-primary); margin: 0; font-family: 'Rajdhani'; font-size: 2rem; letter-spacing: 2px; text-shadow: 0 0 15px var(--accent-primary);">
+                        <i class="fa-solid fa-satellite"></i> SATELLITE FEED (LIVE)
+                    </h3>
+                    <button onclick="document.getElementById('stream-modal').style.display='none'" class="btn" style="width: auto; padding: 10px 30px;">Close Feed</button>
                 </div>
-                <img id="stream-img" src="" style="max-width: 85%; max-height: 80vh; border: 2px solid var(--accent-secondary); box-shadow: 0 0 30px rgba(0, 240, 255, 0.3); border-radius: 8px;">
+                <img id="stream-img" src="" style="max-width: 85%; max-height: 80vh; border: 2px solid var(--accent-primary); box-shadow: 0 0 40px rgba(0, 240, 255, 0.4); border-radius: 12px; object-fit: contain;">
             </div>
 
         </div>
@@ -481,12 +389,12 @@
             formData.forEach((value, key) => { args[key] = value; });
 
             const originalBtnText = btnElement.innerHTML;
-            btnElement.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Executing...';
+            btnElement.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> EXECUTING...';
             btnElement.disabled = true;
-            termStatus.innerHTML = '<i class="fa-solid fa-cog fa-spin"></i> Running';
+            termStatus.innerHTML = '<i class="fa-solid fa-cog fa-spin"></i> Processing';
             termStatus.style.color = "orange";
             
-            appendToTerminal(`\n<span style="color:var(--accent-secondary)">[~] Executing module [${toolId}]...</span>`, true);
+            appendToTerminal(`\n<span style="color:var(--accent-primary)">[~] Initiating module [${toolId}]...</span>`, true);
 
             fetch('/api/run', {
                 method: 'POST',
@@ -536,17 +444,17 @@
                         const botsList = document.getElementById('bots-list');
                         botsList.innerHTML = '';
                         if(d.bots.length === 0) {
-                            botsList.innerHTML = '<div style="color: #64748b; font-size: 0.9rem; text-align: center; padding: 20px;"><i class="fa-solid fa-satellite fa-2x" style="opacity: 0.5; margin-bottom: 10px;"></i><br>Dinleme aktif. Kurban bağlantısı bekleniyor...</div>';
+                            botsList.innerHTML = '<div style="color: #475569; font-size: 1rem; text-align: center; padding: 30px;"><i class="fa-solid fa-radar fa-spin fa-3x" style="opacity: 0.3; margin-bottom: 15px;"></i><br>Dinleme aktif. Kurban bağlantısı bekleniyor...</div>';
                         }
                         d.bots.forEach(bot => {
                             const isCurrent = (currentBotId === bot.id);
                             botsList.innerHTML += `
-                                <div class="zombie-item" style="${isCurrent ? 'border-color: var(--accent-secondary); background: rgba(0, 240, 255, 0.1);' : ''}">
+                                <div class="zombie-item" style="${isCurrent ? 'border-color: var(--accent-primary); background: rgba(0, 240, 255, 0.1); box-shadow: 0 0 15px rgba(0,240,255,0.2);' : ''}">
                                     <div>
-                                        <strong style="color: #fff; font-family: 'JetBrains Mono';"><i class="fa-solid fa-skull"></i> Zombie_${bot.id}</strong>
-                                        <div style="font-size: 0.8rem; color: #94a3b8; font-family: 'JetBrains Mono'; margin-top: 4px;">IP: ${bot.ip}:${bot.port}</div>
+                                        <strong style="color: #fff; font-family: 'JetBrains Mono'; font-size: 1.1rem;"><i class="fa-solid fa-skull"></i> ZOMBIE_${bot.id}</strong>
+                                        <div style="font-size: 0.85rem; color: var(--text-muted); font-family: 'JetBrains Mono'; margin-top: 6px;">IP: ${bot.ip}:${bot.port}</div>
                                     </div>
-                                    <button class="btn" style="width: auto; padding: 8px 20px; font-size: 0.75rem;" onclick="interactBot('${bot.id}')">
+                                    <button class="btn" style="width: auto; padding: 10px 25px; font-size: 0.85rem;" onclick="interactBot('${bot.id}')">
                                         <i class="fa-solid fa-terminal"></i> INTERACT
                                     </button>
                                 </div>
@@ -566,8 +474,8 @@
                                 currentBotId = null;
                                 document.getElementById('bot-cmd-input').style.display = 'none';
                                 document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
-                                document.getElementById('term-prompt').style.color = "var(--accent-secondary)";
-                                appendToTerminal(`\n<span style="color:var(--accent-primary)">[C2] Kurban ile bağlantı koptu.</span>`, true);
+                                document.getElementById('term-prompt').style.color = "var(--accent-primary)";
+                                appendToTerminal(`\n<span style="color:var(--accent-secondary)">[C2] Kurban ile bağlantı koptu.</span>`, true);
                             }
                         });
                     }
@@ -580,7 +488,7 @@
             document.getElementById('bot-cmd-input').style.display = 'block';
             document.getElementById('bot-cmd-input').focus();
             document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-skull-crossbones"></i> zombie_${botId}:~#`;
-            document.getElementById('term-prompt').style.color = "var(--accent-primary)";
+            document.getElementById('term-prompt').style.color = "var(--accent-secondary)";
             appendToTerminal(`\n<span style="color:var(--success-color)">[+] Interacting with zombie_${botId}... Type '!help' or commands.</span>`, true);
         }
 
@@ -613,7 +521,7 @@
             currentBotId = null;
             document.getElementById('bot-cmd-input').style.display = 'none';
             document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
-            document.getElementById('term-prompt').style.color = "var(--accent-secondary)";
+            document.getElementById('term-prompt').style.color = "var(--accent-primary)";
             pollBots();
         }
 
@@ -623,13 +531,13 @@
             currentBotId = null;
             document.getElementById('bot-cmd-input').style.display = 'none';
             document.getElementById('term-prompt').innerHTML = `<i class="fa-solid fa-terminal"></i> root@arsenal:~#`;
-            document.getElementById('term-prompt').style.color = "var(--accent-secondary)";
+            document.getElementById('term-prompt').style.color = "var(--accent-primary)";
             
             const category = CONFIG[categoryIndex];
             topbarTitle.innerHTML = `<i class="fa-solid ${category.icon}"></i> ${category.category}`;
             toolsGrid.innerHTML = '';
 
-            category.tools.forEach(tool => {
+            category.tools.forEach((tool, i) => {
                 let inputsHTML = '';
                 if(tool.inputs) {
                     tool.inputs.forEach(inp => {
@@ -642,11 +550,14 @@
                     });
                 }
 
+                // Stagger animations based on index (1, 2, 3)
+                const staggerClass = `stagger-${(i % 3) + 1}`;
+
                 const cardHTML = `
-                    <div class="card">
+                    <div class="card ${staggerClass}">
                         <h3><i class="fa-solid fa-cube"></i> ${tool.name}</h3>
                         <p>${tool.desc}</p>
-                        <form id="form-${tool.id}" onsubmit="event.preventDefault();">
+                        <form id="form-${tool.id}" onsubmit="event.preventDefault();" style="margin-top: auto;">
                             ${inputsHTML}
                             <button type="button" class="btn" onclick="runTool('${tool.id}', this)">
                                 <i class="fa-solid fa-bolt"></i> LAUNCH
