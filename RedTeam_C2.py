@@ -649,12 +649,21 @@ class Program {{
             cmd.append(cs_path)
             
             print(f"{C.YELLOW}  [*] Launcher derleniyor...{C.RESET}")
-            subprocess.run(cmd, capture_output=True)
+            try:
+                res = subprocess.run(cmd, capture_output=True, text=True)
+            except Exception as e:
+                res = type('obj', (object,), {'stdout': '', 'stderr': str(e)})()
         else:
+            res = None
             final_exe = exe_path
 
         if not os.path.exists(final_exe):
             print(f"{C.RED}  [-] Paketleme başarısız!{C.RESET}")
+            if res:
+                print(f"{C.RED}  Derleyici Çıktısı:\n{res.stdout}\n{res.stderr}{C.RESET}")
+                if "error CS1566" in res.stdout or "error CS1566" in res.stderr:
+                    print(f"{C.YELLOW}  [!] DİKKAT: İkon (.ico) dosyanız bozuk veya geçerli bir ICO formatında değil!{C.RESET}")
+                    print(f"{C.YELLOW}  [!] Sadece ismini değiştirerek yaptığınız .ico dosyaları derleyicimi bozar.{C.RESET}")
             input(f"\n{C.YELLOW}  Enter'a basın...{C.RESET}")
             return
 
