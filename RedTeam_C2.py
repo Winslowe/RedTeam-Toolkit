@@ -456,10 +456,19 @@ def run_external_tool(script_path, desc):
 
     args = ""
     if "Evil_Twin.py" in script_path:
-        print(f"{C.YELLOW}  [*] Evil Twin Kurulum Sihirbazı{C.RESET}")
-        iface = input(f"  {C.CYAN}[?] WiFi Arayüzü (ör: wlan0): {C.RESET}").strip()
-        ssid = input(f"  {C.CYAN}[?] Sahte Ağ Adı (ör: FreeWiFi): {C.RESET}").strip()
-        kanal = input(f"  {C.CYAN}[?] Kanal (ör: 6): {C.RESET}").strip()
+        print(f"\n{C.YELLOW}{C.BOLD}  [*] Gelişmiş Evil Twin (Sahte AP) Kurulum Sihirbazı{C.RESET}")
+        print(f"{C.DIM}  =============================================================={C.RESET}")
+        print(f"  {C.CYAN}[ℹ] Evil Twin, hedefin WiFi ağının kopyasını oluşturarak{C.RESET}")
+        print(f"  {C.CYAN}    kullanıcıları sahte ağa (Captive Portal) yönlendirir.{C.RESET}")
+        print(f"  {C.CYAN}[!] Önerilen Ayarlar:{C.RESET}")
+        print(f"  {C.CYAN}    - Hedef ağın kanalıyla (Channel) aynı kanalı kullanın.{C.RESET}")
+        print(f"  {C.CYAN}    - Captive Portal otomatik olarak Port 80'de (HTTP) çalışır.{C.RESET}")
+        print(f"{C.DIM}  =============================================================={C.RESET}\n")
+        
+        iface = input(f"  {C.CYAN}[?] İzleme Destekli WiFi Arayüzü {C.DIM}[wlan0]{C.RESET}: ").strip() or "wlan0"
+        ssid = input(f"  {C.CYAN}[?] Taklit Edilecek Ağ Adı (SSID) {C.DIM}[FreeWiFi]{C.RESET}: ").strip() or "FreeWiFi"
+        kanal = input(f"  {C.CYAN}[?] WiFi Kanalı {C.DIM}[6]{C.RESET}: ").strip() or "6"
+        
         if iface and ssid:
             args = f"{iface} {ssid} {kanal}".strip()
     
