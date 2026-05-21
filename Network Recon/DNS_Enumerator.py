@@ -1,89 +1,88 @@
 #!/usr/bin/env python3
 """
-DNS Enumerator (Eğitim Amaçlı)
-===============================
-DNS kayıt tiplerini sorgular ve zone transfer dener.
+Advanced DNS Enumerator
+=======================
+DNS kayıt tiplerini sorgular ve multi-threaded alt alan adı taraması yapar.
+Gereksinim: pip install dnspython
 """
 import socket
 import sys
-
-RECORD_TYPES = {
-    "A": "IPv4 Adresi",
-    "AAAA": "IPv6 Adresi",
-    "MX": "Mail Sunucusu",
-    "NS": "Name Server",
-    "TXT": "TXT Kaydı",
-    "CNAME": "Canonical Name",
-}
+import concurrent.futures
+try:
+    import dns.resolver
+except ImportError:
+    print("[-] 'dnspython' modülü eksik. Yüklemek için: pip install dnspython")
+    sys.exit(1)
 
 def dns_lookup(domain):
-    """Temel DNS sorgusu"""
+    """Kapsamlı DNS sorgusu"""
     print(f"[*] DNS Sorgusu: {domain}")
     print("-" * 50)
+    resolver = dns.resolver.Resolver()
+    resolver.timeout = 2
+    resolver.lifetime = 2
 
-    # A kaydı
-    try:
-        ips = socket.getaddrinfo(domain, None, socket.AF_INET)
-        seen = set()
-        for info in ips:
-            ip = info[4][0]
-            if ip not in seen:
-                print(f"  [A]     {ip}")
-                seen.add(ip)
-    except socket.gaierror:
-        print(f"  [-] A kaydı bulunamadı.")
+    records = {
+        "A": "IPv4 Adresi",
+        "AAAA": "IPv6 Adresi",
+        "MX": "Mail Sunucusu",
+        "NS": "Name Server",
+        "TXT": "TXT Kaydı"
+    }
 
-    # AAAA kaydı
-    try:
-        ips6 = socket.getaddrinfo(domain, None, socket.AF_INET6)
-        seen6 = set()
-        for info in ips6:
-            ip6 = info[4][0]
-            if ip6 not in seen6:
-                print(f"  [AAAA]  {ip6}")
-                seen6.add(ip6)
-    except socket.gaierror:
-        pass
-
-    # MX kaydı (basit DNS sorgusu)
-    try:
-        mx_records = socket.getaddrinfo(f"mail.{domain}", None)
-        for info in mx_records[:2]:
-            print(f"  [MX]    {info[4][0]}")
-    except socket.gaierror:
-        pass
+    for record_type, desc in records.items():
+        try:
+            answers = resolver.resolve(domain, record_type)
+            for rdata in answers:
+                if record_type == "MX":
+                    print(f"  [{record_type}] {desc:<15}: {rdata.exchange} (Pref: {rdata.preference})")
+                else:
+                    print(f"  [{record_type}] {desc:<15}: {rdata.to_text()}")
+        except Exception:
+            pass
 
     # Reverse DNS
     try:
         main_ip = socket.gethostbyname(domain)
         reverse = socket.gethostbyaddr(main_ip)
-        print(f"  [PTR]   {reverse[0]}")
+        print(f"  [PTR] Reverse DNS    : {reverse[0]}")
     except (socket.herror, socket.gaierror):
         pass
 
     print("-" * 50)
 
+def check_subdomain(target):
+    try:
+        ip = socket.gethostbyname(target)
+        return target, ip
+    except socket.gaierror:
+        return None, None
+
 def subdomain_bruteforce(domain, wordlist_path):
-    """Alt alan adı brute-force"""
+    """Multi-threaded alt alan adı brute-force"""
     print(f"\n[*] Alt alan adı taraması: {domain}")
     found = []
+    
     try:
         with open(wordlist_path, 'r', encoding='utf-8', errors='ignore') as f:
-            for line in f:
-                sub = line.strip()
-                if not sub:
-                    continue
-                target = f"{sub}.{domain}"
-                try:
-                    ip = socket.gethostbyname(target)
+            subdomains = [line.strip() for line in f if line.strip()]
+            
+        print(f"[*] {len(subdomains)} kelime test ediliyor...")
+        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+            targets = [f"{sub}.{domain}" for sub in subdomains]
+            futures = {executor.submit(check_subdomain, target): target for target in targets}
+            
+            for future in concurrent.futures.as_completed(futures):
+                target, ip = future.result()
+                if target and ip:
                     found.append((target, ip))
                     print(f"  [+] {target:<35} → {ip}")
-                except socket.gaierror:
-                    pass
+                    
     except FileNotFoundError:
         print(f"  [-] Wordlist bulunamadı: {wordlist_path}")
 
-    print(f"\n[+] {len(found)} alt alan adı bulundu.")
+    print(f"\n[+] Toplam {len(found)} alt alan adı bulundu.")
     return found
 
 if __name__ == "__main__":

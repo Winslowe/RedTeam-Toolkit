@@ -837,9 +837,14 @@ def main_menu():
         ("ARP Spoofer", os.path.join(base_dir, "Network Recon", "ARP_Spoofer.py"), "Yerel ağda Ortadaki Adam (MitM) saldırısı", C.RED)
     ]
     
+    osint_tools = [
+        ("Email Harvester", os.path.join(base_dir, "OSINT", "Email_Harvester.py"), "Google üzerinden hedef domain emaillerini topla", C.GREEN),
+        ("Whois Lookup", os.path.join(base_dir, "OSINT", "Whois_Lookup.py"), "Domain Whois ve kayıt bilgilerini sorgula", C.GREEN)
+    ]
+
     web_tools = [
-        ("SQLi Tester", os.path.join(base_dir, "Web Exploitation", "SQLi_Tester.py"), "Temel SQL Injection tespiti", C.YELLOW),
-        ("XSS Scanner", os.path.join(base_dir, "Web Exploitation", "XSS_Scanner.py"), "Reflected XSS tespiti", C.YELLOW),
+        ("SQLi Tester", os.path.join(base_dir, "Web Exploitation", "SQLi_Tester.py"), "SQL Injection tespiti (Error/Time-Based)", C.YELLOW),
+        ("XSS Scanner", os.path.join(base_dir, "Web Exploitation", "XSS_Scanner.py"), "Gelişmiş Reflected XSS tespiti", C.YELLOW),
         ("Directory Bruteforcer", os.path.join(base_dir, "Web Exploitation", "Directory_Bruteforcer.py"), "Gizli dizin ve dosya bulucu", C.YELLOW),
         ("LFI Scanner", os.path.join(base_dir, "Web Exploitation", "LFI_Scanner.py"), "Local File Inclusion tarayıcı", C.RED)
     ]
@@ -847,17 +852,17 @@ def main_menu():
     pwd_tools = [
         ("Wordlist Generator", os.path.join(base_dir, "Password Cracking", "Wordlist_Generator.py"), "Hedef odaklı özel şifre listesi üret", C.GREEN),
         ("Hash Identifier", os.path.join(base_dir, "Password Cracking", "Hash_Identifier.py"), "Hash formatını belirle", C.GREEN),
-        ("MD5 Hash Cracker", os.path.join(base_dir, "Password Cracking", "Hash_Cracker.py"), "Wordlist ile MD5 kırma", C.YELLOW),
+        ("Multi Hash Cracker", os.path.join(base_dir, "Password Cracking", "Hash_Cracker.py"), "MD5/SHA1/SHA256/NTLM Kırma", C.YELLOW),
         ("ZIP Password Cracker", os.path.join(base_dir, "Password Cracking", "Zip_Cracker.py"), "Şifreli ZIP dosyalarını kırma", C.YELLOW),
         ("SSH Bruteforce", os.path.join(base_dir, "Password Cracking", "SSH_Bruteforce.py"), "SSH login denemeleri", C.RED),
         ("FTP Bruteforce", os.path.join(base_dir, "Password Cracking", "FTP_Bruteforce.py"), "FTP login denemeleri", C.RED)
     ]
     
     post_tools = [
-        ("Reverse Shell Generator", os.path.join(base_dir, "Post-Exploitation", "Reverse_Shell_Gen.py"), "12 dilde hazır shell kodu üret", C.GREEN),
+        ("Reverse Shell Generator", os.path.join(base_dir, "Post-Exploitation", "Reverse_Shell_Gen.py"), "Çoklu dilde hazır shell kodu üret", C.GREEN),
         ("Credential Harvester", os.path.join(base_dir, "Post-Exploitation", "Credential_Harvester.py"), "WiFi şifreleri ve sistem bilgisi", C.YELLOW),
         ("Screenshot Grabber", os.path.join(base_dir, "Post-Exploitation", "Screenshot_Grabber.py"), "Hedef ekrandan görüntü alma", C.YELLOW),
-        ("Simple Keylogger", os.path.join(base_dir, "Post-Exploitation", "Simple_Keylogger.py"), "Klavye vuruşlarını kaydetme", C.RED),
+        ("Advanced Keylogger", os.path.join(base_dir, "Post-Exploitation", "Simple_Keylogger.py"), "Pencere takipli klavye dinleyici", C.RED),
         ("Data Exfiltrator", os.path.join(base_dir, "Post-Exploitation", "Data_Exfiltrator.py"), "B64/HTTP ile veri sızdırma", C.RED),
         ("Persistence Installer", os.path.join(base_dir, "Post-Exploitation", "Persistence_Installer.py"), "Kalıcılık sağlama (Registry/Cron)", C.RED),
         ("Log Cleaner", os.path.join(base_dir, "Post-Exploitation", "Log_Cleaner.py"), "İz silme — Windows/Linux log temizleyici", C.RED)
@@ -876,26 +881,32 @@ def main_menu():
     wireless_tools = [
         ("Evil Twin", os.path.join(base_dir, "Wireless Attacks", "Evil_Twin.py"), "Sahte WiFi AP + Captive Portal (Linux)", C.RED)
     ]
+    
+    reporting_tools = [
+        ("HTML Report Generator", os.path.join(base_dir, "Reporting", "Report_Generator.py"), "Sızma testi bulgularını HTML rapora çevir", C.GREEN)
+    ]
 
     while True:
         clear_screen()
         print_banner()
         print(f"{C.BOLD}  RİSK BİLGİLENDİRMESİ:{C.RESET}")
-        print(f"  {C.GREEN}■ DÜŞÜK RİSK{C.RESET}  : Tespit/Kontrol araçları. İz bırakmaz.")
+        print(f"  {C.GREEN}■ DÜŞÜK RİSK{C.RESET}  : Tespit/Kontrol/OSINT araçları. İz bırakmaz.")
         print(f"  {C.YELLOW}■ ORTA RİSK{C.RESET}   : Tarayıcılar/Bruteforce. Log bırakabilir.")
         print(f"  {C.RED}■ YÜKSEK RİSK{C.RESET} : İstismar/Kalıcılık/C2. Doğrudan müdahale.\n")
         print(f"{C.DIM}{'─' * 65}{C.RESET}\n")
 
         print(f"{C.BOLD}  KATEGORİLER:{C.RESET}\n")
         
-        print(f"  {C.CYAN}1){C.RESET} {C.GREEN}Privilege Escalation{C.RESET} {C.DIM}— Windows/Linux PrivEsc Checker{C.RESET}")
-        print(f"  {C.CYAN}2){C.RESET} {C.GREEN}AV Evasion{C.RESET}           {C.DIM}— Obfuscator, Shellcode Encoder{C.RESET}")
-        print(f"  {C.CYAN}3){C.RESET} {C.YELLOW}Network Recon{C.RESET}        {C.DIM}— Ağ tarama, DNS, ARP Spoofing{C.RESET}")
-        print(f"  {C.CYAN}4){C.RESET} {C.YELLOW}Web Exploitation{C.RESET}     {C.DIM}— SQLi, XSS, LFI, Dir Buster{C.RESET}")
-        print(f"  {C.CYAN}5){C.RESET} {C.YELLOW}Password Cracking{C.RESET}    {C.DIM}— Wordlist, Hash, SSH/FTP Brute{C.RESET}")
-        print(f"  {C.CYAN}6){C.RESET} {C.RED}Post-Exploitation{C.RESET}    {C.DIM}— Shell Gen, Keylogger, Log Cleaner{C.RESET}")
-        print(f"  {C.CYAN}7){C.RESET} {C.RED}Wireless Attacks{C.RESET}     {C.DIM}— Evil Twin, Sahte WiFi AP{C.RESET}")
-        print(f"  {C.CYAN}8){C.RESET} {C.RED}C2 Framework{C.RESET}         {C.DIM}— Payload Builder & Listener (Stealth){C.RESET}")
+        print(f"  {C.CYAN}1){C.RESET} {C.GREEN}OSINT (Açık Kaynak İstihbarat){C.RESET} {C.DIM}— Email Harvester, Whois{C.RESET}")
+        print(f"  {C.CYAN}2){C.RESET} {C.GREEN}Privilege Escalation{C.RESET}         {C.DIM}— Windows/Linux PrivEsc Checker{C.RESET}")
+        print(f"  {C.CYAN}3){C.RESET} {C.GREEN}AV Evasion{C.RESET}                   {C.DIM}— Obfuscator, Shellcode Encoder{C.RESET}")
+        print(f"  {C.CYAN}4){C.RESET} {C.YELLOW}Network Recon{C.RESET}                {C.DIM}— Ağ tarama, DNS, ARP Spoofing{C.RESET}")
+        print(f"  {C.CYAN}5){C.RESET} {C.YELLOW}Web Exploitation{C.RESET}             {C.DIM}— SQLi, XSS, LFI, Dir Buster{C.RESET}")
+        print(f"  {C.CYAN}6){C.RESET} {C.YELLOW}Password Cracking{C.RESET}            {C.DIM}— Wordlist, Hash, SSH/FTP Brute{C.RESET}")
+        print(f"  {C.CYAN}7){C.RESET} {C.RED}Post-Exploitation{C.RESET}            {C.DIM}— Shell Gen, Keylogger, Log Cleaner{C.RESET}")
+        print(f"  {C.CYAN}8){C.RESET} {C.RED}Wireless Attacks{C.RESET}             {C.DIM}— Evil Twin, Sahte WiFi AP{C.RESET}")
+        print(f"  {C.CYAN}9){C.RESET} {C.RED}C2 Framework{C.RESET}                 {C.DIM}— Payload Builder & Listener (Stealth){C.RESET}")
+        print(f" {C.CYAN}10){C.RESET} {C.MAGENTA}Reporting (Raporlama){C.RESET}        {C.DIM}— Otomatik HTML Pentest Raporu Üretici{C.RESET}")
         print(f"  {C.CYAN}0){C.RESET} Çıkış\n")
 
         try:
@@ -906,26 +917,29 @@ def main_menu():
             sys.exit(0)
 
         if choice == '1':
-            external_menu_category("Privilege Escalation", priv_tools)
+            external_menu_category("OSINT", osint_tools)
         elif choice == '2':
-            external_menu_category("AV Evasion", av_tools)
+            external_menu_category("Privilege Escalation", priv_tools)
         elif choice == '3':
-            external_menu_category("Network Recon", recon_tools)
+            external_menu_category("AV Evasion", av_tools)
         elif choice == '4':
-            external_menu_category("Web Exploitation", web_tools)
+            external_menu_category("Network Recon", recon_tools)
         elif choice == '5':
-            external_menu_category("Password Cracking", pwd_tools)
+            external_menu_category("Web Exploitation", web_tools)
         elif choice == '6':
-            external_menu_category("Post-Exploitation", post_tools)
+            external_menu_category("Password Cracking", pwd_tools)
         elif choice == '7':
-            external_menu_category("Wireless Attacks", wireless_tools)
+            external_menu_category("Post-Exploitation", post_tools)
         elif choice == '8':
+            external_menu_category("Wireless Attacks", wireless_tools)
+        elif choice == '9':
             while True:
                 clear_screen()
                 print_banner()
                 print(f"{C.BOLD}  C2 FRAMEWORK:{C.RESET}\n")
                 print(f"  {C.CYAN}1){C.RESET} Payload Builder (EXE Oluştur)")
                 print(f"  {C.CYAN}2){C.RESET} Listener (Dinleyici)")
+                print(f"  {C.CYAN}3){C.RESET} EXE Disguise (Dosya Kılık Değiştirme)")
                 print(f"  {C.CYAN}0){C.RESET} Geri Dön\n")
                 try:
                     c2c = input(f"{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
@@ -934,7 +948,10 @@ def main_menu():
 
                 if c2c == '1': c2_payload_builder()
                 elif c2c == '2': c2_listener()
+                elif c2c == '3': c2_disguise()
                 elif c2c == '0': break
+        elif choice == '10':
+            external_menu_category("Reporting", reporting_tools)
         elif choice == '0':
             clear_screen()
             print(f"{C.RED}  [*] The Ultimate Pentest Arsenal kapatılıyor... İyi avlar!{C.RESET}\n")
