@@ -3,178 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Ultimate Pentest Arsenal - Web UI</title>
+    <title>The Ultimate Pentest Arsenal - Elite UI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
-            --border-color: #30363d;
-            --text-color: #c9d1d9;
-            --accent-color: #58a6ff;
-            --success-color: #2ea043;
-            --danger-color: #f85149;
-            --warning-color: #d29922;
+            --bg-color: #0b0f19;
+            --sidebar-bg: #111827;
+            --card-bg: rgba(31, 41, 55, 0.7);
+            --border-color: #374151;
+            --text-color: #e5e7eb;
+            --accent-color: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --terminal-bg: #000000;
+            --terminal-text: #22c55e;
         }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        header {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .sidebar-header {
             padding: 20px;
             text-align: center;
+            border-bottom: 1px solid var(--border-color);
         }
-        h1 {
+
+        .sidebar-header h1 {
             margin: 0;
+            font-size: 1.2rem;
             color: var(--danger-color);
-            font-family: monospace;
-            font-size: 2em;
             text-transform: uppercase;
             letter-spacing: 2px;
+            font-family: monospace;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
         }
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
+
+        .sidebar-menu {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 0;
+        }
+
+        .menu-category {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #d1d5db;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at top right, #111827, #0b0f19);
+        }
+
+        .topbar {
+            height: 60px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
             padding: 0 20px;
+            background-color: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
         }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+
+        .topbar h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
             gap: 20px;
         }
+
+        /* Cards */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 20px;
+            backdrop-filter: blur(10px);
             transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
         }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
         .card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
             border-color: var(--accent-color);
         }
-        .card h2 {
+
+        .card h3 {
             margin-top: 0;
-            color: var(--accent-color);
-            font-size: 1.2em;
+            color: #f3f4f6;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
         }
+
         .card p {
-            font-size: 0.9em;
-            color: #8b949e;
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-bottom: 15px;
+            min-height: 40px;
         }
-        .btn {
-            display: inline-block;
-            background-color: var(--border-color);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.2s;
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+            color: #9ca3af;
+        }
+
+        .form-control {
             width: 100%;
+            padding: 10px;
+            background-color: #111827;
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 4px;
             box-sizing: border-box;
-            text-align: center;
-            margin-top: 10px;
-        }
-        .btn:hover {
-            background-color: #3b424a;
-        }
-        .btn-danger {
-            background-color: transparent;
-            color: var(--danger-color);
-            border-color: var(--danger-color);
-        }
-        .btn-danger:hover {
-            background-color: var(--danger-color);
-            color: white;
-        }
-        .btn-success {
-            background-color: transparent;
-            color: var(--success-color);
-            border-color: var(--success-color);
-        }
-        .btn-success:hover {
-            background-color: var(--success-color);
-            color: white;
-        }
-        .terminal {
-            background-color: #000;
-            color: #0f0;
             font-family: monospace;
-            padding: 15px;
-            border-radius: 6px;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Terminal */
+        .terminal-container {
+            margin-top: auto;
             border: 1px solid #333;
-            min-height: 200px;
-            max-height: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--terminal-bg);
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            height: 300px;
+        }
+
+        .terminal-header {
+            background-color: #1f2937;
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            color: #9ca3af;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #333;
+        }
+
+        .terminal-content {
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: var(--terminal-text);
             overflow-y: auto;
-            margin-top: 30px;
+            flex: 1;
             white-space: pre-wrap;
+            line-height: 1.4;
         }
-        .status-dot {
-            height: 10px;
-            width: 10px;
-            background-color: var(--success-color);
-            border-radius: 50%;
+
+        .terminal-content .spinner {
             display: inline-block;
-            margin-right: 5px;
+            animation: spin 1s linear infinite;
         }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
     </style>
 </head>
 <body>
-    <header>
-        <h1><span class="status-dot"></span> The Ultimate Pentest Arsenal</h1>
-        <p style="color: #8b949e; margin-bottom: 0;">C2 Web Dashboard - v5.0 (Elite)</p>
-    </header>
 
-    <div class="container">
-        <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">🛡️ Hızlı Araçlar</h2>
-        <div class="grid">
-            <div class="card">
-                <h2>🤖 Auto-Pwn (Otopilot)</h2>
-                <p>Hedef IP üzerinde tüm açık portları tarar ve tespit ettiği servislere yönelik otomatik zafiyet tarama ve sızma girişimlerini arka planda zincirleme çalıştırır.</p>
-                <form action="/run/autopwn" method="POST">
-                    <input type="text" name="target" placeholder="Hedef IP" required style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; background: #0d1117; color: white; border: 1px solid #30363d; border-radius: 4px;">
-                    <button type="submit" class="btn btn-danger">Ateşle (Auto-Pwn)</button>
-                </form>
-            </div>
-            
-            <div class="card">
-                <h2>🎣 Phishing Server</h2>
-                <p>Sosyal mühendislik saldırıları için hızlıca yerel bir oltalama sunucusu başlatır. Girilen şifreleri kaydeder ve Telegram'a bildirir.</p>
-                <form action="/run/phishing" method="POST">
-                    <input type="number" name="port" placeholder="Port (örn: 8080)" value="8080" required style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; background: #0d1117; color: white; border: 1px solid #30363d; border-radius: 4px;">
-                    <button type="submit" class="btn btn-success">Sunucuyu Başlat</button>
-                </form>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fa-solid fa-skull"></i> Arsenal UI</h1>
+            <div style="font-size: 0.7rem; color: var(--success-color); margin-top: 5px;">● SYSTEM ONLINE</div>
+        </div>
+        <div class="sidebar-menu" id="sidebar-menu">
+            <!-- Kategoriler JS ile buraya yüklenecek -->
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h2 id="topbar-title"><i class="fa-solid fa-layer-group"></i> Dashboard</h2>
+        </div>
+        
+        <div class="content-area">
+            <div class="tools-grid" id="tools-grid">
+                <!-- Araç kartları JS ile buraya yüklenecek -->
             </div>
 
-            <div class="card">
-                <h2>🕸️ Web CMS Scanner</h2>
-                <p>Hedef web sitesinin altyapısını (WordPress, Joomla vb.) tespit eder ve bilinen açıklar/hassas dosyalar için analiz yapar.</p>
-                <form action="/run/cms_scanner" method="POST">
-                    <input type="text" name="url" placeholder="Hedef URL (örn: http://site.com)" required style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; background: #0d1117; color: white; border: 1px solid #30363d; border-radius: 4px;">
-                    <button type="submit" class="btn btn-warning">Tara</button>
-                </form>
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <span><i class="fa-solid fa-terminal"></i> root@arsenal:~#</span>
+                    <span id="term-status" style="color: var(--success-color);">Idle</span>
+                </div>
+                <div class="terminal-content" id="terminal-content">
+The Ultimate Pentest Arsenal - Web Dashboard v5.0
+Initialize sequence completed. Awaiting commands...
+                </div>
             </div>
         </div>
-
-        <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-top: 40px;">🖥️ Terminal Çıktısı</h2>
-        <div class="terminal" id="terminal-output">{{ output | default("Bekleniyor...\nLütfen yukarıdan bir araç çalıştırın.") }}</div>
     </div>
-    
+
     <script>
-        // Terminali otomatik en alta kaydır
-        var term = document.getElementById("terminal-output");
-        term.scrollTop = term.scrollHeight;
+        // Sunucudan gelen JSON config
+        const CONFIG = {{ tools_config | safe }};
+        
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const toolsGrid = document.getElementById('tools-grid');
+        const topbarTitle = document.getElementById('topbar-title');
+        const termContent = document.getElementById('terminal-content');
+        const termStatus = document.getElementById('term-status');
+
+        function appendToTerminal(text, isHTML=false) {
+            if(isHTML) {
+                termContent.innerHTML += text + "\n";
+            } else {
+                termContent.innerHTML += text.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "\n";
+            }
+            termContent.scrollTop = termContent.scrollHeight;
+        }
+
+        function clearTerminal() {
+            termContent.innerHTML = "";
+        }
+
+        function runTool(toolId, btnElement) {
+            // İlgili formu bul
+            const form = document.getElementById(`form-${toolId}`);
+            const formData = new FormData(form);
+            const args = {};
+            formData.forEach((value, key) => { args[key] = value; });
+
+            // UI Güncelle
+            const originalBtnText = btnElement.innerHTML;
+            btnElement.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Çalışıyor...';
+            btnElement.disabled = true;
+            termStatus.innerText = "Running...";
+            termStatus.style.color = "var(--warning-color)";
+            
+            appendToTerminal(`\n[+] Executing module [${toolId}]...`);
+
+            fetch('/api/run', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tool_id: toolId, args: args })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success") {
+                    appendToTerminal(data.output);
+                } else {
+                    appendToTerminal(`[!] ERROR: ${data.output}`);
+                }
+            })
+            .catch(err => {
+                appendToTerminal(`[!] Network Error: ${err}`);
+            })
+            .finally(() => {
+                btnElement.innerHTML = originalBtnText;
+                btnElement.disabled = false;
+                termStatus.innerText = "Idle";
+                termStatus.style.color = "var(--success-color)";
+            });
+        }
+
+        function renderCategory(categoryIndex) {
+            const category = CONFIG[categoryIndex];
+            topbarTitle.innerHTML = `<i class="fa-solid ${category.icon}"></i> ${category.category}`;
+            toolsGrid.innerHTML = '';
+
+            category.tools.forEach(tool => {
+                let inputsHTML = '';
+                if(tool.inputs) {
+                    tool.inputs.forEach(inp => {
+                        inputsHTML += `
+                            <div class="form-group">
+                                <label>${inp.label}</label>
+                                <input type="${inp.type}" name="${inp.name}" class="form-control" placeholder="${inp.placeholder}">
+                            </div>
+                        `;
+                    });
+                }
+
+                const cardHTML = `
+                    <div class="card">
+                        <h3><i class="fa-solid fa-cube"></i> ${tool.name}</h3>
+                        <p>${tool.desc}</p>
+                        <form id="form-${tool.id}" onsubmit="event.preventDefault();">
+                            ${inputsHTML}
+                            <button type="button" class="btn" onclick="runTool('${tool.id}', this)">
+                                <i class="fa-solid fa-play"></i> Çalıştır
+                            </button>
+                        </form>
+                    </div>
+                `;
+                toolsGrid.innerHTML += cardHTML;
+            });
+
+            // Active class update
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`menu-item-${categoryIndex}`).classList.add('active');
+        }
+
+        function initSidebar() {
+            sidebarMenu.innerHTML = '';
+            CONFIG.forEach((cat, index) => {
+                sidebarMenu.innerHTML += `
+                    <div class="menu-item" id="menu-item-${index}" onclick="renderCategory(${index})">
+                        <i class="fa-solid ${cat.icon}"></i>
+                        <span>${cat.category}</span>
+                    </div>
+                `;
+            });
+            // İlk kategoriyi aç
+            if(CONFIG.length > 0) {
+                renderCategory(0);
+            }
+        }
+
+        // Başlat
+        initSidebar();
+
     </script>
 </body>
 </html>
