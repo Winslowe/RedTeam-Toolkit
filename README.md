@@ -1,138 +1,87 @@
 <div align="center">
 
-# 💀 The Ultimate Pentest Arsenal (RedTeam C2)
+# 💀 The Ultimate Pentest Arsenal (RedTeam C2 Karargahı)
 
 **Profesyonel, Hepsi Bir Arada Siber Güvenlik, Otomasyon ve Kırmızı Takım (Red Team) Aracı**
 
 [![Python Version](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
-[![Status](https://img.shields.io/badge/Status-Elite-red.svg)]()
+[![Status](https://img.shields.io/badge/Status-Elite%20APT-red.svg)]()
 [![FUD](https://img.shields.io/badge/FUD%20Rate-0%2F70-success.svg)]()
 
-*Bu proje yalnızca eğitim, sızma testi (pentest) yetkilendirmesi olan profesyoneller ve etik hackerlar (White Hat) için geliştirilmiştir.*
+*Bu proje yalnızca eğitim, sızma testi yetkilendirmesi olan profesyoneller ve etik hackerlar (White Hat) için geliştirilmiştir.*
 
 ---
 
 </div>
 
 ## 📖 Proje Hakkında
-
-**The Ultimate Pentest Arsenal**, dağınık haldeki siber güvenlik araçlarını (Nmap, DirBuster, Hydra, Metasploit vb. işlevlerini) tek bir merkezden, **Karanlık Mod (Dark Mode) Web Dashboard** veya **Terminal Sihirbazı** aracılığıyla yönetmenizi sağlayan devasa bir Red Team otomasyon aracıdır.
-
-Sıfırdan tasarlanan **Askeri Düzey AES-256 Şifreli C2 (Command & Control)** mimarisi sayesinde, oluşturduğunuz Zararlı Yazılımlar (Payloads) hedef ağdaki modern Firewall ve IDS sistemlerini kolayca atlatır (Bypass). 
-
-## 🚀 Öne Çıkan "Elite" Özellikler
-
-- **🤖 Auto-Pwn (Otopilot):** Tek bir IP adresi verin, arkaya yaslanın. Araç kendi kendine portları tarar, bulduğu servislere (HTTP, FTP, SSH) uygun zafiyet araçlarını zincirleme çalıştırır ve raporu sunar.
-- **👻 01_Antivirus_Atlatma & SigThief (0-Day Stealth):** Nuitka C derlemesi ve **SigThief (Dijital İmza Çalma)** sayesinde Microsoft imzalarını kopyalayarak EDR ve Anti-Virüsleri (0/70 FUD oranı) tamamen atlatın.
-- **🌐 Glassmorphism Web Dashboard:** 26 farklı sızma testi aracını, komut satırı ezberlemeden, şık ve dinamik bir web tarayıcı arayüzünden yönetin.
-- **🔒 AES-256 E2EE C2 Bağlantısı:** Hedef cihazlarla aranızdaki Reverse Shell iletişimi uçtan uca AES-256 ile şifrelenir. 
-- **📱 Telegram & Discord Entegrasyonu:** Şifre mi kırıldı? Biri Phishing ağına mı düştü? Yoksa C2'ye yeni bir shell mi bağlandı? Sistem anında cebinize bildirim gönderir.
+Bu proje, standart bir script yığınından öte, tam teşekküllü bir **Komuta Kontrol Merkezi (C2)** ve **Pentest Otomasyon** (Auto-Pwn) aracıdır. Tüm sistemi **`C2_Karargah.py`** üzerinden tek bir noktadan yönetirsiniz.
 
 ---
 
-## 🏗️ Mimari Şeması (Architecture)
+## 🚀 KULLANIM KILAVUZU (Neyi Nasıl Kullanmalısınız?)
 
-Aşağıdaki şema, projenin devasa modül ağının birbiriyle nasıl entegre haberleştiğini göstermektedir:
-
-```mermaid
-graph TD
-    A[👨‍💻 Saldırgan / Güvenlik Uzmanı] -->|Terminal Sihirbazı| B(RedTeam_C2 Core)
-    A -->|Web Tarayıcı :5000| W[🌐 Flask Web Dashboard]
-    W <--> B
-    
-    B --> C{Saldırı Vektörleri}
-    
-    C -->|Bilgi Toplama| D[05_Acik_Kaynak_Istihbarat & 04_Ag_Kesif_Araclari]
-    D --> D1[Email, Whois, DNS, ARP Spoof]
-    
-    C -->|Zafiyet Analizi| E[12_Web_Zafiyet_Araclari]
-    E --> E1[CMS Scan, DirBrute, SQLi, XSS]
-    
-    C -->|Otomasyon| F[🤖 Auto-Pwn Motoru]
-    F -->|Tarama + Exploit Zinciri| C
-    
-    C -->|Erişim Sağlama| G[06_Sifre_Kirici_Araclar & Phishing]
-    G -->|Yakalanan Şifreler| T((📱 Telegram/Discord Bildirimi))
-    
-    C -->|Kalıcılık & Kontrol| H[AES-256 C2 Listener]
-    H <==>|Uçtan Uca Şifreli Bağlantı| I[💀 Hedef Sistem / Kurban]
-    
-    C -->|AV Atlatma| J[01_Antivirus_Atlatma & SigThief]
-    J -.->|FUD Payload Derler| H
-    I -->|Veri Sızdırma| H
-```
-
----
-
-## 🧰 Modüller ve İçerikleri
-
-Proje içerisinde **26+** modül mükemmel bir uyumla çalışmak üzere kategorize edilmiştir:
-
-| Kategori | Araçlar | Açıklama |
-| :--- | :--- | :--- |
-| **05_Acik_Kaynak_Istihbarat** | `Email_Harvester`, `Whois_Lookup` | Alan adları ve hedefler hakkında açık kaynaklardan veri toplar. |
-| **04_Ag_Kesif_Araclari** | `Network_Scanner`, `DNS_Enumerator`, `ARP_Spoofer` | LAN üzerinde cihaz tespiti, DNS analizi ve ağ trafiğini manipüle etme (MITM). |
-| **12_Web_Zafiyet_Araclari** | `CMS_Scanner`, `DirBrute`, `SQLi`, `XSS`, `LFI` | Web sunucularındaki kritik zafiyetleri ve gizli dosyaları analiz eder. |
-| **06_Sifre_Kirici_Araclar** | `SSH_Brute`, `FTP_Brute`, `Hash_Cracker`, `Zip_Cracker` | Kritik servislere ve dosyalara yönelik kaba kuvvet saldırıları düzenler. |
-| **10_Sosyal_Muhendislik**| `Phishing_Server` | Modern, log tutan ve bildirim gönderen sahte oltalama sunucusu. |
-| **01_Antivirus_Atlatma** | `SigThief`, `Payload_Obfuscator`, `Shellcode_Encoder` | Güvenlik duvarlarını ve Antivirüsleri atlatmak için sertifika kopyalama (SigThief) ve kod gizleme araçları. |
-| **C2 & Post-Exploit** | `Payload_Builder`, `C2_Listener`, `Ransomware`, `Keylogger` | Antivirüslere yakalanmayan, hedef ağı içeriden yöneten E2EE kontrol merkezi. |
-
----
-
-## 💻 Kurulum ve Çalıştırma
-
-The Ultimate Pentest Arsenal, tüm bağımlılıkları tek tuşla kurabilmeniz için özel scriptler içerir.
-
-### Windows İçin
-Dizindeki **`kurulum.bat`** dosyasına çift tıklayın veya terminalde çalıştırın:
-```cmd
-kurulum.bat
-```
-
-### Linux (Kali / Parrot) İçin
-Terminali açın ve şu komutları girin:
+Sistemi başlatmak için terminalinizde şu komutu çalıştırın:
 ```bash
-chmod +x install.sh
-./install.sh
+python C2_Karargah.py
 ```
+Karşınıza efsanevi bir ASCII logosu ve Ana Menü çıkacaktır.
 
-### Projeyi Başlatma (Ana Menü)
-Tüm araçları yöneteceğiniz merkezi çalıştırmak için:
-```bash
-python Komuta_Kontrol_Merkezi_C2.py
-```
+### 🔴 1. C2 Komuta Merkezi (Menü Seçeneği: 0)
+Sistemin kalbidir. Kendi Zombi Botnet ağınızı kurmanızı sağlar. Bu menüye girdiğinizde 3 ana seçeneğiniz vardır:
 
-Bu komuttan sonra karşınıza çıkan sihirbazdan:
-- İstediğiniz aracı seçip **Terminal Sihirbazı** üzerinden parametreleri adım adım girebilirsiniz.
-- Veya menüden **"13) Web Dashboard"** seçeneğini seçerek tarayıcınızdan muhteşem **Glassmorphism grafik arayüzüne** bağlanabilirsiniz!
+#### 🟢 Payload Builder (Zararlı Yazılım Üretici)
+- **Ne İşe Yarar?** Hedef bilgisayara göndereceğiniz `EXE` virüs dosyasını oluşturur.
+- **Nasıl Kullanılır?** Kendi IP adresinizi ve Portunuzu (Örn: 443) girin. Araç arka planda C dilinde (Nuitka ile) **FUD (Anti-Virüslere yakalanmayan)**, AES-256 şifreli bir EXE üretir. İçerisindeki değişkenler her üretimde rastgele değiştiği için statik imzalara takılmaz.
+- **Çıktı:** Dosya `Moduller/11_Gizli_Zararli_Olusturucu/` içine kaydedilir.
+
+#### 🟢 Listener (Dinleyici & Botnet Yöneticisi)
+- **Ne İşe Yarar?** Ürettiğiniz virüsü hedefe gönderdikten sonra, hedefin size bağlanmasını beklediğiniz ekrandır. Arka planda çalışır ve **aynı anda 50 kurbanı** (Multi-Session) destekler.
+- **Nasıl Kullanılır?** Payload'ı oluştururken yazdığınız Portu (Örn: 443) yazıp dinlemeye başlayın.
+- **Özel Shell Komutları (Kurban size bağlandığında C2 konsolunda kullanılır):**
+  - `sessions` : Ağa düşen tüm zombileri listeler.
+  - `interact 1` : 1 numaralı zombinin içine girer (Bağlantı kurar).
+  - `background` : Zombinin içinden çıkıp ana dinleyiciye döner.
+  - `!steal_passwords` : Kurbanın Chrome/Edge tarayıcısındaki tüm kayıtlı şifreleri çalıp (Decrypt edip) `Ganimetler/` klasörüne kaydeder.
+  - `!screenshot` : Kurbanın bilgisayarından sessizce ekran görüntüsü alıp `Ganimetler/` klasörüne PNG olarak kaydeder.
+  - `!keylog_start` : Hedefin klavyesini arka planda dinlemeye başlar.
+  - `!keylog_dump` : Dinlenen klavye verilerini ekrana yazdırır.
+  - `!persist` : Virüsü Windows Kayıt Defteri'ne gizlice ekler. Bilgisayar yeniden başlasa bile virüs otomatik açılır.
+  - `!PANIK` : Kill-Switch. Acil bir durumda kurban bilgisayarındaki virüsü tamamen siler (Suicide modu), bağlantıları koparır ve logları yok eder.
+
+#### 🟢 EXE Disguise (Kılık Değiştirme)
+- **Ne İşe Yarar?** Oluşturduğunuz EXE virüsünü bir resim (`.png`, `.jpg`) veya belge (`.pdf`) gibi gösterir. Kurban dosyaya tıkladığında ekrana gerçek bir resim (Yem) açılırken, virüs arka planda çalışır.
 
 ---
 
-## ⚙️ Bildirim Ayarları (Config)
+### 🤖 2. Oto Sızma Aracı (Menü Seçeneği: 00)
+- **Ne İşe Yarar?** Bir hedefin (IP Adresi) açık portlarını bulur ve o portlara uygun hack araçlarını (Brute Force, DirBuster, SQLi) **insan müdahalesi olmadan** otomatik çalıştırır.
+- **Nasıl Kullanılır?** Menüden `00` seçin, hedef IP'yi verin ve arkanıza yaslanın. Çıktıyı detaylı bir `.txt` raporu olarak kaydeder ve telefonunuza "İşlem bitti" mesajı atar.
 
-Projedeki oltalama (Phishing), otopilot (Auto-Pwn) veya yeni C2 kurban bağlantıları sırasında cebinize bildirim gelmesini istiyorsanız, proje dizininde oluşan `config.json` dosyasını şu şekilde düzenleyin:
+---
+
+### 🛠️ 3. Sızma Testi Modülleri (Kategori 1'den 13'e kadar)
+Ana menüde listelenen 13 farklı kategori, manuel sızma testleri (Pentest) için tasarlanmıştır. İstediğiniz numarayı (Örn: `1`) tuşlayarak kategoriye girin.
+- **01_Antivirus_Atlatma:** Mevcut zararlıları gizleme araçları.
+- **04_Ag_Kesif_Araclari:** Hedef ağda nmap taramaları veya ARP Spoofing (Ortadaki Adam Saldırısı) yapmak için.
+- **06_Sifre_Kirici_Araclar:** FTP, SSH gibi servislere Wordlist ile saldırı (Bruteforce) araçları.
+- **10_Sosyal_Muhendislik:** Phishing (Oltalama) sunucusu başlatarak kurbanların şifrelerini çalma sayfası kurar.
+
+---
+
+## 📱 Bildirim Sistemi Kurulumu (Telegram/Discord)
+
+Ağa yeni bir Zombi (Kurban) düştüğünde telefonunuza anında uyarı gelmesi için `Moduller/Sistem/config.json` dosyasını açıp kendi Telegram bilgilerinizi girmelisiniz:
 
 ```json
 {
-    "telegram_bot_token": "123456789:ABCdefGHIjklMNOpqrs",
-    "telegram_chat_id": "12345678",
-    "discord_webhook": "https://discord.com/api/webhooks/...",
+    "telegram_bot_token": "BOT_TOKEN_BURAYA",
+    "telegram_chat_id": "CHAT_ID_BURAYA",
+    "discord_webhook": "",
     "notifications_enabled": true
 }
 ```
 
----
-
 ## ⚠️ Yasal Uyarı
-
-Bu proje **sadece** sistem yöneticileri, sızma testi (penetration testing) uzmanları ve siber güvenlik öğrencileri için eğitim/savunma amacıyla tasarlanmıştır.
-
-Bu araç setinin izin alınmamış sistemler (kurumlar, kişiler veya sunucular) üzerinde kullanılması **yasa dışıdır**. Geliştirici, bu kodların kötüye kullanımından doğacak yasal veya cezai hiçbir sorumluluğu kabul etmez. Kullanıcı, aracı kullanırken bulunduğu ülkenin bilişim yasalarına uymakla yükümlüdür.
-
-<div align="center">
-  <br>
-  <i>"Güvenlik bir yanılsama değil, sürekli bir savunma halidir."</i>
-</div>
+Bu proje eğitim ve savunma amacıyla tasarlanmıştır. Bu araç setinin izin alınmamış sistemler üzerinde kullanılması yasa dışıdır. Geliştirici yasal veya cezai hiçbir sorumluluğu kabul etmez.
