@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>C2 Karargah - Elite Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <script src="/static/modules.js"></script>
+    <link rel="stylesheet" href="/static/style.css?v=2">
+    <script src="/static/modules.js?v=2"></script>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 </head>
 <body>
@@ -368,7 +368,7 @@
 
         async function loadCategories() {
             try {
-                const res = await fetch('/api/categories');
+                const res = await fetch('/api/categories?v=' + new Date().getTime());
                 const data = await res.json();
                 let html = '';
                 data.categories.forEach(cat => {
@@ -397,7 +397,7 @@
             document.getElementById('moduleModal').classList.add('active');
 
             try {
-                const res = await fetch(`/api/modules/${cat}`);
+                const res = await fetch(`/api/modules/${cat}?v=` + new Date().getTime());
                 const data = await res.json();
                 let html = '<div style="display:flex; flex-direction:column; gap:10px; padding-top:10px;">';
                 data.modules.forEach(mod => {
