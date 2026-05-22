@@ -1,0 +1,265 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;400;700&display=swap');
+
+:root {
+    --bg-color: #050505;
+    --primary: #ff003c;
+    --primary-glow: rgba(255, 0, 60, 0.4);
+    --secondary: #00f3ff;
+    --glass-bg: rgba(20, 20, 25, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --text-main: #e0e0e0;
+    --text-muted: #888;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(255, 0, 60, 0.08), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(0, 243, 255, 0.08), transparent 25%);
+    background-attachment: fixed;
+    color: var(--text-main);
+    font-family: 'Roboto Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    margin: 20px;
+}
+
+.logo h1 {
+    font-family: 'Orbitron', sans-serif;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 1.8rem;
+    text-shadow: 0 0 10px var(--primary-glow);
+}
+.logo span { color: var(--primary); }
+
+.status-bar {
+    display: flex;
+    gap: 20px;
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+}
+
+.indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #555;
+}
+.indicator.active {
+    background: #00ff00;
+    box-shadow: 0 0 8px #00ff00;
+}
+.indicator.danger {
+    background: var(--primary);
+    box-shadow: 0 0 8px var(--primary);
+}
+
+/* Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    padding: 0 20px 20px 20px;
+    height: calc(100vh - 120px);
+}
+
+/* Sidebar */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.sidebar h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    color: var(--secondary);
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 10px;
+}
+
+.btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    transition: all 0.3s ease;
+    text-align: left;
+    width: 100%;
+}
+.btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+.btn-primary {
+    background: rgba(255, 0, 60, 0.1);
+    border-color: var(--primary);
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+}
+.btn-primary:hover {
+    background: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+/* Main Area */
+.main-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.zombi-list {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.zombi-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-left: 3px solid #00ff00;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+}
+.zombi-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Terminal */
+.terminal-container {
+    flex: 2;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.terminal-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.terminal-title {
+    color: var(--primary);
+    font-family: 'Orbitron', sans-serif;
+}
+
+.terminal-output {
+    flex: 1;
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 15px;
+    font-size: 0.9rem;
+    overflow-y: auto;
+    color: #0f0;
+    white-space: pre-wrap;
+    margin-bottom: 10px;
+}
+
+.terminal-input-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+.terminal-input {
+    flex: 1;
+    background: #000;
+    border: 1px solid #333;
+    color: #0f0;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: 'Roboto Mono', monospace;
+    outline: none;
+}
+.terminal-input:focus {
+    border-color: var(--primary);
+}
+
+/* Input groups */
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.input-group input {
+    flex: 1;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    color: #fff;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+/* Quick Commands */
+.quick-commands {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+.cmd-btn {
+    background: #111;
+    border: 1px solid #444;
+    color: #aaa;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+.cmd-btn:hover {
+    border-color: var(--secondary);
+    color: var(--secondary);
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
