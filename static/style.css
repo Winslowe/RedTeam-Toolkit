@@ -147,7 +147,7 @@ header {
 /* Layout */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 380px 1fr;
     gap: 25px;
     padding: 0 25px 25px 25px;
     height: calc(100vh - 100px);
@@ -206,6 +206,9 @@ header {
     margin: 0;
     border-radius: 6px;
     width: auto;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 .btn {
