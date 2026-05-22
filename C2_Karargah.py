@@ -495,9 +495,13 @@ except:
 
 active_sessions = {}
 session_counter = 1
+bg_listener_socket = None
 
 def start_listener_background(port):
-    global active_sessions, session_counter
+    global active_sessions, session_counter, bg_listener_socket
+    if bg_listener_socket:
+        try: bg_listener_socket.close()
+        except: pass
     aes_key = None
     key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Moduller/Sistem/c2_aes_key.txt")
     if os.path.exists(key_path):
@@ -508,6 +512,7 @@ def start_listener_background(port):
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(("0.0.0.0", int(port)))
     s.listen(100)
+    bg_listener_socket = s
 
     def accept_thread():
         global session_counter, active_sessions

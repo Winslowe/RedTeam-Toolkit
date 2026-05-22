@@ -29,8 +29,6 @@ def status():
 @app.route("/api/start_listener", methods=["POST"])
 def start_listener():
     global listener_running
-    if listener_running:
-        return jsonify({"status": "error", "message": "Dinleyici zaten aktif!"})
     
     port = request.json.get("port", 443)
     try:
@@ -223,7 +221,7 @@ def generate_report():
     out_name = f"pentest_raporu_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
     out_file = os.path.join(reports_dir, out_name)
     
-    html_content = f\"\"\"
+    html_content = f"""
     <html>
     <head>
         <title>Sizma Testi Operasyon Raporu</title>
@@ -244,7 +242,7 @@ def generate_report():
         </div>
     </body>
     </html>
-    \"\"\"
+    """
     
     try:
         with open(out_file, "w", encoding="utf-8") as f:
