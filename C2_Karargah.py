@@ -948,7 +948,8 @@ def main_menu():
                 elif c2_choice == '0': break
 
         elif choice == '00':
-            run_script('Moduller/00_Oto_Sizma_Araci/Oto_Sizma_Araci.py')
+            base_d = os.path.dirname(os.path.abspath(__file__))
+            run_script(os.path.join(base_d, 'Moduller', '00_Oto_Sizma_Araci', 'Oto_Sizma_Araci.py'))
         elif choice.isdigit() and 1 <= int(choice) <= len(categories):
             cat_folder = categories[int(choice)-1]
             category_menu(cat_folder)
@@ -973,7 +974,8 @@ def category_menu(cat_folder):
         if choice == '0':
             break
         elif choice.isdigit() and 1 <= int(choice) <= len(files):
-            script_path = os.path.join("Moduller", cat_folder, files[int(choice)-1])
+            base_d = os.path.dirname(os.path.abspath(__file__))
+            script_path = os.path.join(base_d, "Moduller", cat_folder, files[int(choice)-1])
             run_script(script_path)
 
 if __name__ == "__main__":
