@@ -197,7 +197,7 @@ header {
     background: transparent;
     border: none;
     color: #fff;
-    padding: 10px 15px;
+    padding: 8px;
     font-family: 'Fira Code', monospace;
     font-size: 0.9rem;
     outline: none;
@@ -209,6 +209,55 @@ header {
     padding: 10px 15px;
     font-size: 0.9rem;
     white-space: nowrap;
+}
+.menu-list .btn {
+    text-align: left;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    padding: 10px 15px;
+}
+
+/* Category Cards */
+.cat-card {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    gap: 12px;
+}
+.cat-card:hover {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: var(--secondary);
+    transform: translateX(5px);
+}
+.cat-icon {
+    font-size: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.cat-title {
+    color: var(--text-main);
+    font-weight: bold;
+    font-size: 0.95rem;
+    font-family: 'Rajdhani', sans-serif;
+}
+.cat-desc {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1.2;
 }
 
 .btn {

@@ -29,28 +29,37 @@
 
     <div class="dashboard-grid">
         <!-- Sidebar -->
-        <div class="sidebar glass-panel">
+        <div class="sidebar glass-panel" style="overflow-y:auto; padding-right:10px;">
             <div class="sidebar-section">
-                <h2>Hızlı İşlemler</h2>
+                <h2 style="display:flex; align-items:center; gap:8px;"><span style="font-size:1.2rem;">⚡</span> Hızlı İşlemler</h2>
+                <div style="background:rgba(0, 229, 255, 0.05); border-left:3px solid var(--secondary); padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.85rem; color:#ccc;">
+                    C2 dinleyici portunu açarak kurbanların (zombilerin) merkeze bağlanmasını sağlayın veya yeni bir ajan dosyası oluşturun.
+                </div>
                 <div class="input-group" style="margin-bottom: 10px;">
                     <input type="number" id="listen-port" value="443" placeholder="Port">
                     <button class="btn btn-primary" onclick="startListener()">Dinle</button>
                 </div>
-                <button class="btn" style="border-color:var(--primary); color:var(--primary); justify-content:center; margin-bottom: 10px;" onclick="openPayloadModal()">🦠 Zararlı Üret (FUD)</button>
+                <button class="btn" style="border-color:var(--primary); color:var(--primary); justify-content:center; margin-bottom: 10px; width:100%;" onclick="openPayloadModal()">🦠 Zararlı Üret (FUD)</button>
             </div>
 
             <div class="sidebar-section">
-                <h2>Oto-Pwn Motoru</h2>
+                <h2 style="display:flex; align-items:center; gap:8px;"><span style="font-size:1.2rem;">🎯</span> Oto-Pwn Motoru</h2>
+                <div style="background:rgba(255, 0, 85, 0.05); border-left:3px solid var(--primary); padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.85rem; color:#ccc;">
+                    Yapay zeka destekli otopilot motoru. Hedef IP'yi girin, sistem tüm zafiyetleri otomatik tarayıp sızma girişimlerini yapsın.
+                </div>
                 <div class="input-group">
-                    <input type="text" id="target-ip" placeholder="Hedef IP (Örn: 192.168.1.5)">
+                    <input type="text" id="target-ip" placeholder="IP (Örn: 192.168.1.5)">
                     <button class="btn btn-primary" onclick="startAutoPwn()">Saldır</button>
                 </div>
             </div>
 
             <div class="sidebar-section">
-                <h2>Sistem Modülleri</h2>
-                <div class="menu-list" id="category-list">
-                    <span style="color:var(--text-muted); font-size:0.9rem;">Yükleniyor...</span>
+                <h2 style="display:flex; align-items:center; gap:8px;"><span style="font-size:1.2rem;">⚔️</span> Sistem Modülleri</h2>
+                <div style="background:rgba(0, 255, 102, 0.05); border-left:3px solid #00ff66; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.85rem; color:#ccc;">
+                    Saldırı vektörlerini, zafiyet tarayıcılarını ve sızma sonrası (post-exploitation) araçlarını içeren siber cephanelik. İncelemek istediğiniz modül kategorisini seçin.
+                </div>
+                <div class="menu-list" id="category-list" style="display:flex; flex-direction:column; gap:10px;">
+                    <span style="color:var(--text-muted); font-size:0.9rem;">Siber Silahlar Yükleniyor...</span>
                 </div>
             </div>
         </div>
@@ -341,13 +350,39 @@
 
         // moduleConfig is now loaded from /static/modules.js
 
+        const catConfig = {
+            "01_Antivirus_Atlatma": { icon: "🛡️", desc: "Anti-Virüs korumalarını aşmak için gizleme" },
+            "02_Zafiyet_Gelistirme_BufferOverflow": { icon: "💥", desc: "Bellek taşması ve zero-day exploit analizi" },
+            "03_Guvenlik_Duvari_Atlatma": { icon: "🧱", desc: "WAF, IDS/IPS güvenlik duvarı atlatma" },
+            "04_Ag_Kesif_Araclari": { icon: "📡", desc: "Port tarama, servis ve ağ topolojisi keşfi" },
+            "05_Acik_Kaynak_Istihbarat": { icon: "🕵️", desc: "Açık kaynaklardan bilgi (OSINT) toplama" },
+            "06_Sifre_Kirici_Araclar": { icon: "🔑", desc: "Hash kırma, Brute-Force ve Wordlist araçları" },
+            "07_Sizma_Sonrasi_Taktikler": { icon: "🚪", desc: "Kalıcılık (Persistence) ve sistemde yayılma" },
+            "08_Yetki_Yukseltme": { icon: "👑", desc: "Hedef sistemde root/admin haklarına erişim" },
+            "09_Raporlama": { icon: "📄", desc: "Test sonuçlarını otomatik raporlama motoru" },
+            "10_Sosyal_Muhendislik": { icon: "🎭", desc: "Oltalama (Phishing) ve sahte login ekranları" },
+            "11_Gizli_Zararli_Olusturucu": { icon: "🦠", desc: "FUD zararlı ve Truva atı (Trojan) üretimi" },
+            "12_Web_Zafiyet_Araclari": { icon: "🌐", desc: "SQLi, XSS, LFI gibi web saldırı vektörleri" },
+            "13_Kablosuz_Ag_Saldirilari": { icon: "📶", desc: "Wi-Fi şifre kırma ve Evil Twin saldırıları" }
+        };
+
         async function loadCategories() {
             try {
                 const res = await fetch('/api/categories');
                 const data = await res.json();
                 let html = '';
                 data.categories.forEach(cat => {
-                    html += `<button class="btn" onclick="openCategory('${cat}')">${cat}</button>`;
+                    const conf = catConfig[cat] || { icon: "⚙️", desc: "Sistem modülü" };
+                    const cleanName = cat.replace(/^\d+_/, '').replace(/_/g, ' ');
+                    html += `
+                        <div class="cat-card" onclick="openCategory('${cat}')">
+                            <div class="cat-icon">${conf.icon}</div>
+                            <div class="cat-info">
+                                <div class="cat-title">${cleanName}</div>
+                                <div class="cat-desc">${conf.desc}</div>
+                            </div>
+                        </div>
+                    `;
                 });
                 document.getElementById('category-list').innerHTML = html;
             } catch(e) {}
