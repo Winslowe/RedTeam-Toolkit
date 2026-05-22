@@ -476,17 +476,69 @@ header {
 .modal-overlay {
     display: none;
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85);
+    background: rgba(5, 5, 10, 0.6);
     z-index: 1000;
     justify-content: center; align-items: center;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
-.modal-overlay.active { display: flex; }
+.modal-overlay.active { 
+    display: flex; 
+    opacity: 1;
+}
 .modal-content {
-    width: 600px;
+    width: 650px;
     max-width: 95%;
-    padding: 30px;
-    border: 1px solid var(--secondary);
-    box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+    padding: 35px;
+    background: linear-gradient(135deg, rgba(20,20,30,0.8) 0%, rgba(5,5,10,0.95) 100%);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-top: 3px solid var(--secondary);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 229, 255, 0.15) inset;
+    transform: scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    transform: skewX(-20deg);
+    animation: shine 4s infinite;
+}
+@keyframes shine {
+    0% { left: -100%; }
+    20% { left: 200%; }
+    100% { left: 200%; }
+}
+.modal-content input.terminal-input {
+    background: rgba(0,0,0,0.7) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-bottom: 2px solid var(--secondary) !important;
+    transition: all 0.3s ease;
+}
+.modal-content input.terminal-input:focus {
+    background: rgba(0,229,255,0.05) !important;
+    border-color: var(--secondary) !important;
+    box-shadow: 0 5px 15px rgba(0,229,255,0.1);
+    outline: none;
+}
+.modal-content .btn-primary {
+    background: linear-gradient(45deg, var(--primary-dim), var(--primary));
+    border: none;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    box-shadow: 0 5px 20px var(--primary-glow);
+}
+.modal-content .btn-primary:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--primary-glow);
 }
