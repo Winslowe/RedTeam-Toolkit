@@ -135,6 +135,49 @@ def autopwn():
     threading.Thread(target=run_pwn, daemon=True).start()
     return jsonify({"status": "success", "message": f"{target} icin Auto-Pwn arka planda baslatildi. Tamamlandiginda telefonunuza bildirim gelecek."})
 
+@app.route("/api/categories")
+def categories():
+    cats = []
+    mod_dir = os.path.join(base_d, "Moduller")
+    if os.path.exists(mod_dir):
+        for d in sorted(os.listdir(mod_dir)):
+            if os.path.isdir(os.path.join(mod_dir, d)) and d not in ["Sistem", "Kurulum", "00_Oto_Sizma_Araci", "__pycache__"]:
+                cats.append(d)
+    return jsonify({"categories": cats})
+
+@app.route("/api/modules/<category>")
+def modules(category):
+    mods = []
+    cat_dir = os.path.join(base_d, "Moduller", category)
+    if os.path.exists(cat_dir):
+        for f in sorted(os.listdir(cat_dir)):
+            if f.endswith('.py') or f.endswith('.bat'):
+                mods.append(f)
+    return jsonify({"modules": mods})
+
+@app.route("/api/run_module", methods=["POST"])
+def run_module_api():
+    data = request.json
+    cat = data.get("category")
+    mod = data.get("module")
+    args = data.get("args", "")
+    
+    if not cat or not mod:
+        return jsonify({"status": "error", "message": "Eksik parametre."})
+        
+    script_path = os.path.join(base_d, "Moduller", cat, mod)
+    if not os.path.exists(script_path):
+        return jsonify({"status": "error", "message": "Modul bulunamadi."})
+        
+    try:
+        import subprocess
+        cmd = f"python \"{script_path}\" {args}" if script_path.endswith('.py') else f"\"{script_path}\" {args}"
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=120)
+        out = result.stdout + result.stderr
+        return jsonify({"status": "success", "output": out if out else "Modul calisti fakat cikti uretmedi."})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
 if __name__ == "__main__":
     os.makedirs(os.path.join(base_d, "Ganimetler"), exist_ok=True)
     print("🚀 Web Karargahı Başlatılıyor... http://127.0.0.1:5000 adresine gidin.")

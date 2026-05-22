@@ -46,12 +46,8 @@
 
             <div class="sidebar-section">
                 <h2>Sistem Modülleri</h2>
-                <div class="menu-list">
-                    <button class="btn" onclick="logMsg('Terminaldeki C2_Karargah.py menüsünden başlatın.')">01_Antivirus_Atlatma</button>
-                    <button class="btn" onclick="logMsg('Terminalden başlatın.')">04_Ag_Kesif_Araclari</button>
-                    <button class="btn" onclick="logMsg('Terminalden başlatın.')">06_Sifre_Kirici</button>
-                    <button class="btn" onclick="logMsg('Terminalden başlatın.')">10_Sosyal_Muhendislik</button>
-                    <button class="btn" onclick="logMsg('Terminalden başlatın.')">12_Web_Zafiyet</button>
+                <div class="menu-list" id="category-list">
+                    <span style="color:var(--text-muted); font-size:0.9rem;">Yükleniyor...</span>
                 </div>
             </div>
         </div>
@@ -100,6 +96,27 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Modal for Modules -->
+    <div id="moduleModal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <h2 id="modal-title" style="color:var(--secondary); font-family:'Orbitron';">Kategori</h2>
+            <div id="modal-body" class="menu-list" style="max-height:300px; overflow-y:auto;">
+                <!-- Modules will be listed here -->
+            </div>
+            
+            <div id="modal-args" style="display:none; margin-top:20px;">
+                <h3 style="color:var(--text-main); font-size:1rem; margin-bottom:10px;">Çalıştırma Parametreleri</h3>
+                <input type="text" id="module-args" class="terminal-input" style="width:100%; border:1px solid var(--glass-border); padding:10px; background:rgba(0,0,0,0.5);" placeholder="Örn: 192.168.1.5 VEYA -h">
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button class="btn btn-primary" onclick="executeModule()">Ateşle</button>
+                    <button class="btn" style="border-color:var(--primary); color:var(--primary)" onclick="closeModal()">İptal</button>
+                </div>
+            </div>
+
+            <button id="modal-close-btn" class="btn" style="margin-top:20px; border-color:var(--glass-border);" onclick="closeModal()">Kapat</button>
         </div>
     </div>
 
@@ -221,8 +238,77 @@
             }
         }
 
+        // Modül Sistemi (Dinamik Entegrasyon)
+        let activeCategory = '';
+        let activeModule = '';
+
+        async function loadCategories() {
+            try {
+                const res = await fetch('/api/categories');
+                const data = await res.json();
+                let html = '';
+                data.categories.forEach(cat => {
+                    html += `<button class="btn" onclick="openCategory('${cat}')">${cat}</button>`;
+                });
+                document.getElementById('category-list').innerHTML = html;
+            } catch(e) {}
+        }
+
+        async function openCategory(cat) {
+            activeCategory = cat;
+            document.getElementById('modal-title').innerText = cat;
+            document.getElementById('modal-args').style.display = 'none';
+            document.getElementById('modal-close-btn').style.display = 'block';
+            document.getElementById('modal-body').innerHTML = '<span style="color:var(--text-muted)">Yükleniyor...</span>';
+            document.getElementById('moduleModal').classList.add('active');
+
+            try {
+                const res = await fetch(`/api/modules/${cat}`);
+                const data = await res.json();
+                let html = '';
+                data.modules.forEach(mod => {
+                    html += `<button class="btn" onclick="prepareModule('${mod}')">🚀 ${mod}</button>`;
+                });
+                document.getElementById('modal-body').innerHTML = html;
+            } catch(e) {}
+        }
+
+        function prepareModule(mod) {
+            activeModule = mod;
+            document.getElementById('modal-title').innerText = `Çalıştır: ${mod}`;
+            document.getElementById('modal-body').innerHTML = '';
+            document.getElementById('modal-args').style.display = 'block';
+            document.getElementById('modal-close-btn').style.display = 'none';
+            document.getElementById('module-args').value = '';
+        }
+
+        function closeModal() {
+            document.getElementById('moduleModal').classList.remove('active');
+        }
+
+        async function executeModule() {
+            const args = document.getElementById('module-args').value;
+            closeModal();
+            logMsg(`\n[*] [SİSTEM MODÜLÜ] ${activeModule} çalıştırılıyor... Lütfen bekleyin.`, false);
+            
+            try {
+                const res = await fetch('/api/run_module', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({category: activeCategory, module: activeModule, args: args})
+                });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    logMsg(`\n[+] [SONUÇ - ${activeModule}]\n${data.output}`);
+                } else {
+                    logMsg(`\n[-] Hata: ${data.message}`, true);
+                }
+            } catch(e) { logMsg(`[-] Modül çalıştırma hatası: ${e}`, true); }
+        }
+
         setInterval(updateSessions, 3000);
         updateSessions();
+        loadCategories();
     </script>
 </body>
 </html>
