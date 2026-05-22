@@ -27,12 +27,13 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def get_categories():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Moduller")
+    if not os.path.exists(base_dir): return []
     folders = [f for f in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, f)) and f[0].isdigit()]
     return sorted(folders)
 
 def list_files(category_folder):
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Moduller")
     cat_dir = os.path.join(base_dir, category_folder)
     files = [f for f in os.listdir(cat_dir) if f.endswith('.py') or f.endswith('.bat')]
     return sorted(files)
@@ -93,7 +94,7 @@ def category_menu(cat_folder):
         if choice == '0':
             break
         elif choice.isdigit() and 1 <= int(choice) <= len(files):
-            script_path = os.path.join(cat_folder, files[int(choice)-1])
+            script_path = os.path.join("Moduller", cat_folder, files[int(choice)-1])
             run_script(script_path)
 
 if __name__ == "__main__":

