@@ -399,10 +399,22 @@
             try {
                 const res = await fetch(`/api/modules/${cat}`);
                 const data = await res.json();
-                let html = '';
+                let html = '<div style="display:flex; flex-direction:column; gap:10px; padding-top:10px;">';
                 data.modules.forEach(mod => {
-                    html += `<button class="btn" onclick="prepareModule('${mod}')">🚀 ${mod}</button>`;
+                    const mData = window.moduleConfig[mod] || {icon: "⚙️", desc: "Bu siber silah için özel bir açıklama bulunmuyor."};
+                    const cleanName = mod.replace('.py', '').replace('.bat', '').replace(/_/g, ' ');
+                    html += `
+                        <div class="mod-card" onclick="prepareModule('${mod}')">
+                            <div class="mod-icon">${mData.icon}</div>
+                            <div class="mod-info">
+                                <div class="mod-title">${cleanName}</div>
+                                <div class="mod-desc">${mData.desc}</div>
+                            </div>
+                            <div class="mod-action">▶ Seç</div>
+                        </div>
+                    `;
                 });
+                html += '</div>';
                 document.getElementById('modal-body').innerHTML = html;
             } catch(e) {}
         }
