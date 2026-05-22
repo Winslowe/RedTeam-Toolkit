@@ -108,12 +108,7 @@
             </div>
             
             <div id="modal-args" style="display:none; margin-top:20px;">
-                <h3 style="color:var(--text-main); font-size:1rem; margin-bottom:10px;">Çalıştırma Parametreleri</h3>
-                <input type="text" id="module-args" class="terminal-input" style="width:100%; border:1px solid var(--glass-border); padding:10px; background:rgba(0,0,0,0.5);" placeholder="Örn: 192.168.1.5 VEYA -h">
-                <div style="display:flex; gap:10px; margin-top:15px;">
-                    <button class="btn btn-primary" onclick="executeModule()">Ateşle</button>
-                    <button class="btn" style="border-color:var(--primary); color:var(--primary)" onclick="closeModal()">İptal</button>
-                </div>
+                <!-- Dynamic form will be injected here -->
             </div>
 
             <button id="modal-close-btn" class="btn" style="margin-top:20px; border-color:var(--glass-border);" onclick="closeModal()">Kapat</button>
@@ -242,6 +237,46 @@
         let activeCategory = '';
         let activeModule = '';
 
+        const moduleConfig = {
+            "Evil_Twin.py": [
+                {name: "Ağ Arayüzü (Interface)", placeholder: "Örn: wlan0"},
+                {name: "Sahte Ağ Adı (SSID)", placeholder: "Örn: Free_WiFi"}
+            ],
+            "FTP_Bruteforce.py": [
+                {name: "Hedef IP", placeholder: "192.168.1.10"},
+                {name: "Kullanıcı Adı", placeholder: "admin"},
+                {name: "Wordlist Yolu", placeholder: "wordlist.txt"}
+            ],
+            "Directory_Bruteforcer.py": [
+                {name: "Hedef URL", placeholder: "http://hedef.com"},
+                {name: "Wordlist Yolu", placeholder: "dir_wordlist.txt"}
+            ],
+            "SQLi_Tester.py": [
+                {name: "Hedef URL", placeholder: "http://hedef.com/page?id=1"}
+            ],
+            "XSS_Scanner.py": [
+                {name: "Hedef URL", placeholder: "http://hedef.com/page?search="}
+            ],
+            "Hash_Cracker.py": [
+                {name: "Hash", placeholder: "5d41402abc4b2a76b9719d911017c592"},
+                {name: "Wordlist", placeholder: "rockyou.txt"}
+            ],
+            "Payload_Obfuscator.py": [
+                {name: "Orijinal Payload Dosyası", placeholder: "payload.py"},
+                {name: "Şifrelenmiş Çıktı Dosyası", placeholder: "obf_payload.py"}
+            ],
+            "ARP_Spoofer.py": [
+                {name: "Hedef IP", placeholder: "192.168.1.5"},
+                {name: "Ağ Geçidi (Gateway) IP", placeholder: "192.168.1.1"}
+            ],
+            "Network_Scanner.py": [
+                {name: "Hedef Alt Ağ (Subnet)", placeholder: "192.168.1.0/24"}
+            ],
+            "DNS_Enumerator.py": [
+                {name: "Hedef Alan Adı", placeholder: "example.com"}
+            ]
+        };
+
         async function loadCategories() {
             try {
                 const res = await fetch('/api/categories');
@@ -277,9 +312,30 @@
             activeModule = mod;
             document.getElementById('modal-title').innerText = `Çalıştır: ${mod}`;
             document.getElementById('modal-body').innerHTML = '';
+            
+            const params = moduleConfig[mod] || [{name: "Komut Parametreleri", placeholder: "Örn: 192.168.1.5 -p 80"}];
+            let html = '<h3 style="color:var(--text-main); font-size:1rem; margin-bottom:15px;">Çalıştırma Parametreleri</h3><div style="display:flex; flex-direction:column; gap:15px;">';
+            
+            params.forEach((p, idx) => {
+                html += `
+                    <div>
+                        <label style="color:var(--secondary); font-size:0.95rem; margin-bottom:8px; display:block; font-weight:bold;">${p.name}</label>
+                        <input type="text" id="arg-${idx}" class="terminal-input" style="width:100%; border:1px solid var(--glass-border); padding:12px; background:rgba(0,0,0,0.6); border-radius:6px; color:#fff;" placeholder="${p.placeholder}">
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                <div style="display:flex; gap:10px; margin-top:25px;">
+                    <button class="btn btn-primary" onclick="executeModule()">🔥 Çalıştır</button>
+                    <button class="btn" style="border-color:var(--primary); color:var(--primary)" onclick="closeModal()">İptal</button>
+                </div>
+            `;
+            
+            document.getElementById('modal-args').innerHTML = html;
             document.getElementById('modal-args').style.display = 'block';
             document.getElementById('modal-close-btn').style.display = 'none';
-            document.getElementById('module-args').value = '';
         }
 
         function closeModal() {
@@ -287,7 +343,14 @@
         }
 
         async function executeModule() {
-            const args = document.getElementById('module-args').value;
+            const params = moduleConfig[activeModule] || [{}];
+            let argsArr = [];
+            params.forEach((p, idx) => {
+                const val = document.getElementById(`arg-${idx}`).value.trim();
+                if(val) argsArr.push(`"${val}"`);
+            });
+            const args = argsArr.join(" ");
+            
             closeModal();
             logMsg(`\n[*] [SİSTEM MODÜLÜ] ${activeModule} çalıştırılıyor... Lütfen bekleyin.`, false);
             
