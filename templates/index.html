@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>C2 Karargah - Elite Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/modules.js"></script>
 </head>
 <body>
     <header class="glass-panel">
@@ -237,45 +238,7 @@
         let activeCategory = '';
         let activeModule = '';
 
-        const moduleConfig = {
-            "Evil_Twin.py": [
-                {name: "Ağ Arayüzü (Interface)", placeholder: "Örn: wlan0"},
-                {name: "Sahte Ağ Adı (SSID)", placeholder: "Örn: Free_WiFi"}
-            ],
-            "FTP_Bruteforce.py": [
-                {name: "Hedef IP", placeholder: "192.168.1.10"},
-                {name: "Kullanıcı Adı", placeholder: "admin"},
-                {name: "Wordlist Yolu", placeholder: "wordlist.txt"}
-            ],
-            "Directory_Bruteforcer.py": [
-                {name: "Hedef URL", placeholder: "http://hedef.com"},
-                {name: "Wordlist Yolu", placeholder: "dir_wordlist.txt"}
-            ],
-            "SQLi_Tester.py": [
-                {name: "Hedef URL", placeholder: "http://hedef.com/page?id=1"}
-            ],
-            "XSS_Scanner.py": [
-                {name: "Hedef URL", placeholder: "http://hedef.com/page?search="}
-            ],
-            "Hash_Cracker.py": [
-                {name: "Hash", placeholder: "5d41402abc4b2a76b9719d911017c592"},
-                {name: "Wordlist", placeholder: "rockyou.txt"}
-            ],
-            "Payload_Obfuscator.py": [
-                {name: "Orijinal Payload Dosyası", placeholder: "payload.py"},
-                {name: "Şifrelenmiş Çıktı Dosyası", placeholder: "obf_payload.py"}
-            ],
-            "ARP_Spoofer.py": [
-                {name: "Hedef IP", placeholder: "192.168.1.5"},
-                {name: "Ağ Geçidi (Gateway) IP", placeholder: "192.168.1.1"}
-            ],
-            "Network_Scanner.py": [
-                {name: "Hedef Alt Ağ (Subnet)", placeholder: "192.168.1.0/24"}
-            ],
-            "DNS_Enumerator.py": [
-                {name: "Hedef Alan Adı", placeholder: "example.com"}
-            ]
-        };
+        // moduleConfig is now loaded from /static/modules.js
 
         async function loadCategories() {
             try {
@@ -310,13 +273,25 @@
 
         function prepareModule(mod) {
             activeModule = mod;
-            document.getElementById('modal-title').innerText = `Çalıştır: ${mod}`;
+            
+            const mData = window.moduleConfig[mod] || {
+                icon: "⚙️", 
+                desc: "Bu modül standart bir betiktir. Aşağıdaki parametreleri doldurarak sistemi tetikleyebilirsiniz.", 
+                params: [{name: "Komut Parametreleri", placeholder: "Örn: 192.168.1.5 -p 80"}]
+            };
+
+            document.getElementById('modal-title').innerHTML = `${mData.icon} Çalıştır: ${mod}`;
             document.getElementById('modal-body').innerHTML = '';
             
-            const params = moduleConfig[mod] || [{name: "Komut Parametreleri", placeholder: "Örn: 192.168.1.5 -p 80"}];
-            let html = '<h3 style="color:var(--text-main); font-size:1rem; margin-bottom:15px;">Çalıştırma Parametreleri</h3><div style="display:flex; flex-direction:column; gap:15px;">';
+            let html = `
+                <div style="background:rgba(0, 229, 255, 0.05); border-left:3px solid var(--secondary); padding:15px; border-radius:6px; margin-bottom:20px;">
+                    <p style="color:#d0d0d0; font-family:'Rajdhani', sans-serif; font-size:1.05rem; line-height:1.5;">${mData.desc}</p>
+                </div>
+                <h3 style="color:var(--text-main); font-size:1rem; margin-bottom:15px; border-bottom:1px solid var(--glass-border); padding-bottom:5px;">Çalıştırma Parametreleri</h3>
+                <div style="display:flex; flex-direction:column; gap:15px;">
+            `;
             
-            params.forEach((p, idx) => {
+            mData.params.forEach((p, idx) => {
                 html += `
                     <div>
                         <label style="color:var(--secondary); font-size:0.95rem; margin-bottom:8px; display:block; font-weight:bold;">${p.name}</label>
@@ -328,7 +303,7 @@
             html += `
                 </div>
                 <div style="display:flex; gap:10px; margin-top:25px;">
-                    <button class="btn btn-primary" onclick="executeModule()">🔥 Çalıştır</button>
+                    <button class="btn btn-primary" onclick="executeModule()">🔥 Sistemi Ateşle</button>
                     <button class="btn" style="border-color:var(--primary); color:var(--primary)" onclick="closeModal()">İptal</button>
                 </div>
             `;
@@ -343,9 +318,9 @@
         }
 
         async function executeModule() {
-            const params = moduleConfig[activeModule] || [{}];
+            const mData = window.moduleConfig[activeModule] || {params: [{}]};
             let argsArr = [];
-            params.forEach((p, idx) => {
+            mData.params.forEach((p, idx) => {
                 const val = document.getElementById(`arg-${idx}`).value.trim();
                 if(val) argsArr.push(`"${val}"`);
             });
