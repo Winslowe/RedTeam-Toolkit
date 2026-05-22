@@ -25,7 +25,7 @@ Sıfırdan tasarlanan **Askeri Düzey AES-256 Şifreli C2 (Command & Control)** 
 ## 🚀 Öne Çıkan "Elite" Özellikler
 
 - **🤖 Auto-Pwn (Otopilot):** Tek bir IP adresi verin, arkaya yaslanın. Araç kendi kendine portları tarar, bulduğu servislere (HTTP, FTP, SSH) uygun zafiyet araçlarını zincirleme çalıştırır ve raporu sunar.
-- **👻 AV Evasion & SigThief (0-Day Stealth):** Nuitka C derlemesi ve **SigThief (Dijital İmza Çalma)** sayesinde Microsoft imzalarını kopyalayarak EDR ve Anti-Virüsleri (0/70 FUD oranı) tamamen atlatın.
+- **👻 01_Antivirus_Atlatma & SigThief (0-Day Stealth):** Nuitka C derlemesi ve **SigThief (Dijital İmza Çalma)** sayesinde Microsoft imzalarını kopyalayarak EDR ve Anti-Virüsleri (0/70 FUD oranı) tamamen atlatın.
 - **🌐 Glassmorphism Web Dashboard:** 26 farklı sızma testi aracını, komut satırı ezberlemeden, şık ve dinamik bir web tarayıcı arayüzünden yönetin.
 - **🔒 AES-256 E2EE C2 Bağlantısı:** Hedef cihazlarla aranızdaki Reverse Shell iletişimi uçtan uca AES-256 ile şifrelenir. 
 - **📱 Telegram & Discord Entegrasyonu:** Şifre mi kırıldı? Biri Phishing ağına mı düştü? Yoksa C2'ye yeni bir shell mi bağlandı? Sistem anında cebinize bildirim gönderir.
@@ -44,22 +44,22 @@ graph TD
     
     B --> C{Saldırı Vektörleri}
     
-    C -->|Bilgi Toplama| D[OSINT & Network Recon]
+    C -->|Bilgi Toplama| D[05_Acik_Kaynak_Istihbarat & 04_Ag_Kesif_Araclari]
     D --> D1[Email, Whois, DNS, ARP Spoof]
     
-    C -->|Zafiyet Analizi| E[Web Exploitation]
+    C -->|Zafiyet Analizi| E[12_Web_Zafiyet_Araclari]
     E --> E1[CMS Scan, DirBrute, SQLi, XSS]
     
     C -->|Otomasyon| F[🤖 Auto-Pwn Motoru]
     F -->|Tarama + Exploit Zinciri| C
     
-    C -->|Erişim Sağlama| G[Password Cracking & Phishing]
+    C -->|Erişim Sağlama| G[06_Sifre_Kirici_Araclar & Phishing]
     G -->|Yakalanan Şifreler| T((📱 Telegram/Discord Bildirimi))
     
     C -->|Kalıcılık & Kontrol| H[AES-256 C2 Listener]
     H <==>|Uçtan Uca Şifreli Bağlantı| I[💀 Hedef Sistem / Kurban]
     
-    C -->|AV Atlatma| J[AV Evasion & SigThief]
+    C -->|AV Atlatma| J[01_Antivirus_Atlatma & SigThief]
     J -.->|FUD Payload Derler| H
     I -->|Veri Sızdırma| H
 ```
@@ -72,12 +72,12 @@ Proje içerisinde **26+** modül mükemmel bir uyumla çalışmak üzere kategor
 
 | Kategori | Araçlar | Açıklama |
 | :--- | :--- | :--- |
-| **OSINT** | `Email_Harvester`, `Whois_Lookup` | Alan adları ve hedefler hakkında açık kaynaklardan veri toplar. |
-| **Network Recon** | `Network_Scanner`, `DNS_Enumerator`, `ARP_Spoofer` | LAN üzerinde cihaz tespiti, DNS analizi ve ağ trafiğini manipüle etme (MITM). |
-| **Web Exploitation** | `CMS_Scanner`, `DirBrute`, `SQLi`, `XSS`, `LFI` | Web sunucularındaki kritik zafiyetleri ve gizli dosyaları analiz eder. |
-| **Password Cracking** | `SSH_Brute`, `FTP_Brute`, `Hash_Cracker`, `Zip_Cracker` | Kritik servislere ve dosyalara yönelik kaba kuvvet saldırıları düzenler. |
-| **Social Engineering**| `Phishing_Server` | Modern, log tutan ve bildirim gönderen sahte oltalama sunucusu. |
-| **AV Evasion** | `SigThief`, `Payload_Obfuscator`, `Shellcode_Encoder` | Güvenlik duvarlarını ve Antivirüsleri atlatmak için sertifika kopyalama (SigThief) ve kod gizleme araçları. |
+| **05_Acik_Kaynak_Istihbarat** | `Email_Harvester`, `Whois_Lookup` | Alan adları ve hedefler hakkında açık kaynaklardan veri toplar. |
+| **04_Ag_Kesif_Araclari** | `Network_Scanner`, `DNS_Enumerator`, `ARP_Spoofer` | LAN üzerinde cihaz tespiti, DNS analizi ve ağ trafiğini manipüle etme (MITM). |
+| **12_Web_Zafiyet_Araclari** | `CMS_Scanner`, `DirBrute`, `SQLi`, `XSS`, `LFI` | Web sunucularındaki kritik zafiyetleri ve gizli dosyaları analiz eder. |
+| **06_Sifre_Kirici_Araclar** | `SSH_Brute`, `FTP_Brute`, `Hash_Cracker`, `Zip_Cracker` | Kritik servislere ve dosyalara yönelik kaba kuvvet saldırıları düzenler. |
+| **10_Sosyal_Muhendislik**| `Phishing_Server` | Modern, log tutan ve bildirim gönderen sahte oltalama sunucusu. |
+| **01_Antivirus_Atlatma** | `SigThief`, `Payload_Obfuscator`, `Shellcode_Encoder` | Güvenlik duvarlarını ve Antivirüsleri atlatmak için sertifika kopyalama (SigThief) ve kod gizleme araçları. |
 | **C2 & Post-Exploit** | `Payload_Builder`, `C2_Listener`, `Ransomware`, `Keylogger` | Antivirüslere yakalanmayan, hedef ağı içeriden yöneten E2EE kontrol merkezi. |
 
 ---
@@ -102,7 +102,7 @@ chmod +x install.sh
 ### Projeyi Başlatma (Ana Menü)
 Tüm araçları yöneteceğiniz merkezi çalıştırmak için:
 ```bash
-python RedTeam_C2.py
+python Komuta_Kontrol_Merkezi_C2.py
 ```
 
 Bu komuttan sonra karşınıza çıkan sihirbazdan:
